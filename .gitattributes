@@ -1,0 +1,2 @@
+humanoidverse/data/lafan_29dof.pkl filter=lfs diff=lfs merge=lfs -text
+humanoidverse/data/lafan_29dof_10s-clipped.pkl filter=lfs diff=lfs merge=lfs -text
