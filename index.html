@@ -2248,39 +2248,39 @@
     </div>
     
     <!-- 底部：Before/After 视频对比 -->
-    <div class="columns is-vcentered">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: nowrap; max-height: 60vh;">
       <!-- Before 视频 -->
-      <div class="column is-half">
+      <div style="flex: 0 0 40%; max-width: 40%;">
         <div class="has-text-centered">
-          <div style="border: 3px solid #dc3545; border-radius: 8px; padding: 5px; background: rgba(220, 53, 69, 0.05); display: inline-block; width: 70%;">
-            <video width="100%" height="auto" controls style="border-radius: 5px;">
+          <div style="border: 3px solid #dc3545; border-radius: 8px; padding: 5px; background: rgba(220, 53, 69, 0.05);">
+            <video width="100%" height="auto" controls style="border-radius: 5px; max-height: 50vh;">
               <source src="./resources/adaptation/before_adapt.mp4" type="video/mp4">
               Your browser does not support the video tag.
-      </video>
+            </video>
             <h4 style="font-family: Georgia, serif; font-size: 0.9em; margin-top: 8px; color: #dc3545;">Before Adaptation</h4>
-    </div>
+          </div>
         </div>
       </div>
       
       <!-- 箭头 -->
-      <div class="column is-narrow" style="text-align: center;">
+      <div style="flex: 0 0 auto; text-align: center;">
         <div style="margin: 20px 0;">
-              <div style="font-family: Georgia, serif; font-size: 1.0em; font-weight: bold; color: #666; margin-bottom: 10px; line-height: 1.3;">
-                <div>Adaptation in Sim</div>
-                <div style="font-size: 0.8em; margin-top: 5px;">for less than 2 minutes</div>
-              </div>
-          <div style="font-size: 2em; color: #666;">→</div>
+          <div style="font-family: Georgia, serif; font-size: 1.0em; font-weight: bold; color: #666; margin-bottom: 10px; line-height: 1.3;">
+            <div>Adaptation in Sim</div>
+            <div style="font-size: 0.8em; margin-top: 5px;">for less than 2 minutes</div>
+          </div>
+          <div style="font-size: 3em; color: #666;">→</div>
         </div>
       </div>
       
       <!-- After 视频 -->
-      <div class="column is-half">
+      <div style="flex: 0 0 40%; max-width: 40%;">
         <div class="has-text-centered">
-          <div style="border: 3px solid #28a745; border-radius: 8px; padding: 5px; background: rgba(40, 167, 69, 0.05); display: inline-block; width: 70%;">
-            <video width="100%" height="auto" controls style="border-radius: 5px;">
+          <div style="border: 3px solid #28a745; border-radius: 8px; padding: 5px; background: rgba(40, 167, 69, 0.05);">
+            <video width="100%" height="auto" controls style="border-radius: 5px; max-height: 50vh;">
               <source src="./resources/adaptation/after_adapt.mp4" type="video/mp4">
               Your browser does not support the video tag.
-      </video>
+            </video>
             <h4 style="font-family: Georgia, serif; font-size: 0.9em; margin-top: 8px; color: #28a745;">After Adaptation</h4>
           </div>
         </div>
@@ -2291,6 +2291,36 @@
 
 <section class="section">
   <h2 class="title is-2" style="text-align: center;">Space Interpolation</h2>
+  <div class="container" style="max-width: 80%; margin: 0 auto;">\
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: Georgia, serif;">The structured nature of the learned space enables smooth interpolation between latent representations. We can leverage Spherical Linear Interpolation to generate intermediate latent vectors along the geodesic arc between the two end-points.</h4>
+    
+    <div style="text-align: center; margin: 20px 0;">
+      <p style="margin-bottom: 10px;">$$z_{t} := \frac{\sin((1-t)\theta)}{\sin \theta}z_0 + \frac{\sin(t\theta)}{\sin \theta}z_1, \quad \theta := \arccos\left(\langle z_0, z_1 \rangle\right), \ z_0\ne z_1, t\in[0,1].$$</p>
+    </div> 
+
+    <div class="columns is-centered">
+      <div class="column is-half">
+        <div class="has-text-centered">
+          <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 8px; margin-bottom: 15px;">
+            <source src="./resources/interpolation/interpolation1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+      </video>
+          <h4 style="font-family: Georgia, serif; font-size: 0.9em; margin-bottom: 10px;">Interpolation between strafe-left and strafe-right</h4>
+          <!-- <p style="font-family: Georgia, serif; font-size: 0.9em;">Hightlight: The robot almost stop at t=0.5, demonstrates the structured nature of the learned space.</p> -->
+    </div>
+      </div>
+      <div class="column is-half">
+        <div class="has-text-centered">
+          <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 8px; margin-bottom: 15px;">
+            <source src="./resources/interpolation/interpolation2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <h4 style="font-family: Georgia, serif; font-size: 0.9em; margin-bottom: 10px;">Interpolation between arms-low-low and arms-low-high</h4>
+          <!-- <p style="font-family: Georgia, serif; font-size: 0.9em;">Shows robust performance under various disturbance conditions and quick recovery.</p> -->
+        </div>
+      </div>
+    </div>
+   </div>
 </section>
 
 
