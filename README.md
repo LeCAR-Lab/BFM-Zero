@@ -1,4 +1,4 @@
-<h1 align="center"> Hold My Beer🍻: Learning Gentle Humanoid Locomotion and End-Effector Stabilization Control </h1>
+<h1 align="center"> BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning </h1>
 
 <div align="center">
 
