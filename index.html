@@ -1,0 +1,2323 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <style>
+    .flip-card {
+      background-color: transparent;
+      width: 100%;
+      height: auto;
+      perspective: 1000px;
+      display: inline-block;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: auto;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+      top: 0;
+      left: 0;
+      min-height: fit-content;
+    }
+
+    .flip-card-front {
+      background-color: #f8f9fa;
+    }
+
+    .flip-card-back {
+      background-color: #ffffff;
+      transform: rotateY(180deg);
+      padding: 20px;
+      font-family: Georgia, serif;
+      font-size: 0.9em;
+      line-height: 1.6;
+    }
+
+    .flip-card-front img {
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+    
+    /* 第一列卡片放大 */
+    .columns .column.is-one-third:first-child .flip-card {
+      transform: scale(1.1);
+      transform-origin: center;
+    }
+    
+    /* 第二列卡片缩小 */
+    .columns .column.is-one-third:last-child .flip-card {
+      transform: scale(0.8);
+      transform-origin: center;
+    }
+    
+    /* 减少右边一列卡片之间的间隔 */
+    .columns .column.is-one-third:last-child .columns {
+      margin-bottom: 0;
+      gap: 0.5rem;
+    }
+    
+    .columns .column.is-one-third:last-child .column {
+      padding-bottom: 0.25rem;
+      padding-top: 0.25rem;
+    }
+    
+    /* 确保左右两列上下对齐 */
+    .columns.is-centered {
+      align-items: flex-start;
+    }
+    
+    /* 让右边一列的内容垂直居中分布 */
+    .columns .column.is-one-third:last-child {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    /* 确保翻转效果仍然正常工作 */
+    .columns .column.is-one-third:first-child .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    
+    .columns .column.is-one-third:last-child .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    
+    /* 新的长方形容器布局样式 */
+    .flip-cards-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 2rem;
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+      min-height: 300px;
+      transform: scale(1.1);
+      transform-origin: center;
+      width: 100%;
+      max-width: 800px;
+    }
+    
+    /* 左侧单个卡片 */
+    .flip-card-left {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-right: 0;
+    }
+    
+    .flip-card-left .flip-card {
+      width: 100%;
+      max-width: 250px;
+      transform: scale(1.25);
+      transform-origin: center;
+    }
+    
+    .flip-card-left .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    
+    /* 右侧上下排列的两个卡片 */
+    .flip-cards-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 1rem;
+      padding-left: 0;
+    }
+    
+    .flip-cards-right .flip-card-item {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    
+    .flip-cards-right .flip-card-item .flip-card {
+      width: 100%;
+      max-width: 200px;
+    }
+    
+    /* 确保页面放大时图片和字体保持不变 */
+    .flip-card-front img {
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      transform: scale(1);
+      transform-origin: center;
+    }
+    
+    .flip-card-back {
+      background-color: #ffffff;
+      transform: rotateY(180deg);
+      padding: 20px;
+      font-family: Georgia, serif;
+      font-size: 0.9em;
+      line-height: 1.6;
+      font-size: clamp(0.8em, 1vw, 1em);
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .flip-cards-container {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      .flip-card-left .flip-card {
+        max-width: 200px;
+        transform: scale(1.1);
+      }
+      
+      .flip-cards-right .flip-card-item .flip-card {
+        max-width: 150px;
+      }
+    }
+    
+    /* 视频进度条样式 */
+    .video-timeline-container {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      overflow: visible;
+      position: relative;
+      min-height: 0px;
+    }
+    
+    .timeline-slider {
+      width: 96%;
+      height: 8px;
+      background: #5a8a2a;
+      border-radius: 4px;
+      outline: none;
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 70px 0 0 0;
+    }
+    
+    .timeline-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #5a8a2a;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    
+    .timeline-slider::-moz-range-thumb {
+      -moz-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #5a8a2a;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    
+    .timeline-marks {
+      position: relative;
+      height: 120px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      overflow: visible;
+      background: transparent;
+    }
+    
+    /* 进度条现在在timeline-marks容器内 */
+    /* 确保timeline颜色不被外部CSS覆盖 */
+    .video-timeline-container .timeline-slider {
+      background: #5a8a2a !important;
+    }
+    
+    .video-timeline-container .timeline-slider::-webkit-slider-thumb {
+      background: #5a8a2a !important;
+    }
+    
+    .video-timeline-container .timeline-slider::-moz-range-thumb {
+      background: #5a8a2a !important;
+    }
+    
+    .timeline-marks .timeline-slider {
+      background: #5a8a2a !important;
+    }
+    
+    
+    .timeline-current-time {
+      text-align: center;
+      margin-top: 30px;
+      font-family: Georgia, serif;
+      color: #333;
+    }
+    
+    /* 播放按钮样式 */
+    .play-button {
+      position: absolute;
+      top: 175px;
+      left: 10px;
+      width: 40px;
+      height: 40px;
+      background: #3a6902;
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      z-index: 20;
+    }
+    
+    .play-button:hover {
+      background: #2d4f02;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .play-button.paused::before {
+      content: '▶';
+    }
+    
+    .play-button.playing::before {
+      content: '⏸';
+    }
+    
+    /* 推理方块样式 */
+    .inference-cards {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      gap: 2rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .inference-card {
+      width: 300px;
+      height: 140px;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+      background: transparent;
+    }
+    
+    .inference-card:nth-child(1) {
+      border: 3px solid #3a6902;
+    }
+    
+    .inference-card:nth-child(2) {
+      border: 3px solid #b63620;
+    }
+    
+    .inference-card:nth-child(3) {
+      border: 3px solid #004bb3;
+    }
+    
+    .inference-card:hover {
+      transform: scale(1.2);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+    
+    .inference-card-title {
+      color: #333;
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      font-family: Georgia, serif;
+      transition: opacity 0.3s ease;
+    }
+    
+    .inference-card:nth-child(1) .inference-card-title {
+      color: #3a6902;
+    }
+    
+    .inference-card:nth-child(2) .inference-card-title {
+      color: #b63620;
+    }
+    
+    .inference-card:nth-child(3) .inference-card-title {
+      color: #004bb3;
+    }
+    
+    .inference-card:hover .inference-card-title {
+      opacity: 0;
+    }
+    
+    .inference-card-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 12px;
+      background: rgba(255,255,255,0.95);
+      color: #333;
+      font-size: 0.8rem;
+      line-height: 1.3;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .inference-card:hover .inference-card-content {
+      opacity: 1;
+    }
+    
+    .inference-card-content h4 {
+      margin-bottom: 8px;
+      font-size: 1.0rem;
+    }
+    
+    .inference-card:nth-child(1) .inference-card-content h4 {
+      color: #ff8c42;
+    }
+    
+    .inference-card:nth-child(2) .inference-card-content h4 {
+      color: #42c78a;
+    }
+    
+    .inference-card:nth-child(3) .inference-card-content h4 {
+      color: #4285c7;
+    }
+    
+    .inference-card-content p {
+      margin: 5px 0;
+      font-family: Georgia, serif;
+    }
+    
+    .inference-card-content .formula {
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+    
+    .inference-card:nth-child(1) .inference-card-content .formula {
+      border-left: 3px solid #3a6902;
+    }
+    
+    .inference-card:nth-child(2) .inference-card-content .formula {
+      border-left: 3px solid #b63620;
+    }
+    
+    .inference-card:nth-child(3) .inference-card-content .formula {
+      border-left: 3px solid #004bb3;
+    }
+    
+    /* 选项卡样式 */
+    .tabs-container {
+      max-width: 90%;
+      margin: 2rem auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .tabs-header {
+      display: flex;
+      background: linear-gradient(135deg, #004bb3 0%, #4285c7 100%);
+      border-bottom: 2px solid #004bb3;
+    }
+    
+    .tab-button {
+      flex: 1;
+      padding: 15px 10px;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: Georgia, serif;
+      text-align: center;
+    }
+    
+    .tab-button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .tab-button.active {
+      background: white;
+      color: #004bb3;
+    }
+    
+    .tab-content {
+      padding: 30px;
+      min-height: 400px;
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .tab-content h3 {
+      color: #004bb3;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+    
+    .tab-content p {
+      font-family: Georgia, serif;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    
+    /* 子选项卡样式 */
+    .sub-tabs-container {
+      margin: 20px 0;
+      background: #f8f9fa;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+    }
+    
+    .sub-tabs-header {
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #666 0%, #888 100%);
+      border-bottom: 1px solid #666;
+      width: 200px;
+      flex-shrink: 0;
+    }
+    
+    .sub-tab-button {
+      width: 100%;
+      padding: 12px 15px;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: Georgia, serif;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .sub-tab-button:last-child {
+      border-bottom: none;
+    }
+    
+    .sub-tab-button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .sub-tab-button.active {
+      background: rgba(255,255,255,0.2);
+      border-bottom: 2px solid #fff;
+    }
+    
+    .sub-tab-content {
+      display: none;
+      padding: 20px;
+      background: white;
+      flex: 1;
+      min-height: 200px;
+    }
+    
+    .sub-tab-content.active {
+      display: block;
+    }
+    
+    .sub-tab-content h4 {
+      color: #004bb3;
+      margin-bottom: 10px;
+      font-family: Georgia, serif;
+    }
+    
+    .sub-tab-content p {
+      margin-bottom: 15px;
+      font-family: Georgia, serif;
+      line-height: 1.5;
+    }
+    
+    .sub-tab-content .reward-formula {
+      background: #f0f2f8;
+      padding: 12px;
+      border-radius: 6px;
+      margin: 10px 0;
+      border-left: 3px solid #666;
+      font-family: Georgia, serif;
+    }
+    
+    /* 视频优化样式 */
+    .sub-tab-content video {
+      transition: opacity 0.2s ease;
+      background: #000;
+    }
+    
+    .sub-tab-content video::-webkit-media-controls {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .sub-tab-content video:hover::-webkit-media-controls {
+      opacity: 1;
+    }
+    
+    .sub-tab-content video::-webkit-media-controls-panel {
+      background: rgba(0,0,0,0.7);
+    }
+    
+    .sub-tab-content video::-webkit-media-controls-play-button,
+    .sub-tab-content video::-webkit-media-controls-timeline,
+    .sub-tab-content video::-webkit-media-controls-current-time-display,
+    .sub-tab-content video::-webkit-media-controls-time-remaining-display {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .sub-tab-content video:hover::-webkit-media-controls-play-button,
+    .sub-tab-content video:hover::-webkit-media-controls-timeline,
+    .sub-tab-content video:hover::-webkit-media-controls-current-time-display,
+    .sub-tab-content video:hover::-webkit-media-controls-time-remaining-display {
+      opacity: 1;
+    }
+    
+    /* 视频画廊样式 */
+    .video-gallery {
+      margin: 2rem 0;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .gallery-container {
+      display: flex;
+      transition: transform 0.5s ease;
+      gap: 1rem;
+    }
+    
+    .gallery-item {
+      flex: 0 0 auto;
+      width: 300px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    
+    .gallery-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    .gallery-item video {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 10px 10px 0 0;
+    }
+    
+    .gallery-item .video-info {
+      padding: 15px;
+    }
+    
+    .gallery-item h4 {
+      color: #b63620;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+    }
+    
+    /* Goal Reaching 画廊绿色主题 */
+    #goalGalleryContainer .gallery-item h4 {
+      color: #3a6902;
+    }
+    
+    #goalGalleryContainer .gallery-item:hover {
+      box-shadow: 0 8px 20px rgba(58, 105, 2, 0.2);
+    }
+    
+    #goalGalleryDots .gallery-dot.active {
+      background: #3a6902;
+    }
+    
+    #goalGalleryDots .gallery-dot:hover {
+      background: #5a8a2a;
+    }
+    
+    .gallery-item p {
+      color: #666;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    
+    .gallery-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .gallery-nav button {
+      background: #b63620;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    
+    .gallery-nav button:hover {
+      background: #9a2d1a;
+      transform: scale(1.05);
+    }
+    
+    .gallery-nav button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .gallery-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .gallery-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ddd;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    
+    .gallery-dot.active {
+      background: #b63620;
+    }
+    
+    /* 播放箭头按钮样式 */
+    .gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      background: rgba(182, 54, 32, 0.8);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+    
+    .gallery-arrow:hover {
+      background: rgba(182, 54, 32, 1);
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    .gallery-arrow-left {
+      left: 10px;
+    }
+    
+    .gallery-arrow-right {
+      right: 10px;
+    }
+    
+    .gallery-arrow::before {
+      content: '';
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+    
+    .gallery-arrow-left::before {
+      border-width: 8px 12px 8px 0;
+      border-color: transparent white transparent transparent;
+      margin-left: -2px;
+    }
+    
+    .gallery-arrow-right::before {
+      border-width: 8px 0 8px 12px;
+      border-color: transparent transparent transparent white;
+      margin-left: 2px;
+    }
+    
+    /* Goal Reaching 画廊箭头绿色主题 */
+    .video-gallery:has(#goalGalleryContainer) .gallery-arrow {
+      background: rgba(58, 105, 2, 0.8);
+    }
+    
+    .video-gallery:has(#goalGalleryContainer) .gallery-arrow:hover {
+      background: rgba(58, 105, 2, 1);
+    }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+    
+    // 全局变量和函数
+    let currentVideoIndex = 0;
+    let isAutoPlaying = false;
+    const videoOrder = [
+      'video-stand-still',
+      'video-go-forward', 
+      'video-strafe-left',
+      'video-go-backward',
+      'video-strafe-right',
+      'video-turn-anticlockwise',
+      'video-turn-clockwise'
+    ];
+    
+    // 全局函数
+    function handleSubTabClick(subTabId, event) {
+      // 如果正在自动播放，显示提示
+      if (isAutoPlaying) {
+        showStopPlayFirstTip();
+        return;
+      }
+      
+      // 正常切换选项卡（不重置视频）
+      showSubTab(subTabId, event ? event.target : null);
+    }
+    
+    // 显示停止播放提示
+    function showStopPlayFirstTip() {
+      // 创建提示元素
+      const tip = document.createElement('div');
+      tip.textContent = 'Stop play first';
+      tip.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-family: Georgia, serif;
+        font-size: 14px;
+        z-index: 10000;
+        pointer-events: none;
+      `;
+      
+      document.body.appendChild(tip);
+      
+      // 2秒后移除提示
+      setTimeout(() => {
+        if (tip.parentNode) {
+          tip.parentNode.removeChild(tip);
+        }
+      }, 2000);
+    }
+    
+    // 页面加载后立即设置timeline颜色
+    window.addEventListener('load', function() {
+      const timelineSlider = document.getElementById('timelineSlider');
+      if (timelineSlider) {
+        timelineSlider.style.setProperty('background', '#5a8a2a', 'important');
+        timelineSlider.style.backgroundColor = '#5a8a2a';
+        timelineSlider.style.background = '#5a8a2a';
+        
+        // 添加动态样式
+        const dynamicStyle = document.createElement('style');
+        dynamicStyle.id = 'timeline-green-style';
+        dynamicStyle.textContent = `
+          #timelineSlider {
+            background: #5a8a2a !important;
+            background-color: #5a8a2a !important;
+          }
+          #timelineSlider::-webkit-slider-thumb {
+            background: #5a8a2a !important;
+          }
+          #timelineSlider::-moz-range-thumb {
+            background: #5a8a2a !important;
+          }
+        `;
+        document.head.appendChild(dynamicStyle);
+      }
+    });
+    
+    // 动态调整翻转框高度以匹配图片
+    document.addEventListener('DOMContentLoaded', function() {
+      const flipCards = document.querySelectorAll('.flip-card');
+      flipCards.forEach(card => {
+        const img = card.querySelector('img');
+        if (img) {
+          img.onload = function() {
+            const imgHeight = img.naturalHeight;
+            const imgWidth = img.naturalWidth;
+            const containerWidth = card.offsetWidth;
+            const aspectRatio = imgHeight / imgWidth;
+            const calculatedHeight = containerWidth * aspectRatio;
+            
+            card.style.height = calculatedHeight + 'px';
+            card.querySelector('.flip-card-inner').style.height = calculatedHeight + 'px';
+          };
+          
+          // 如果图片已经加载完成
+          if (img.complete) {
+            img.onload();
+          }
+        }
+      });
+      
+      // 视频时间轴控制功能
+      const timelineSlider = document.getElementById('timelineSlider');
+      const frameVideo = document.getElementById('frameVideo');
+      const currentTimeDisplay = document.getElementById('currentTime');
+      
+      if (timelineSlider && frameVideo) {
+        // 关键时间点（秒）
+        const keyPoints = [0, 6, 9, 13, 16.5, 18.2, 20, 23, 26, 30];
+        const keyImages = [
+          './resources/goal_reaching/rendered/goal1.png',
+          './resources/goal_reaching/rendered/goal2.png',
+          './resources/goal_reaching/rendered/goal3.png',
+          './resources/goal_reaching/rendered/goal4.png',
+          './resources/goal_reaching/rendered/goal5.png',
+          './resources/goal_reaching/rendered/goal6.png',
+          './resources/goal_reaching/rendered/goal7.png',
+          './resources/goal_reaching/rendered/goal8.png',
+          './resources/goal_reaching/rendered/goal9.png',
+          './resources/goal_reaching/rendered/goal1.png'
+        ];
+        
+        // 创建关键点标记
+        const timelineMarks = document.getElementById('timelineMarks');
+        const timelineContainer = document.querySelector('.video-timeline-container');
+        
+        // 创建播放按钮
+        const playButton = document.createElement('button');
+        playButton.className = 'play-button paused';
+        playButton.title = '播放/暂停';
+        timelineContainer.appendChild(playButton);
+        
+        // 播放按钮点击事件
+        playButton.addEventListener('click', function() {
+          if (frameVideo.paused) {
+            frameVideo.play();
+            this.className = 'play-button playing';
+            this.title = '暂停';
+          } else {
+            frameVideo.pause();
+            this.className = 'play-button paused';
+            this.title = '播放';
+          }
+        });
+        
+        // 视频播放状态监听
+        frameVideo.addEventListener('play', function() {
+          playButton.className = 'play-button playing';
+          playButton.title = '暂停';
+        });
+        
+        frameVideo.addEventListener('pause', function() {
+          playButton.className = 'play-button paused';
+          playButton.title = '播放';
+        });
+        
+        keyPoints.forEach((point, index) => {
+          // 创建进度条上的关键点
+          const keyPoint = document.createElement('div');
+          keyPoint.style.position = 'absolute';
+          keyPoint.style.left = (point / 30 * 100) + '%';
+          keyPoint.style.top = '70px'; // 与进度条对齐
+          keyPoint.style.width = '8px';
+          keyPoint.style.height = '8px';
+          keyPoint.style.backgroundColor = '#3a6902';
+          keyPoint.style.borderRadius = '50%';
+          keyPoint.style.transform = 'translateX(-50%)';
+          keyPoint.style.zIndex = '15';
+          keyPoint.style.border = '2px solid #fff';
+          keyPoint.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+          
+          // 创建图片元素
+          const img = document.createElement('img');
+          img.src = keyImages[index];
+          img.style.width = '60px';
+          img.style.height = 'auto'; // 让高度自适应
+          img.style.objectFit = 'contain'; // 保持原始比例，不被裁剪
+          img.style.borderRadius = '8px';
+          img.style.position = 'absolute';
+          img.style.left = (point / 30 * 100) + '%';
+          img.style.transform = 'translateX(-50%)';
+          img.style.cursor = 'pointer';
+          img.style.zIndex = '10';
+          img.style.display = 'block';
+          img.style.backgroundColor = '#fff';
+          img.style.padding = '4px';
+          img.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+          img.style.transition = 'all 0.3s ease';
+          img.alt = `Keyframe ${index + 1}`;
+          
+          // 创建连接线
+          const line = document.createElement('div');
+          line.style.position = 'absolute';
+          line.style.left = (point / 30 * 100) + '%';
+          line.style.transform = 'translateX(-50%)';
+          line.style.width = '2px';
+          line.style.backgroundColor = '#3a6902';
+          line.style.zIndex = '5';
+          
+          // 根据索引决定图片和线的位置
+          if (index % 2 === 0) {
+            // 偶数索引：图片在上方
+            img.style.top = '0px';
+            line.style.top = '40px';
+            line.style.height = '36px';
+          } else {
+            // 奇数索引：图片在下方
+            img.style.top = '90px';
+            line.style.top = '70px';
+            line.style.height = '20px';
+          }
+          
+          // 悬停效果
+          img.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(-50%) scale(1.3)';
+            this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+            this.style.zIndex = '20';
+            keyPoint.style.transform = 'translateX(-50%) scale(1.5)';
+            line.style.backgroundColor = '#2d4f02';
+          });
+          
+          img.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(-50%) scale(1)';
+            this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+            this.style.zIndex = '10';
+            keyPoint.style.transform = 'translateX(-50%) scale(1)';
+            line.style.backgroundColor = '#3a6902';
+          });
+          
+          // 图片加载错误处理
+          img.onerror = function() {
+            console.log('图片加载失败:', keyImages[index]);
+            console.log('图片路径:', this.src);
+            this.style.backgroundColor = '#ff6b6b';
+            this.style.color = 'white';
+            this.style.display = 'flex';
+            this.style.alignItems = 'center';
+            this.style.justifyContent = 'center';
+            this.style.fontSize = '12px';
+            this.textContent = 'Error';
+          };
+          
+          img.onload = function() {
+            console.log('图片加载成功:', keyImages[index]);
+          };
+          
+          // 点击图片跳转到对应时间
+          img.addEventListener('click', function() {
+            timelineSlider.value = point;
+            frameVideo.currentTime = point;
+            updateTimeDisplay(point);
+          });
+          
+          // 点击关键点也跳转
+          keyPoint.addEventListener('click', function() {
+            timelineSlider.value = point;
+            frameVideo.currentTime = point;
+            updateTimeDisplay(point);
+          });
+          
+          // 添加到timelineMarks容器
+          timelineMarks.appendChild(keyPoint);
+          timelineMarks.appendChild(line);
+          timelineMarks.appendChild(img);
+        });
+        
+        // 滑块变化事件
+        timelineSlider.addEventListener('input', function() {
+          const time = parseFloat(this.value);
+          frameVideo.currentTime = time;
+          updateTimeDisplay(time);
+        });
+        
+        // 视频时间更新事件
+        frameVideo.addEventListener('timeupdate', function() {
+          timelineSlider.value = this.currentTime;
+          updateTimeDisplay(this.currentTime);
+        });
+        
+        // 更新时间显示
+        function updateTimeDisplay(time) {
+          const minutes = Math.floor(time / 60);
+          const seconds = Math.floor(time % 60);
+          const milliseconds = Math.floor((time % 1) * 100);
+          currentTimeDisplay.textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 强制设置timeline颜色 - 多重保障
+        timelineSlider.style.setProperty('background', '#5a8a2a', 'important');
+        timelineSlider.style.backgroundColor = '#5a8a2a';
+        timelineSlider.style.background = '#5a8a2a';
+        
+        // 设置滑块thumb颜色
+        const style = document.createElement('style');
+        style.textContent = `
+          #timelineSlider::-webkit-slider-thumb {
+            background: #5a8a2a !important;
+          }
+          #timelineSlider::-moz-range-thumb {
+            background: #5a8a2a !important;
+          }
+          #timelineSlider {
+            background: #5a8a2a !important;
+          }
+        `;
+        document.head.appendChild(style);
+        
+        // 初始化
+        timelineSlider.max = frameVideo.duration || 30;
+        updateTimeDisplay(0);
+        
+        // 确保视频加载完成后初始化
+        frameVideo.addEventListener('loadedmetadata', function() {
+          timelineSlider.max = this.duration;
+          updateTimeDisplay(0);
+        });
+        
+        // 如果视频已经加载完成，立即初始化
+        if (frameVideo.readyState >= 1) {
+          timelineSlider.max = frameVideo.duration;
+          updateTimeDisplay(0);
+        }
+      }
+    });
+    
+    // 选项卡切换功能
+    function showTab(tabId) {
+      // 隐藏所有选项卡内容
+      const allTabs = document.querySelectorAll('.tab-content');
+      allTabs.forEach(tab => tab.classList.remove('active'));
+      
+      // 移除所有按钮的active类
+      const allButtons = document.querySelectorAll('.tab-button');
+      allButtons.forEach(button => button.classList.remove('active'));
+      
+      // 显示选中的选项卡内容
+      document.getElementById(tabId).classList.add('active');
+      
+      // 激活对应的按钮
+      event.target.classList.add('active');
+    }
+    
+    // 子选项卡切换功能
+    function showSubTab(subTabId, buttonElement = null) {
+      // 隐藏所有子选项卡内容
+      const allSubTabs = document.querySelectorAll('.sub-tab-content');
+      allSubTabs.forEach(tab => tab.classList.remove('active'));
+      
+      // 移除所有子按钮的active类
+      const allSubButtons = document.querySelectorAll('.sub-tab-button');
+      allSubButtons.forEach(button => button.classList.remove('active'));
+      
+      // 显示选中的子选项卡内容
+      document.getElementById(subTabId).classList.add('active');
+      
+      // 激活对应的子按钮
+      if (buttonElement) {
+        buttonElement.classList.add('active');
+      } else if (event && event.target) {
+        event.target.classList.add('active');
+      } else {
+        // 自动播放时，通过按钮文本找到对应的按钮
+        const targetButton = Array.from(allSubButtons).find(button => {
+          const buttonText = button.textContent.trim();
+          const tabTexts = {
+            'stand-still': 'Stand Still',
+            'go-forward': 'Go Forward',
+            'strafe-left': 'Strafe Left',
+            'go-backward': 'Go Backward',
+            'strafe-right': 'Strafe Right',
+            'turn-anticlockwise': 'Turn Anticlockwise',
+            'turn-clockwise': 'Turn Clockwise'
+          };
+          return buttonText === tabTexts[subTabId];
+        });
+        if (targetButton) {
+          targetButton.classList.add('active');
+        }
+      }
+    }
+    
+    // Motion Tracking 视频画廊控制
+    let currentSlide = 0;
+    const totalSlides = 6;
+    const itemWidth = 320; // 每个视频的宽度（300px + 20px gap）
+    
+    function moveGallery(direction) {
+      const container = document.getElementById('galleryContainer');
+      
+      currentSlide += direction;
+      
+      // 循环往复逻辑
+      if (currentSlide < 0) {
+        currentSlide = totalSlides - 1; // 从最后一个开始
+      } else if (currentSlide >= totalSlides) {
+        currentSlide = 0; // 回到第一个
+      }
+      
+      // 计算移动距离 - 每次移动一个视频的距离
+      const translateX = -currentSlide * itemWidth;
+      container.style.transform = `translateX(${translateX}px)`;
+      
+      // 更新圆点状态
+      updateDots();
+    }
+    
+      // Goal Reaching 视频画廊控制
+      let currentGoalSlide = 0;
+      const totalGoalSlides = 10;
+    
+    function moveGoalGallery(direction) {
+      const container = document.getElementById('goalGalleryContainer');
+      
+      currentGoalSlide += direction;
+      
+      // 循环往复逻辑
+      if (currentGoalSlide < 0) {
+        currentGoalSlide = totalGoalSlides - 1; // 从最后一个开始
+      } else if (currentGoalSlide >= totalGoalSlides) {
+        currentGoalSlide = 0; // 回到第一个
+      }
+      
+      // 计算移动距离 - 每次移动一个视频的距离
+      const translateX = -currentGoalSlide * itemWidth;
+      container.style.transform = `translateX(${translateX}px)`;
+      
+      // 更新圆点状态
+      updateGoalDots();
+    }
+    
+    function goToSlide(slideIndex) {
+      currentSlide = slideIndex;
+      moveGallery(0);
+    }
+    
+    function goToGoalSlide(slideIndex) {
+      currentGoalSlide = slideIndex;
+      moveGoalGallery(0);
+    }
+    
+    function updateDots() {
+      const dots = document.querySelectorAll('.gallery-dots span');
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentSlide);
+      });
+    }
+    
+    function updateGoalDots() {
+      const dots = document.querySelectorAll('#goalGalleryDots span');
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentGoalSlide);
+      });
+    }
+    
+    // 初始化画廊
+    document.addEventListener('DOMContentLoaded', function() {
+      updateDots();
+      updateGoalDots();
+      
+      // 添加视频悬停播放功能 - Motion Tracking
+      const videos = document.querySelectorAll('.gallery-item video');
+      videos.forEach(video => {
+        video.addEventListener('mouseenter', function() {
+          this.play();
+        });
+        
+        video.addEventListener('mouseleave', function() {
+          this.pause();
+          this.currentTime = 0;
+        });
+      });
+      
+      // 添加视频悬停播放功能 - Goal Reaching
+      const goalVideos = document.querySelectorAll('#goalGalleryContainer .gallery-item video');
+      goalVideos.forEach(video => {
+        video.addEventListener('mouseenter', function() {
+          this.play();
+        });
+        
+        video.addEventListener('mouseleave', function() {
+          this.pause();
+          this.currentTime = 0;
+        });
+      });
+
+      // Basic Locomotion 子选项卡自动播放功能
+      let autoPlayInterval;
+      
+      function startAutoPlay() {
+        // 停止之前的自动播放
+        if (autoPlayInterval) {
+          clearInterval(autoPlayInterval);
+        }
+        
+        isAutoPlaying = true; // 设置自动播放状态
+        
+        // 预加载所有视频并隐藏进度条
+        videoOrder.forEach(videoId => {
+          const video = document.getElementById(videoId);
+          if (video) {
+            video.pause();
+            video.currentTime = 0;
+            video.preload = 'auto';
+            video.loop = false; // 禁用循环播放
+            // 隐藏进度条
+            video.style.outline = 'none';
+            video.controls = false; // 暂时隐藏控制条
+          }
+        });
+        
+        // 开始自动播放
+        autoPlayInterval = setInterval(() => {
+          // 暂停当前视频（不重置到第一帧）
+          const currentVideo = document.getElementById(videoOrder[currentVideoIndex]);
+          if (currentVideo) {
+            currentVideo.pause();
+            // 不重置 currentTime，保持当前帧
+          }
+          
+          // 切换到下一个视频
+          const previousIndex = currentVideoIndex;
+          currentVideoIndex = (currentVideoIndex + 1) % videoOrder.length;
+          
+          // 检查是否完成了一轮播放（从最后一个回到第一个）
+          if (currentVideoIndex === 0 && previousIndex === videoOrder.length - 1) {
+            // 完成一轮播放，重置所有视频到开头
+            videoOrder.forEach(videoId => {
+              const video = document.getElementById(videoId);
+              if (video) {
+                video.currentTime = 0;
+              }
+            });
+          }
+          
+          // 播放新视频
+          const nextVideo = document.getElementById(videoOrder[currentVideoIndex]);
+          if (nextVideo) {
+            // 确保视频已加载，不重置进度
+            if (nextVideo.readyState >= 3) { // HAVE_FUTURE_DATA
+              // 直接播放，不重置currentTime
+              nextVideo.play().catch(e => {
+                console.log('Video play failed:', e);
+                // 如果播放失败，尝试重新加载
+                nextVideo.load();
+                nextVideo.play();
+              });
+            } else {
+              // 等待视频加载完成
+              nextVideo.addEventListener('canplay', function() {
+                // 不重置currentTime，保持当前位置
+                this.play().catch(e => {
+                  console.log('Video play failed:', e);
+                  this.load();
+                  this.play();
+                });
+              }, { once: true });
+            }
+            
+            // 切换到对应的子选项卡
+            const tabIds = [
+              'stand-still',
+              'go-forward',
+              'strafe-left', 
+              'go-backward',
+              'strafe-right',
+              'turn-anticlockwise',
+              'turn-clockwise'
+            ];
+            
+            const targetTabId = tabIds[currentVideoIndex];
+            showSubTab(targetTabId);
+          }
+        }, 3000); // 每3秒切换一次
+      }
+      
+      function stopAutoPlay() {
+        if (autoPlayInterval) {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = null;
+        }
+        
+        isAutoPlaying = false; // 清除自动播放状态
+        
+        // 暂停所有视频，重置到第一帧并恢复控制条
+        videoOrder.forEach(videoId => {
+          const video = document.getElementById(videoId);
+          if (video) {
+            video.pause();
+            video.currentTime = 0;
+            video.loop = true; // 恢复循环播放
+            video.controls = true; // 恢复控制条
+          }
+        });
+      }
+      
+      
+      // 添加自动播放控制按钮
+      const basicLocomotionTab = document.getElementById('basic-locomotion');
+      if (basicLocomotionTab) {
+        const autoPlayButton = document.createElement('button');
+        autoPlayButton.innerHTML = '▶ Auto Play';
+        autoPlayButton.style.cssText = `
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: #004bb3;
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-family: Georgia, serif;
+          font-size: 0.9em;
+        `;
+        
+        let isAutoPlaying = false;
+        
+        autoPlayButton.addEventListener('click', function() {
+          if (isAutoPlaying) {
+            stopAutoPlay();
+            this.innerHTML = '▶ Auto Play';
+            isAutoPlaying = false;
+          } else {
+            startAutoPlay();
+            this.innerHTML = '⏸ Stop Play';
+            isAutoPlaying = true;
+          }
+        });
+        
+        basicLocomotionTab.style.position = 'relative';
+        basicLocomotionTab.appendChild(autoPlayButton);
+      }
+    });
+  </script>
+  <meta property="og:site_name" content="BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning" />
+  <meta property="og:title" content="BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+
+  <meta property="article:publisher" content="" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning" />
+</head>
+
+
+<body>
+  <section class="hero is-link is-fullheight video" style="overflow: hidden; position:relative;">
+    <div class="hero-video" style="height: 100%; width: 177.77777778vh; min-width: 100%;min-height: 56.25vw;">
+      <video playsinline autoplay muted loop>
+        <source src="./resources/hold-my-beer-header-dark.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="hero-video is-hidden-tablet is-inline-block-mobile"
+      style="height: 154.28571428vw; width: 100%; min-width:64.81481481vh;min-height:100%;">
+      <video playsinline autoplay muted loop>
+        <source src="./resources/hold-my-beer-header-dark.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="overlay"></div>
+    <!-- Hero content: will be in the middle -->
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <h1 class="title is-1 publication-title is-size-1-mobile" style="font-size: 7rem;">
+          BFM-Zero
+        </h1>
+        <h1 class="subtitle is-3 publication-title is-size-4-mobile" style="font-size: 2rem;">
+          A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning
+        </h1>
+        <!-- <h1 class="is-2 is-italic is-size-4-mobile" style="font-size: 2rem;">
+          In Submission
+        </h1> -->
+    </div>
+  </section>
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-3 publication-title">BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning</h1>
+  
+            <div class="is-size-4 publication-authors">
+              <span class="author-block" style="font-size: 1.2rem;">
+                <a href="https://liyitang22.github.io/">Yitang Li*</a>&nbsp;&nbsp;
+                <a href="https://www.zhengyiluo.com/">Zhengyi Luo*</a>&nbsp;&nbsp;
+                <a href="https://tonghe-zhang.github.io/">Tonghe Zhang</a>&nbsp;&nbsp;
+                <a href="https://cunxid.github.io/">Cunxi Dai</a>&nbsp;&nbsp;
+                <br>
+                <a href="https://scholar.google.com/citations?user=iPimqbwAAAAJ&hl=en">Anssi Kanervisto</a>&nbsp;&nbsp;
+                <a href="https://andreatirinzoni.github.io/">Andrea Tirinzoni</a>&nbsp;&nbsp;
+                <a href="https://egalahad.github.io/">Haoyang Weng</a>&nbsp;&nbsp;
+                <br>
+                <a href="https://kriskitani.github.io/">Kris Kitani</a>&nbsp;&nbsp;
+                <a href="https://scholar.google.com/citations?user=-jQ-FRoAAAAJ&hl=en">Mateusz Guzek</a>&nbsp;&nbsp;
+                <a href="https://scholar.google.com/citations?user=D4LT5xAAAAAJ&hl=en">Ahmed Touati</a>&nbsp;&nbsp;
+                <a href="https://scholar.google.com/citations?user=6JZ3R6wAAAAJ&hl=en">Alessandro Lazaric</a>&nbsp;&nbsp;
+                <a href="https://teopir.github.io/">Matteo Pirotta</a>&nbsp;&nbsp;
+                <a href="https://www.gshi.me/">Guanya Shi</a>&nbsp;&nbsp;
+              </span>
+            </div>
+  
+            <div class="column">
+              <image src="./static/images/ip.png" style="width: 30%;"></image>
+              <br>
+              <image src="./static/images/meta.png" style="width: 20%;"></image>
+            </div>
+  
+  
+            <div class="is-size-4 publication-authors", style="margin-bottom: 0.5cm;">
+              <!-- #TODO (RSS 2025) -->
+            </div>
+  
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- PDF Link. -->
+                <span class="link-block">
+                  <!-- TODO:update -->
+                  <a href="./resources/Main-Paper.pdf"
+                     class="external-link button is-normal is-rounded is-dark" target="_blank">
+                    <span class="icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>PDF</span>
+                  </a>
+                </span>
+                <!-- arXiv Link. -->
+                <span class="link-block">
+                  <!-- TODO:update -->
+                  <a href="https://lecar-lab.github.io/SoFTA/"
+                     class="external-link button is-normal is-rounded is-dark" target="_blank">
+                    <span class="icon">
+                        <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>ArXiv</span>
+                  </a>
+                </span>
+                <!-- <span class="link-block">
+                  <a href="https://lecar-lab.github.io/SoFTA/"
+                     class="external-link button is-normal is-rounded is-dark" target="_blank">
+                    <span class="icon">
+                        <i class="fab fa-youtube"></i>
+                    </span>
+                    <span>Video</span>
+                  </a>
+                </span> -->
+                <!-- Datasets Link. -->
+                <!-- <span class="link-block">
+                  <a href="https://cmu.box.com/s/kmayzq5ax2rxvwn97s0hzz0aq5vws9io" class="external-link button is-normal is-rounded is-dark" target="_blank">
+                    <span class="icon">
+                        <i class="fas fa-database"></i>
+                    </span>
+                    <span>Datasets</span>
+                  </a>
+                </span> -->
+                <!-- twitter Link. -->
+                <span class="link-block">
+                  <!-- TODO:update -->
+                  <a href="https://lecar-lab.github.io/SoFTA/"
+                     class="external-link button is-normal is-rounded is-dark" target="_blank">
+                    <span class="icon">
+                        <i class="fab fa-twitter"></i>
+                    </span>
+                    <span>Summary</span>
+                  </a>
+                </span>
+                <!-- Code Link. -->
+                <span class="link-block">
+                  <!-- TODO:update -->
+                  <a href="https://github.com/LeCAR-Lab/SoFTA" class="external-link button is-normal is-rounded is-dark" target="_blank">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<section class="section"></section>
+
+<section class="section">
+  <div class="container">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-two-thirds">
+        <h2 class="title is-2">Video</h2>
+            <div class="column is-full-width is-centered has-text-centered">
+              <iframe width="520" height="292.5" src="https://www.youtube.com/embed/xum0Qe860Kw?si=H7bVZv3XSkOi3U9D" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<p style="margin-top: 10px;">Teaser Video</p>
+
+<iframe width="520" height="292.5" src="https://www.youtube.com/embed/tvJxaqVvrl8?si=Ibicis4L0IKwIi1e" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<p style="margin-top: 10px;">Intro Video</p>
+            </div>
+        </div>
+    </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- <h2 class="title is-2" style="text-align: center;">Abstract</h2> -->
+<section class="section">
+  <h2 class="title is-2" style="text-align: center;">Abstract</h2>
+  <div class="container" style="width:65%;">
+    <!-- <div class="columns is-centered">
+      <img src="./resources/approach.png" ></img>
+    </div> -->
+    <p style="font-family: Georgia, serif; font-size: 0.9em;">
+       Building <span style="color:#b36b00; font-weight:bold;">Behavioral Foundation Models</span> (BFMs) for humanoid robots has the potential to unify diverse control tasks under a single, promptable generalist policy. However, existing approaches are either exclusively deployed on simulated humanoid characters, or specialized to specific tasks such as tracking. We propose <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span>, a framework that learns an effective shared latent representation that embeds <span style="color:#3a6902; font-weight:bold;">motions</span>, <span style="color:#b63620; font-weight:bold;">goals</span>, and <span style="color:#004bb3; font-weight:bold;">rewards</span> into a common space, enabling a single policy to be prompted for multiple downstream tasks without retraining. This well-structured latent space in BFM-Zero enables versatile and robust whole-body skills on a Unitree G1 humanoid in the real world, via diverse inference methods, including zero-shot <span style="color:#3a6902; font-weight:bold;">motion tracking</span>, <span style="color:#b63620; font-weight:bold;">goal reaching</span>, and <span style="color:#004bb3; font-weight:bold;">reward optimization</span>, and few-shot optimization-based adaptation. Unlike prior on-policy reinforcement learning (RL) frameworks, BFM-Zero builds upon recent advancements in <span style="color:#b36b00; font-weight:bold;">unsupervised RL</span> and <span style="color:#b36b00; font-weight:bold;">Forward-Backward (FB)</span> models, which offer an <span style="color:#b36b00; font-weight:bold;">objective-centric, explainable, and smooth latent representation</span> of whole-body motions. We further extend BFM-Zero with critical reward shaping, domain randomization, and history-dependent asymmetric learning to bridge the sim-to-real gap. Those key design choices are quantitatively ablated in simulation. A first-of-its-kind model, BFM-Zero establishes a step toward scalable, promptable behavioral foundation models for whole-body humanoid control.
+    </p>
+  </div>
+</section>
+
+
+
+<section class="section">
+  <h2 class="title is-2" style="text-align: center;">Approach</h2>
+  <div class="container" style="max-width: 100%; display: flex; justify-content: flex-start; padding-left: 20%;">
+    <div class="flip-cards-container">
+      <!-- 左侧：第一个翻转卡片 -->
+      <div class="flip-card-left">
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img src="./static/images/pretraining.png" alt="Pre-training Image">
+      </div>
+            <div class="flip-card-back">
+              <p style="font-family: Georgia, serif; font-size: 0.9em;">The objective is to learn <strong>a unified latent representation</strong> that embeds tasks (e.g., target motions, rewards, goals) into a shared space and <strong>a promptable policy</strong> that conditions on this representation to perform diverse tasks without retraining.</p>
+      </div>
+      </div>
+    </div>
+  </div>
+      
+      <!-- 右侧：上下排列的两个翻转卡片 -->
+      <div class="flip-cards-right">
+        <!-- 第二个翻转卡片 -->
+        <div class="flip-card-item">
+          <div class="flip-card">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <img src="./static/images/inference.png" alt="Inference Image">
+      </div>
+              <div class="flip-card-back">
+                <p style="font-family: Georgia, serif; font-size: 0.7em;">At test time, BFM-Zero can be used to solve different tasks including <span style="color:#b00202; font-weight:bold;">motion tracking</span>, <span style="color:#b00202; font-weight:bold;">goal reaching</span>, and <span style="color:#b00202; font-weight:bold;">reward optimization</span> in <span style="color:#b00202; font-weight:bold;">zero-shot</span> fashion.</p>
+      </div>
+      </div>
+      </div>
+    </div>
+
+        <!-- 第三个翻转卡片 -->
+        <div class="flip-card-item">
+          <div class="flip-card">
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <img src="./static/images/adaptation.png" alt="Adaptation Image">
+      </div>
+              <div class="flip-card-back">
+                <p style="font-family: Georgia, serif; font-size: 0.7em;">BFM-Zero supports <span style="color:#b00202; font-weight:bold;">few-shot adaptation</span> for tasks that require additional fine-tuning. This enables the model to quickly adapt to new environments or specific requirements with minimal additional training.</p>
+      </div>
+    </div>
+    </div>
+  </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <h2 class="title is-2" style="text-align: center;">Zero-shot Inference</h2>
+  
+  <div class="container">
+    <div class="inference-cards">
+      <!-- Goal Reaching 卡片 -->
+      <div class="inference-card">
+        <div class="inference-card-title">
+          <div>Goal Reaching</div>
+          <div style="font-size: 0.9rem; font-weight: normal; margin-top: 5px;">Natural transitions to any goal pose</div>
+      </div>
+          <div class="inference-card-content">
+            <p><strong>Input:</strong> Target goal pose $s_g$</p>
+            <div class="formula">
+              $$z = B(s_g)$$
+    </div>
+          </div>
+      </div>
+      
+      <!-- Motion Tracking 卡片 -->
+      <div class="inference-card">
+        <div class="inference-card-title">
+          <div>Motion Tracking</div>
+          <div style="font-size: 0.9rem; font-weight: normal; margin-top: 5px;">Real-time motion following</div>
+      </div>
+          <div class="inference-card-content">
+            <p><strong>Input:</strong> Target reference motion $\{s_1, ..., s_T\}$</p>
+            <div class="formula">
+              $$z_t = \sum_{t} \lambda^t B(s_t)$$
+      </div>
+      </div>
+    </div>
+
+      <!-- Reward Inference 卡片 -->
+      <div class="inference-card">
+        <div class="inference-card-title">
+          <div>Reward Optimization</div>
+          <div style="font-size: 0.9rem; font-weight: normal; margin-top: 5px;">Optimize reward functions in Inference-time </div>
+      </div>
+          <div class="inference-card-content">
+            <p><strong>Input:</strong> Any given reward function $r(s)$</p>
+            <div class="formula">
+              $$z = \sum_{i} B(s_i)r(s_i)$$
+            </div>
+            <p>$s_i$ is the $i$-th state in the buffer</p>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" style="background-color: #f0f8f0;">
+  <h2 class="title is-3" style="text-align: center; color: #3a6902;">Goal Reaching</h2>
+  <div class="container" style="max-width: 60%; margin: 0 auto;">
+    <!-- 视频时间轴控制 -->
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: Georgia, serif;">Click image for real-world goal pose, click ▶ for natural transition, and drag the progress bar to view frame by frame.</h4>
+    <div class="video-timeline-container">
+      <div class="timeline-marks" id="timelineMarks"></div>
+      <input type="range" id="timelineSlider" class="timeline-slider" min="0" max="25" step="0.1" value="0" style="background: #5a8a2a !important;">
+      <div class="timeline-current-time" id="currentTime">00:00.00</div>
+      </div>
+
+    <!-- 主视频（用于逐帧查看） -->
+      <div class="column has-text-centered">
+        <video id="frameVideo" width="100%" height="auto" muted playsinline src="./resources/goal_reaching/full/full-2.mp4" poster="./resources/loading-icon.gif" style="border: 1px solid #bbb; border-radius: 10px; margin: 1.0%;"></video>
+      </div>
+      <h4 style="text-align: center; margin-bottom: 15px; font-family: Georgia, serif;">We also test diverse initial on the ground pose to a standing pose. BFM-Zero can achieve relative gentle and natural transitions to any goal pose.</h4>
+    <!-- Goal Reaching 视频画廊 -->
+    <div class="video-gallery">
+      <!-- 左箭头按钮 -->
+      <button class="gallery-arrow gallery-arrow-left" onclick="moveGoalGallery(-1)"></button>
+      
+      <!-- 右箭头按钮 -->
+      <button class="gallery-arrow gallery-arrow-right" onclick="moveGoalGallery(1)"></button>
+      
+      <div class="gallery-container" id="goalGalleryContainer">
+        <!-- 视频项目2 - Any-to-Target 2 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/ANY2T/any2T/any2T-2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: T-Pose</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">You see: it can naturally, smoothly get up from the ground and reach T-Pose.</p>
+    </div>
+        </div>
+
+        <!-- 视频项目1 - Any-to-Target 1 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/ANY2T/any2T/any2T-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: T-Pose</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">A running-like posture emerged spontaneously before he fully stabilized.</p>
+      </div>
+      </div>
+
+        <!-- 视频项目3 - Any-to-Pose 1 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/any2pose/any2pose-4.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: Hands-on-hips posture</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">For other pose that is not that symmetric, it can still reach the target pose naturally.</p>
+      </div>
+    </div>
+
+        <!-- 视频项目4 - Any-to-Pose 2 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/any2pose/any2pose-2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: Hands-on-hips posture</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">It quickly stabilizes on tiptoes, even when the initial stand-up is unstable.</p>
+      </div>
+    </div>
+        
+        <!-- 视频项目5 - Any-to-Pose 3 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/any2pose/any2pose-7.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: Hands-on-hips posture</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">It's fine even if it fails to stand up on the first try.</p>
+      </div>
+    </div>
+        
+        <!-- 视频项目6 - Any-to-Pose 4 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/any2pose/any2pose-3.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: Hands-on-hips posture</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">Sometimes, if the initial pose is weird and not natural, it chooses to get up quickly first.</p>
+    </div>
+  </div>
+        
+        <!-- 视频项目7 - Any-to-Pose 5 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/any2pose/any2pose-5.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: Hands-on-hips posture</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">Anyway, it has a large probability to efficiently reach the target pose.</p>
+      </div>
+      </div>
+        
+        <!-- 视频项目8 - Any-to-Pose 6 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/any2pose/any2pose-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: Hands-on-hips posture</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">Yes, a large...</p>
+      </div>
+      </div>
+        
+        <!-- 视频项目9 - Any-to-Pose 7 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/goal_reaching/any2pose/any2pose-6.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="video-info">
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: Hands-on-hips posture</h4>
+            <p style="font-family: Georgia, serif; font-size: 0.85em;">...large probability</p>
+      </div>
+      </div>
+      
+      <div class="gallery-item">
+        <video muted playsinline>
+          <source src="./resources/goal_reaching/any2pose/robust-1.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="video-info">
+          <h4 style="font-family: Georgia, serif; font-size: 0.9em;">Target: Hands-on-hips posture</h4>
+          <p style="font-family: Georgia, serif; font-size: 0.85em;">Even if the wrist is totally broken:)</p>
+      </div>
+      </div>
+    </div>
+    
+      <!-- 指示点 -->
+      <div class="gallery-dots" id="goalGalleryDots">
+        <span class="gallery-dot active" onclick="goToGoalSlide(0)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(1)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(2)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(3)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(4)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(5)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(6)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(7)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(8)"></span>
+        <span class="gallery-dot" onclick="goToGoalSlide(9)"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background-color: #f8f0f0;">
+  <h2 class="title is-3" style="text-align: center; color: #b63620;">Motion Tracking</h2>
+  <div class="container" style="max-width: 60%; margin: 0 auto;">
+    <!-- 视频画廊 -->
+    <div class="video-gallery">
+      <!-- 左箭头按钮 -->
+      <button class="gallery-arrow gallery-arrow-left" onclick="moveGallery(-1)"></button>
+      
+      <!-- 右箭头按钮 -->
+      <button class="gallery-arrow gallery-arrow-right" onclick="moveGallery(1)"></button>
+      
+      <div class="gallery-container" id="galleryContainer">
+        <!-- 视频项目1 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/motion_tracking/video1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Real-time Tracking</h4>
+            <p>Demonstrates BFM-Zero's ability to track complex human motions in real-time with high accuracy.</p>
+      </div>
+      </div>
+    
+        <!-- 视频项目2 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/motion_tracking/video2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Multi-joint Coordination</h4>
+            <p>Shows coordinated movement across multiple joints for complex motion patterns.</p>
+      </div>
+    </div>
+
+        <!-- 视频项目3 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/motion_tracking/video3.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Dynamic Adaptation</h4>
+            <p>Illustrates how the model adapts to changing motion patterns and environmental conditions.</p>
+  </div>
+        </div>
+        
+        <!-- 视频项目4 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/motion_tracking/video4.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Precision Control</h4>
+            <p>Demonstrates fine-grained control for precise motion tracking tasks.</p>
+      </div>
+    </div>
+    
+        <!-- 视频项目5 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/motion_tracking/video5.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Robust Performance</h4>
+            <p>Shows consistent performance across different motion types and speeds.</p>
+      </div>
+        </div>
+        
+        <!-- 视频项目6 -->
+        <div class="gallery-item">
+          <video muted playsinline>
+            <source src="./resources/motion_tracking/video6.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Zero-shot Transfer</h4>
+            <p>Demonstrates zero-shot transfer to new motion patterns without retraining.</p>
+      </div>
+    </div>
+      </div>
+  
+      <!-- 导航按钮已移除 -->
+      
+      <!-- 指示点 -->
+      <div class="gallery-dots" id="galleryDots">
+        <span class="gallery-dot active" onclick="goToSlide(0)"></span>
+        <span class="gallery-dot" onclick="goToSlide(1)"></span>
+        <span class="gallery-dot" onclick="goToSlide(2)"></span>
+        <span class="gallery-dot" onclick="goToSlide(3)"></span>
+        <span class="gallery-dot" onclick="goToSlide(4)"></span>
+        <span class="gallery-dot" onclick="goToSlide(5)"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background-color: #f0f2f8;">
+  <h2 class="title is-3" style="text-align: center; color: #004bb3;">Reward Optimization</h2>
+
+  <div class="container" style="max-width: 80%; margin: 0 auto;">
+      
+  <h4 style="text-align: center; margin-bottom: 15px; font-family: Georgia, serif;">We do not have <span style="color: #004bb3;">any labeled rewards</span> in our pre-training process.The reward inference (optimization) happens in the test time. Users can prompt in any type of reward function they want w.r.t. the robot states, and the policy <span style="color: #004bb3;">zero-shot</span> output the optimized skills without retraining.</h4>
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button class="tab-button active" onclick="showTab('basic-locomotion')">Basic Locomotion</button>
+        <button class="tab-button" onclick="showTab('arm-control')">Arm Control</button>
+        <button class="tab-button" onclick="showTab('base-height')">Base Height Control</button>
+        <button class="tab-button" onclick="showTab('behavior-diversity')">Behavior Diversity</button>
+        <button class="tab-button" onclick="showTab('skill-combination')">Skill Combination</button>
+      </div>
+      
+      <div id="basic-locomotion" class="tab-content active">
+        <!-- <h3>Basic Locomotion</h3>
+        <p>Optimizes fundamental walking and movement patterns for stable humanoid locomotion.</p> -->
+        
+        <!-- 子选项卡 -->
+        <div class="sub-tabs-container">
+          <div class="sub-tabs-header">
+            <button class="sub-tab-button active" onclick="handleSubTabClick('stand-still', event)">Stand Still</button>
+            <button class="sub-tab-button" onclick="handleSubTabClick('go-forward', event)">Go Forward</button>
+            <button class="sub-tab-button" onclick="handleSubTabClick('strafe-left', event)">Strafe Left</button>
+            <button class="sub-tab-button" onclick="handleSubTabClick('go-backward', event)">Go Backward</button>
+            <button class="sub-tab-button" onclick="handleSubTabClick('strafe-right', event)">Strafe Right</button>
+            <button class="sub-tab-button" onclick="handleSubTabClick('turn-anticlockwise', event)">Turn Anticlockwise</button> 
+            <button class="sub-tab-button" onclick="handleSubTabClick('turn-clockwise', event)">Turn Clockwise</button>
+    </div>
+
+           <div id="stand-still" class="sub-tab-content active">
+             <p>Maintains stable standing posture without movement.</p>
+             <div class="reward-formula">
+               $$R_{stand} = w_1 \cdot R_{balance} + w_2 \cdot R_{posture}$$
+             </div>
+             <div style="margin-top: 15px;">
+               <video id="video-stand-still" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
+                 <source src="./resources/reward_optimization/locomotion/locomotion-2.mp4" type="video/mp4">
+                 Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+          <div id="go-forward" class="sub-tab-content">
+            <p>Forward walking at 0.7m/s</p>
+            <div class="reward-formula">
+              $$R_{forward} = w_1 \cdot R_{velocity} + w_2 \cdot R_{stability} + w_3 \cdot R_{efficiency}$$
+            </div>
+            <div style="margin-top: 15px;">
+              <video id="video-go-forward" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+                <source src="./resources/reward_optimization/locomotion/locomotion-1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+                    
+          <div id="strafe-left" class="sub-tab-content">
+            <p>Sideways movement to the left at 0.3m/s</p>
+            <div class="reward-formula">
+              $$R_{strafe\_left} = w_1 \cdot R_{lateral\_velocity} + w_2 \cdot R_{balance}$$
+            </div>
+            <div style="margin-top: 15px;">
+              <video id="video-strafe-left" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+                <source src="./resources/reward_optimization/locomotion/locomotion-3.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+        </video>
+      </div>
+          </div>
+          
+          
+          <div id="go-backward" class="sub-tab-content">
+            <p>Backward walking at 0.3m/s</p>
+            <div class="reward-formula">
+              $$R_{backward} = w_1 \cdot R_{velocity} + w_2 \cdot R_{stability} + w_3 \cdot R_{control}$$
+            </div>
+            <div style="margin-top: 15px;">
+              <video id="video-go-backward" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+                <source src="./resources/reward_optimization/locomotion/locomotion-4.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+          
+          
+          <div id="strafe-right" class="sub-tab-content">
+            <p>Sideways movement to the right at 0.3m/s</p>
+            <div class="reward-formula">
+              $$R_{strafe\_right} = w_1 \cdot R_{lateral\_velocity} + w_2 \cdot R_{balance}$$
+      </div>
+            <div style="margin-top: 15px;">
+              <video id="video-strafe-right" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+                <source src="./resources/reward_optimization/locomotion/locomotion-5.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+      </div>
+          </div>
+          
+          <div id="turn-anticlockwise" class="sub-tab-content">
+            <p>Anticlockwise turning at 5.0 rad/s</p>
+            <div class="reward-formula">
+              $$R_{turn\_left} = w_1 \cdot R_{angular\_velocity} + w_2 \cdot R_{smoothness}$$
+            </div>
+            <div style="margin-top: 15px;">
+              <video id="video-turn-anticlockwise" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+                <source src="./resources/reward_optimization/locomotion/locomotion-6.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+    </div>
+  </div>
+  
+          <div id="turn-clockwise" class="sub-tab-content">
+            <p>Clockwise turning at 5.0 rad/s</p>
+            <div class="reward-formula">
+              $$R_{turn\_right} = w_1 \cdot R_{angular\_velocity} + w_2 \cdot R_{smoothness}$$
+            </div>
+            <div style="margin-top: 15px;">
+              <video id="video-turn-clockwise" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+                <source src="./resources/reward_optimization/locomotion/locomotion-7.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="arm-control" class="tab-content">
+        <h3>Arm Control</h3>
+        <p>Fine-tunes arm movements for precise manipulation and reaching tasks.</p>
+        <div class="reward-formula">
+          $$R_{arm} = w_1 \cdot R_{precision} + w_2 \cdot R_{coordination} + w_3 \cdot R_{reach}$$
+        </div>
+        <p><strong>Key Components:</strong></p>
+        <ul>
+          <li>Precision reward for accurate positioning</li>
+          <li>Coordination reward for bilateral arm movement</li>
+          <li>Reach reward for extending arm range</li>
+        </ul>
+      </div>
+      
+      <div id="base-height" class="tab-content">
+        <h3>Base Height Control</h3>
+        <p>Regulates body height and posture for different task requirements.</p>
+        <div class="reward-formula">
+          $$R_{height} = w_1 \cdot R_{posture} + w_2 \cdot R_{adaptation} + w_3 \cdot R_{stability}$$
+        </div>
+        <p><strong>Key Components:</strong></p>
+        <ul>
+          <li>Posture reward for maintaining proper alignment</li>
+          <li>Adaptation reward for height adjustments</li>
+          <li>Stability reward for balance maintenance</li>
+        </ul>
+    </div>
+
+      <div id="behavior-diversity" class="tab-content">
+        <h3>Behavior Diversity</h3>
+        <p>Encourages exploration of diverse movement patterns and behaviors.</p>
+        <div class="reward-formula">
+          $$R_{diversity} = w_1 \cdot R_{exploration} + w_2 \cdot R_{novelty} + w_3 \cdot R_{creativity}$$
+        </div>
+        <p><strong>Key Components:</strong></p>
+        <ul>
+          <li>Exploration reward for trying new movements</li>
+          <li>Novelty reward for unique behavior patterns</li>
+          <li>Creativity reward for innovative solutions</li>
+        </ul>
+    </div>
+
+      <div id="skill-combination" class="tab-content">
+        <h3>Skill Combination</h3>
+        <p>Integrates multiple skills for complex multi-task scenarios.</p>
+        <div class="reward-formula">
+          $$R_{combination} = \sum_{i=1}^{n} w_i \cdot R_{skill_i} + w_{interaction} \cdot R_{interaction}$$
+    </div>
+        <p><strong>Key Components:</strong></p>
+        <ul>
+          <li>Individual skill rewards for each component</li>
+          <li>Interaction reward for skill coordination</li>
+          <li>Weighted combination for optimal balance</li>
+        </ul>
+      </div>
+    </div>
+    </div>
+</section>
+  
+<section class="section" style="background-color: #f8f8f8;">
+  <h2 class="title is-2" style="text-align: center;">Disturbance Rejection</h2>
+  <div class="container" style="max-width: 80%; margin: 0 auto;">
+    <div class="columns is-centered">
+      <div class="column is-half">
+        <div class="has-text-centered">
+          <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 8px; margin-bottom: 15px;">
+            <source src="./resources/disturbance/disturbance-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+      </video>
+          <h4 style="font-family: Georgia, serif; font-size: 1.1em; margin-bottom: 10px;">Disturbance Rejection 1</h4>
+          <p style="font-family: Georgia, serif; font-size: 0.9em;">Demonstrates BFM-Zero's ability to maintain stability and recover from external disturbances.</p>
+    </div>
+      </div>
+      <div class="column is-half">
+        <div class="has-text-centered">
+          <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 8px; margin-bottom: 15px;">
+            <source src="./resources/disturbance/disturbance-2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <h4 style="font-family: Georgia, serif; font-size: 1.1em; margin-bottom: 10px;">Disturbance Rejection 2</h4>
+          <p style="font-family: Georgia, serif; font-size: 0.9em;">Shows robust performance under various disturbance conditions and quick recovery.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background-color: #f5f5f5;">
+  <h2 class="title is-2" style="text-align: center;">Few-shot Adaptation</h2>
+  <div class="container" style="max-width: 90%; margin: 0 auto;">
+    <!-- 顶部：设置图片 -->
+    <div class="has-text-centered" style="margin-bottom: 30px;">
+      <img src="./resources/adaptation/setting.png" alt="Adaptation Setting" style="width: 100%; max-width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+    </div>
+    
+    <!-- 底部：Before/After 视频对比 -->
+    <div class="columns is-vcentered">
+      <!-- Before 视频 -->
+      <div class="column is-half">
+        <div class="has-text-centered">
+          <div style="border: 3px solid #dc3545; border-radius: 8px; padding: 5px; background: rgba(220, 53, 69, 0.05); display: inline-block; width: 70%;">
+            <video width="100%" height="auto" controls style="border-radius: 5px;">
+              <source src="./resources/adaptation/before_adapt.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+      </video>
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em; margin-top: 8px; color: #dc3545;">Before Adaptation</h4>
+    </div>
+        </div>
+      </div>
+      
+      <!-- 箭头 -->
+      <div class="column is-narrow" style="text-align: center;">
+        <div style="margin: 20px 0;">
+              <div style="font-family: Georgia, serif; font-size: 1.0em; font-weight: bold; color: #666; margin-bottom: 10px; line-height: 1.3;">
+                <div>Adaptation in Sim</div>
+                <div style="font-size: 0.8em; margin-top: 5px;">for less than 2 minutes</div>
+              </div>
+          <div style="font-size: 2em; color: #666;">→</div>
+        </div>
+      </div>
+      
+      <!-- After 视频 -->
+      <div class="column is-half">
+        <div class="has-text-centered">
+          <div style="border: 3px solid #28a745; border-radius: 8px; padding: 5px; background: rgba(40, 167, 69, 0.05); display: inline-block; width: 70%;">
+            <video width="100%" height="auto" controls style="border-radius: 5px;">
+              <source src="./resources/adaptation/after_adapt.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+      </video>
+            <h4 style="font-family: Georgia, serif; font-size: 0.9em; margin-top: 8px; color: #28a745;">After Adaptation</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+</section>
+
+<section class="section">
+  <h2 class="title is-2" style="text-align: center;">Space Interpolation</h2>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template modified from incredible <a href="#">UMI-On-Legs</a>, <a href="#">NeRFies</a>, and <a href="#">Scaling Up Distilling Down</a>.
+          </p>
+          <p>
+            This website is licensed under a <a rel="license"
+              href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+              Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            This means you are free to borrow and modify the <a href="#">source
+              code</a> of this website as long as
+            you link back to the <a href="#">NeRFies</a> page in the footer.
+            Please remember to remove the analytics code included in the header of the website which
+            you do not want on your website.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
