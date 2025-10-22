@@ -1305,9 +1305,9 @@
       updateDots();
       updateGoalDots();
       
-      // 添加视频悬停播放功能 - Motion Tracking
-      const videos = document.querySelectorAll('.gallery-item video');
-      videos.forEach(video => {
+      // 添加视频悬停播放功能 - Motion Tracking only
+      const motionVideos = document.querySelectorAll('#motionGalleryContainer .gallery-item video');
+      motionVideos.forEach(video => {
         video.addEventListener('mouseenter', function() {
           this.play();
         });
