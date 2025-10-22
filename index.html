@@ -14,810 +14,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <link rel="stylesheet" href="./static/css/index.css">
-  <style>
-    .flip-card {
-      background-color: transparent;
-      width: 100%;
-      height: auto;
-      perspective: 1000px;
-      display: inline-block;
-    }
-
-    .flip-card-inner {
-      position: relative;
-      width: 100%;
-      height: auto;
-      text-align: center;
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-    }
-
-    .flip-card:hover .flip-card-inner {
-      transform: rotateY(180deg);
-    }
-
-    .flip-card-front, .flip-card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-      top: 0;
-      left: 0;
-      min-height: fit-content;
-    }
-
-    .flip-card-front {
-      background-color: #f8f9fa;
-    }
-
-    .flip-card-back {
-      background-color: #ffffff;
-      transform: rotateY(180deg);
-      padding: 20px;
-      font-family: Georgia, serif;
-      font-size: 0.9em;
-      line-height: 1.6;
-    }
-
-    .flip-card-front img {
-      max-width: 100%;
-      height: auto;
-      object-fit: contain;
-      display: block;
-    }
-    
-    /* 第一列卡片放大 */
-    .columns .column.is-one-third:first-child .flip-card {
-      transform: scale(1.1);
-      transform-origin: center;
-    }
-    
-    /* 第二列卡片缩小 */
-    .columns .column.is-one-third:last-child .flip-card {
-      transform: scale(0.8);
-      transform-origin: center;
-    }
-    
-    /* 减少右边一列卡片之间的间隔 */
-    .columns .column.is-one-third:last-child .columns {
-      margin-bottom: 0;
-      gap: 0.5rem;
-    }
-    
-    .columns .column.is-one-third:last-child .column {
-      padding-bottom: 0.25rem;
-      padding-top: 0.25rem;
-    }
-    
-    /* 确保左右两列上下对齐 */
-    .columns.is-centered {
-      align-items: flex-start;
-    }
-    
-    /* 让右边一列的内容垂直居中分布 */
-    .columns .column.is-one-third:last-child {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    
-    /* 确保翻转效果仍然正常工作 */
-    .columns .column.is-one-third:first-child .flip-card:hover .flip-card-inner {
-      transform: rotateY(180deg);
-    }
-    
-    .columns .column.is-one-third:last-child .flip-card:hover .flip-card-inner {
-      transform: rotateY(180deg);
-    }
-    
-    /* 新的长方形容器布局样式 */
-    .flip-cards-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      padding: 2rem;
-      background: transparent;
-      border-radius: 0;
-      box-shadow: none;
-      min-height: 300px;
-      transform: scale(1.1);
-      transform-origin: center;
-      width: 100%;
-      max-width: 800px;
-    }
-    
-    /* 左侧单个卡片 */
-    .flip-card-left {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-right: 0;
-    }
-    
-    .flip-card-left .flip-card {
-      width: 100%;
-      max-width: 250px;
-      transform: scale(1.25);
-      transform-origin: center;
-    }
-    
-    .flip-card-left .flip-card:hover .flip-card-inner {
-      transform: rotateY(180deg);
-    }
-    
-    /* 右侧上下排列的两个卡片 */
-    .flip-cards-right {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-      gap: 1rem;
-      padding-left: 0;
-    }
-    
-    .flip-cards-right .flip-card-item {
-      width: 100%;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-    }
-    
-    .flip-cards-right .flip-card-item .flip-card {
-      width: 100%;
-      max-width: 200px;
-    }
-    
-    /* 确保页面放大时图片和字体保持不变 */
-    .flip-card-front img {
-      max-width: 100%;
-      height: auto;
-      object-fit: contain;
-      display: block;
-      transform: scale(1);
-      transform-origin: center;
-    }
-    
-    .flip-card-back {
-      background-color: #ffffff;
-      transform: rotateY(180deg);
-      padding: 20px;
-      font-family: Georgia, serif;
-      font-size: 0.9em;
-      line-height: 1.6;
-      font-size: clamp(0.8em, 1vw, 1em);
-    }
-    
-    /* 响应式设计 */
-    @media (max-width: 768px) {
-      .flip-cards-container {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-      }
-      
-      .flip-card-left .flip-card {
-        max-width: 200px;
-        transform: scale(1.1);
-      }
-      
-      .flip-cards-right .flip-card-item .flip-card {
-        max-width: 150px;
-      }
-    }
-    
-    /* 视频进度条样式 */
-    .video-timeline-container {
-      margin: 20px 0;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      overflow: visible;
-      position: relative;
-      min-height: 0px;
-    }
-    
-    .timeline-slider {
-      width: 96%;
-      height: 8px;
-      background: #5a8a2a;
-      border-radius: 4px;
-      outline: none;
-      position: absolute;
-      top: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      margin: 70px 0 0 0;
-    }
-    
-    .timeline-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      background: #5a8a2a;
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    
-    .timeline-slider::-moz-range-thumb {
-      -moz-appearance: none;
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      background: #5a8a2a;
-      border-radius: 50%;
-      cursor: pointer;
-      border: none;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-    
-    .timeline-marks {
-      position: relative;
-      height: 120px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-      overflow: visible;
-      background: transparent;
-    }
-    
-    /* 进度条现在在timeline-marks容器内 */
-    /* 确保timeline颜色不被外部CSS覆盖 */
-    .video-timeline-container .timeline-slider {
-      background: #5a8a2a !important;
-    }
-    
-    .video-timeline-container .timeline-slider::-webkit-slider-thumb {
-      background: #5a8a2a !important;
-    }
-    
-    .video-timeline-container .timeline-slider::-moz-range-thumb {
-      background: #5a8a2a !important;
-    }
-    
-    .timeline-marks .timeline-slider {
-      background: #5a8a2a !important;
-    }
-    
-    
-    .timeline-current-time {
-      text-align: center;
-      margin-top: 30px;
-      font-family: Georgia, serif;
-      color: #333;
-    }
-    
-    /* 播放按钮样式 */
-    .play-button {
-      position: absolute;
-      top: 175px;
-      left: 10px;
-      width: 40px;
-      height: 40px;
-      background: #3a6902;
-      border: none;
-      border-radius: 50%;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
-      z-index: 20;
-    }
-    
-    .play-button:hover {
-      background: #2d4f02;
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    
-    .play-button.paused::before {
-      content: '▶';
-    }
-    
-    .play-button.playing::before {
-      content: '⏸';
-    }
-    
-    /* 推理方块样式 */
-    .inference-cards {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      gap: 2rem;
-      margin: 2rem 0;
-      flex-wrap: wrap;
-    }
-    
-    .inference-card {
-      width: 300px;
-      height: 140px;
-      border-radius: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.4s ease;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      position: relative;
-      overflow: hidden;
-      background: transparent;
-    }
-    
-    .inference-card:nth-child(1) {
-      border: 3px solid #3a6902;
-    }
-    
-    .inference-card:nth-child(2) {
-      border: 3px solid #b63620;
-    }
-    
-    .inference-card:nth-child(3) {
-      border: 3px solid #004bb3;
-    }
-    
-    .inference-card:hover {
-      transform: scale(1.2);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-      z-index: 10;
-    }
-    
-    .inference-card-title {
-      color: #333;
-      font-size: 1.2rem;
-      font-weight: bold;
-      text-align: center;
-      font-family: Georgia, serif;
-      transition: opacity 0.3s ease;
-    }
-    
-    .inference-card:nth-child(1) .inference-card-title {
-      color: #3a6902;
-    }
-    
-    .inference-card:nth-child(2) .inference-card-title {
-      color: #b63620;
-    }
-    
-    .inference-card:nth-child(3) .inference-card-title {
-      color: #004bb3;
-    }
-    
-    .inference-card:hover .inference-card-title {
-      opacity: 0;
-    }
-    
-    .inference-card-content {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 12px;
-      background: rgba(255,255,255,0.95);
-      color: #333;
-      font-size: 0.8rem;
-      line-height: 1.3;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-    
-    .inference-card:hover .inference-card-content {
-      opacity: 1;
-    }
-    
-    .inference-card-content h4 {
-      margin-bottom: 8px;
-      font-size: 1.0rem;
-    }
-    
-    .inference-card:nth-child(1) .inference-card-content h4 {
-      color: #ff8c42;
-    }
-    
-    .inference-card:nth-child(2) .inference-card-content h4 {
-      color: #42c78a;
-    }
-    
-    .inference-card:nth-child(3) .inference-card-content h4 {
-      color: #4285c7;
-    }
-    
-    .inference-card-content p {
-      margin: 5px 0;
-      font-family: Georgia, serif;
-    }
-    
-    .inference-card-content .formula {
-      background: #f8f9fa;
-      padding: 8px;
-      border-radius: 5px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.8rem;
-      margin-top: 8px;
-    }
-    
-    .inference-card:nth-child(1) .inference-card-content .formula {
-      border-left: 3px solid #3a6902;
-    }
-    
-    .inference-card:nth-child(2) .inference-card-content .formula {
-      border-left: 3px solid #b63620;
-    }
-    
-    .inference-card:nth-child(3) .inference-card-content .formula {
-      border-left: 3px solid #004bb3;
-    }
-    
-    /* 选项卡样式 */
-    .tabs-container {
-      max-width: 90%;
-      margin: 2rem auto;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    
-    .tabs-header {
-      display: flex;
-      background: linear-gradient(135deg, #004bb3 0%, #4285c7 100%);
-      border-bottom: 2px solid #004bb3;
-    }
-    
-    .tab-button {
-      flex: 1;
-      padding: 15px 10px;
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 0.9rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: Georgia, serif;
-      text-align: center;
-    }
-    
-    .tab-button:hover {
-      background: rgba(255,255,255,0.1);
-    }
-    
-    .tab-button.active {
-      background: white;
-      color: #004bb3;
-    }
-    
-    .tab-content {
-      padding: 30px;
-      min-height: 400px;
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-    
-    .tab-content h3 {
-      color: #004bb3;
-      margin-bottom: 20px;
-      font-size: 1.5rem;
-    }
-    
-    .tab-content p {
-      font-family: Georgia, serif;
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
-    
-    /* 子选项卡样式 */
-    .sub-tabs-container {
-      margin: 20px 0;
-      background: #f8f9fa;
-      border-radius: 10px;
-      overflow: hidden;
-      display: flex;
-    }
-    
-    .sub-tabs-header {
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(135deg, #666 0%, #888 100%);
-      border-bottom: 1px solid #666;
-      width: 200px;
-      flex-shrink: 0;
-    }
-    
-    .sub-tab-button {
-      width: 100%;
-      padding: 12px 15px;
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 0.85rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: Georgia, serif;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    .sub-tab-button:last-child {
-      border-bottom: none;
-    }
-    
-    .sub-tab-button:hover {
-      background: rgba(255,255,255,0.1);
-    }
-    
-    .sub-tab-button.active {
-      background: rgba(255,255,255,0.2);
-      border-bottom: 2px solid #fff;
-    }
-    
-    .sub-tab-content {
-      display: none;
-      padding: 20px;
-      background: white;
-      flex: 1;
-      min-height: 200px;
-    }
-    
-    .sub-tab-content.active {
-      display: block;
-    }
-    
-    .sub-tab-content h4 {
-      color: #004bb3;
-      margin-bottom: 10px;
-      font-family: Georgia, serif;
-    }
-    
-    .sub-tab-content p {
-      margin-bottom: 15px;
-      font-family: Georgia, serif;
-      line-height: 1.5;
-    }
-    
-    .sub-tab-content .reward-formula {
-      background: #f0f2f8;
-      padding: 12px;
-      border-radius: 6px;
-      margin: 10px 0;
-      border-left: 3px solid #666;
-      font-family: Georgia, serif;
-    }
-    
-    /* 视频优化样式 */
-    .sub-tab-content video {
-      transition: opacity 0.2s ease;
-      background: #000;
-    }
-    
-    .sub-tab-content video::-webkit-media-controls {
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    
-    .sub-tab-content video:hover::-webkit-media-controls {
-      opacity: 1;
-    }
-    
-    .sub-tab-content video::-webkit-media-controls-panel {
-      background: rgba(0,0,0,0.7);
-    }
-    
-    .sub-tab-content video::-webkit-media-controls-play-button,
-    .sub-tab-content video::-webkit-media-controls-timeline,
-    .sub-tab-content video::-webkit-media-controls-current-time-display,
-    .sub-tab-content video::-webkit-media-controls-time-remaining-display {
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    
-    .sub-tab-content video:hover::-webkit-media-controls-play-button,
-    .sub-tab-content video:hover::-webkit-media-controls-timeline,
-    .sub-tab-content video:hover::-webkit-media-controls-current-time-display,
-    .sub-tab-content video:hover::-webkit-media-controls-time-remaining-display {
-      opacity: 1;
-    }
-    
-    /* 视频画廊样式 */
-    .video-gallery {
-      margin: 2rem 0;
-      overflow: hidden;
-      position: relative;
-    }
-    
-    .gallery-container {
-      display: flex;
-      transition: transform 0.5s ease;
-      gap: 1rem;
-    }
-    
-    .gallery-item {
-      flex: 0 0 auto;
-      width: 300px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      overflow: hidden;
-      transition: transform 0.3s ease;
-    }
-    
-    .gallery-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    }
-    
-    .gallery-item video {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 10px 10px 0 0;
-    }
-    
-    .gallery-item .video-info {
-      padding: 15px;
-    }
-    
-    .gallery-item h4 {
-      color: #b63620;
-      margin-bottom: 8px;
-      font-size: 1.1rem;
-    }
-    
-    /* Goal Reaching 画廊绿色主题 */
-    #goalGalleryContainer .gallery-item h4 {
-      color: #3a6902;
-    }
-    
-    #goalGalleryContainer .gallery-item:hover {
-      box-shadow: 0 8px 20px rgba(58, 105, 2, 0.2);
-    }
-    
-    #goalGalleryDots .gallery-dot.active {
-      background: #3a6902;
-    }
-    
-    #goalGalleryDots .gallery-dot:hover {
-      background: #5a8a2a;
-    }
-    
-    .gallery-item p {
-      color: #666;
-      font-size: 0.9rem;
-      line-height: 1.4;
-    }
-    
-    .gallery-nav {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    
-    .gallery-nav button {
-      background: #b63620;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
-    }
-    
-    .gallery-nav button:hover {
-      background: #9a2d1a;
-      transform: scale(1.05);
-    }
-    
-    .gallery-nav button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-      transform: none;
-    }
-    
-    .gallery-dots {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-    
-    .gallery-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #ddd;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    
-    .gallery-dot.active {
-      background: #b63620;
-    }
-    
-    /* 播放箭头按钮样式 */
-    .gallery-arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 50px;
-      height: 50px;
-      background: rgba(182, 54, 32, 0.8);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      color: white;
-      transition: all 0.3s ease;
-      z-index: 10;
-    }
-    
-    .gallery-arrow:hover {
-      background: rgba(182, 54, 32, 1);
-      transform: translateY(-50%) scale(1.1);
-    }
-    
-    .gallery-arrow-left {
-      left: 10px;
-    }
-    
-    .gallery-arrow-right {
-      right: 10px;
-    }
-    
-    .gallery-arrow::before {
-      content: '';
-      width: 0;
-      height: 0;
-      border-style: solid;
-    }
-    
-    .gallery-arrow-left::before {
-      border-width: 8px 12px 8px 0;
-      border-color: transparent white transparent transparent;
-      margin-left: -2px;
-    }
-    
-    .gallery-arrow-right::before {
-      border-width: 8px 0 8px 12px;
-      border-color: transparent transparent transparent white;
-      margin-left: 2px;
-    }
-    
-    /* Goal Reaching 画廊箭头绿色主题 */
-    .video-gallery:has(#goalGalleryContainer) .gallery-arrow {
-      background: rgba(58, 105, 2, 0.8);
-    }
-    
-    .video-gallery:has(#goalGalleryContainer) .gallery-arrow:hover {
-      background: rgba(58, 105, 2, 1);
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="./static/js/bulma-carousel.min.js"></script>
   <script src="./static/js/bulma-slider.min.js"></script>
@@ -2027,8 +1225,26 @@
 
 <section class="section" style="background-color: #f8f0f0;">
   <h2 class="title is-3" style="text-align: center; color: #b63620;">Motion Tracking</h2>
+  
+  <!-- Highlight Video Section -->
+  <div class="container" style="max-width: 60%; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h4 style="font-family: Georgia, serif; color: #666; margin-bottom: 20px;">
+          Check our highlight tracking video in dancing with <span style="color: #dc3545; font-weight: bold;">safe, natural, and gentle recovery</span> even when confronted with unexpected falls.<br>
+          <span style="font-style: italic;">(Strongly recommend turning on sound)</span>
+        </h4>
+      <video width="80%" height="auto" controls autoplay muted loop style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <source src="./resources/tracking/tracking_highlight2/tracking_highlight2-1.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
+  
   <div class="container" style="max-width: 60%; margin: 0 auto;">
     <!-- 视频画廊 -->
+    <h4 style="font-family: Georgia, serif; color: #666; margin-bottom: 20px;">
+      More motion tracking demos including styled locomotion, boxing, playing ball games and dancing. <br> <span style="color: #dc3545; font-weight: bold;">All demos come from a single, continuous video shooting with the same policy. </span>
+    </h4>
     <div class="video-gallery">
       <!-- 左箭头按钮 -->
       <button class="gallery-arrow gallery-arrow-left" onclick="moveGallery(-1)"></button>
@@ -2106,6 +1322,78 @@
           <div class="video-info">
             <h4>Zero-shot Transfer</h4>
             <p>Demonstrates zero-shot transfer to new motion patterns without retraining.</p>
+      </div>
+    </div>
+
+        <!-- 视频项目7 - Segment 1 -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Segment 1</h4>
+            <p>Continuous motion tracking demonstration.</p>
+      </div>
+    </div>
+
+        <!-- 视频项目8 - Segment 2 -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Segment 2</h4>
+            <p>Continuous motion tracking demonstration.</p>
+      </div>
+    </div>
+
+        <!-- 视频项目9 - Segment 3 -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg3.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Segment 3</h4>
+            <p>Continuous motion tracking demonstration.</p>
+      </div>
+    </div>
+
+        <!-- 视频项目10 - Segment 4 -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg4.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Segment 4</h4>
+            <p>Continuous motion tracking demonstration.</p>
+      </div>
+    </div>
+
+        <!-- 视频项目11 - Segment 5 -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg5.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Segment 5</h4>
+            <p>Continuous motion tracking demonstration.</p>
+      </div>
+    </div>
+
+        <!-- 视频项目12 - Segment 6 -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg6.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Segment 6</h4>
+            <p>Continuous motion tracking demonstration.</p>
       </div>
     </div>
       </div>
