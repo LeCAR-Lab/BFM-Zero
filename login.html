@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+</head>
+<body>
+  <h2>请输入密码访问网站</h2>
+  <form id="loginForm">
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">登录</button>
+  </form>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const password = document.getElementById("password").value;
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      });
+      const data = await res.json();
+      if(data.success){
+        window.location.href = "/"; // 登录成功跳转首页
+      } else {
+        alert("密码错误！");
+      }
+    });
+  </script>
+</body>
+</html>

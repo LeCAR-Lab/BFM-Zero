@@ -22,6 +22,17 @@
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script>
+    // 检查 HTTP Only Cookie
+    const cookies = document.cookie.split("; ").reduce((acc, c) => {
+      const [key, val] = c.split("=");
+      acc[key] = val;
+      return acc;
+    }, {});
+
+    if(cookies.auth !== "1") {
+      window.location.href = "/login.html"; // 未登录跳转登录页
+    }
+
     window.MathJax = {
       tex: {
         inlineMath: [['$', '$'], ['\\(', '\\)']],
