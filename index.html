@@ -946,7 +946,7 @@
       
       if (timelineSlider && frameVideo) {
         // 关键时间点（秒）
-        const keyPoints = [0, 6, 9, 13, 16.5, 18.2, 20, 23, 26, 30];
+        const keyPoints = [0, 5, 9, 11.5, 16.5, 18.2, 19.5, 22, 25.1, 28.8];
         const keyImages = [
           './resources/goal_reaching/rendered/goal1.png',
           './resources/goal_reaching/rendered/goal2.png',
@@ -1179,6 +1179,13 @@
       
       // 激活对应的按钮
       event.target.classList.add('active');
+      
+      // 如果是Base Height Control tab，重新初始化视频背景
+      if (tabId === 'base-height') {
+        setTimeout(() => {
+          initializeVideoCovers();
+        }, 100);
+      }
     }
     
     // 子选项卡切换功能
@@ -1472,6 +1479,108 @@
         basicLocomotionTab.appendChild(autoPlayButton);
       }
     });
+
+
+    function playVideo(coverElement) {
+      const videoContainer = coverElement.parentElement;
+      const video = videoContainer.querySelector('video[style*="display: none"]'); // 选择隐藏的播放视频
+      const cover = videoContainer.querySelector('.video-cover');
+      
+      // 隐藏封面，显示视频
+      cover.style.display = 'none';
+      video.style.display = 'block';
+      
+      // 播放视频
+      video.currentTime = 0;
+      video.play();
+      
+      // 监听视频结束事件
+      video.addEventListener('ended', function() {
+        // 视频结束后回到封面
+        video.style.display = 'none';
+        cover.style.display = 'block';
+      });
+    }
+
+    // 页面加载完成后初始化视频封面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 不再需要复杂的背景生成，直接使用视频作为背景
+    });
+
+    // 初始化视频封面函数（简化版）
+    function initializeVideoCovers() {
+      // 不再需要生成背景图片
+    }
+
+    // Arm Control 交互功能
+    let rightWristValue = null;
+    let leftWristValue = null;
+    
+    function selectReward(element, side) {
+      // Remove active class from all buttons in the same section
+      const section = element.closest('.wrist-section');
+      section.querySelectorAll('.reward-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      // Add active class to clicked button
+      element.classList.add('active');
+      const value = element.getAttribute('data-value');
+      
+      // Update the selected value for this side
+      if (side === 'right') {
+        rightWristValue = value;
+      } else {
+        leftWristValue = value;
+      }
+      
+      // Show corresponding image
+      showRewardImage();
+    }
+    
+    function showRewardImage() {
+      const imageElement = document.getElementById('arm-image');
+      const placeholder = document.querySelector('.video-placeholder');
+      
+      if (rightWristValue && leftWristValue) {
+        // Show image based on combination
+        let imageKey = '';
+        if (rightWristValue === 'high' && leftWristValue === 'high') {
+          imageKey = 'hh';
+        } else if (rightWristValue === 'high' && leftWristValue === 'low') {
+          imageKey = 'hl';
+        } else if (rightWristValue === 'low' && leftWristValue === 'high') {
+          imageKey = 'lh';
+        } else if (rightWristValue === 'low' && leftWristValue === 'low') {
+          imageKey = 'll';
+        }
+        
+        if (imageKey) {
+          imageElement.src = './resources/reward_optimization/arm_control/' + imageKey + '.png';
+          imageElement.style.display = 'block';
+          placeholder.style.display = 'none';
+        }
+      } else {
+        imageElement.style.display = 'none';
+        placeholder.style.display = 'flex';
+      }
+    }
+    
+    function showContinuousVideo() {
+      const modal = document.getElementById('video-modal');
+      const video = document.getElementById('continuous-video');
+      modal.style.display = 'block';
+      video.play();
+    }
+    
+    function closeContinuousVideo() {
+      const modal = document.getElementById('video-modal');
+      const video = document.getElementById('continuous-video');
+      modal.style.display = 'none';
+      video.pause();
+    }
+    
+
   </script>
   <meta property="og:site_name" content="BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning" />
   <meta property="og:title" content="BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning" />
@@ -1522,10 +1631,10 @@
   
             <div class="is-size-4 publication-authors">
               <span class="author-block" style="font-size: 1.2rem;">
-                <a href="https://liyitang22.github.io/">Yitang Li*</a>&nbsp;&nbsp;
-                <a href="https://www.zhengyiluo.com/">Zhengyi Luo*</a>&nbsp;&nbsp;
-                <a href="https://tonghe-zhang.github.io/">Tonghe Zhang</a>&nbsp;&nbsp;
-                <a href="https://cunxid.github.io/">Cunxi Dai</a>&nbsp;&nbsp;
+                  <a href="https://liyitang22.github.io/">Yitang Li<span class="superscript">*</span></a>&nbsp;&nbsp;
+                  <a href="https://www.zhengyiluo.com/">Zhengyi Luo<span class="superscript">*</span></a>&nbsp;&nbsp;
+                  <a href="https://tonghe-zhang.github.io/">Tonghe Zhang<span class="superscript">$</span></a>&nbsp;&nbsp;
+                  <a href="https://cunxid.github.io/">Cunxi Dai<span class="superscript">$</span></a>&nbsp;&nbsp;
                 <br>
                 <a href="https://scholar.google.com/citations?user=iPimqbwAAAAJ&hl=en">Anssi Kanervisto</a>&nbsp;&nbsp;
                 <a href="https://andreatirinzoni.github.io/">Andrea Tirinzoni</a>&nbsp;&nbsp;
@@ -1535,9 +1644,12 @@
                 <a href="https://scholar.google.com/citations?user=-jQ-FRoAAAAJ&hl=en">Mateusz Guzek</a>&nbsp;&nbsp;
                 <a href="https://scholar.google.com/citations?user=D4LT5xAAAAAJ&hl=en">Ahmed Touati</a>&nbsp;&nbsp;
                 <a href="https://scholar.google.com/citations?user=6JZ3R6wAAAAJ&hl=en">Alessandro Lazaric</a>&nbsp;&nbsp;
-                <a href="https://teopir.github.io/">Matteo Pirotta</a>&nbsp;&nbsp;
-                <a href="https://www.gshi.me/">Guanya Shi</a>&nbsp;&nbsp;
+                <a href="https://teopir.github.io/">Matteo Pirotta<span class="superscript">+</span></a>&nbsp;&nbsp;
+                <a href="https://www.gshi.me/">Guanya Shi<span class="superscript">+</span></a>&nbsp;&nbsp;
               </span>
+              <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                * <span style="font-size: 0.8em;">Equal contribution</span>  &nbsp;&nbsp; $ <span style="font-size: 0.8em;">Equal contribution</span> &nbsp;&nbsp; + <span style="font-size: 0.8em;">Equal advising</span>
+              </div>
             </div>
   
             <div class="column">
@@ -1790,7 +1902,7 @@
       <div class="gallery-container" id="goalGalleryContainer">
         <!-- 视频项目2 - Any-to-Target 2 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/ANY2T/any2T/any2T-2.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
@@ -1802,7 +1914,7 @@
 
         <!-- 视频项目1 - Any-to-Target 1 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/ANY2T/any2T/any2T-1.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
@@ -1814,7 +1926,7 @@
 
         <!-- 视频项目3 - Any-to-Pose 1 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-4.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -1826,7 +1938,7 @@
 
         <!-- 视频项目4 - Any-to-Pose 2 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-2.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -1838,7 +1950,7 @@
         
         <!-- 视频项目5 - Any-to-Pose 3 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-7.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -1850,7 +1962,7 @@
         
         <!-- 视频项目6 - Any-to-Pose 4 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-3.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
@@ -1862,7 +1974,7 @@
         
         <!-- 视频项目7 - Any-to-Pose 5 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-5.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
@@ -1874,7 +1986,7 @@
         
         <!-- 视频项目8 - Any-to-Pose 6 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-1.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
@@ -1886,7 +1998,7 @@
         
         <!-- 视频项目9 - Any-to-Pose 7 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-6.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
@@ -1939,7 +2051,7 @@
       <div class="gallery-container" id="galleryContainer">
         <!-- 视频项目1 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/motion_tracking/video1.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -1951,7 +2063,7 @@
     
         <!-- 视频项目2 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/motion_tracking/video2.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -1963,7 +2075,7 @@
 
         <!-- 视频项目3 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/motion_tracking/video3.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -1975,7 +2087,7 @@
         
         <!-- 视频项目4 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/motion_tracking/video4.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -1987,7 +2099,7 @@
     
         <!-- 视频项目5 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/motion_tracking/video5.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -1999,7 +2111,7 @@
         
         <!-- 视频项目6 -->
         <div class="gallery-item">
-          <video muted playsinline>
+          <video muted playsinline autoplay loop>
             <source src="./resources/motion_tracking/video6.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -2075,7 +2187,7 @@
               $$R_{forward} = w_1 \cdot R_{velocity} + w_2 \cdot R_{stability} + w_3 \cdot R_{efficiency}$$
             </div>
             <div style="margin-top: 15px;">
-              <video id="video-go-forward" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+              <video id="video-go-forward" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
                 <source src="./resources/reward_optimization/locomotion/locomotion-1.mp4" type="video/mp4">
                 Your browser does not support the video tag.
         </video>
@@ -2089,7 +2201,7 @@
               $$R_{strafe\_left} = w_1 \cdot R_{lateral\_velocity} + w_2 \cdot R_{balance}$$
             </div>
             <div style="margin-top: 15px;">
-              <video id="video-strafe-left" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+              <video id="video-strafe-left" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
                 <source src="./resources/reward_optimization/locomotion/locomotion-3.mp4" type="video/mp4">
                 Your browser does not support the video tag.
         </video>
@@ -2103,7 +2215,7 @@
               $$R_{backward} = w_1 \cdot R_{velocity} + w_2 \cdot R_{stability} + w_3 \cdot R_{control}$$
             </div>
             <div style="margin-top: 15px;">
-              <video id="video-go-backward" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+              <video id="video-go-backward" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
                 <source src="./resources/reward_optimization/locomotion/locomotion-4.mp4" type="video/mp4">
                 Your browser does not support the video tag.
         </video>
@@ -2117,7 +2229,7 @@
               $$R_{strafe\_right} = w_1 \cdot R_{lateral\_velocity} + w_2 \cdot R_{balance}$$
       </div>
             <div style="margin-top: 15px;">
-              <video id="video-strafe-right" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+              <video id="video-strafe-right" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
                 <source src="./resources/reward_optimization/locomotion/locomotion-5.mp4" type="video/mp4">
                 Your browser does not support the video tag.
               </video>
@@ -2130,7 +2242,7 @@
               $$R_{turn\_left} = w_1 \cdot R_{angular\_velocity} + w_2 \cdot R_{smoothness}$$
             </div>
             <div style="margin-top: 15px;">
-              <video id="video-turn-anticlockwise" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+              <video id="video-turn-anticlockwise" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
                 <source src="./resources/reward_optimization/locomotion/locomotion-6.mp4" type="video/mp4">
                 Your browser does not support the video tag.
               </video>
@@ -2143,7 +2255,7 @@
               $$R_{turn\_right} = w_1 \cdot R_{angular\_velocity} + w_2 \cdot R_{smoothness}$$
             </div>
             <div style="margin-top: 15px;">
-              <video id="video-turn-clockwise" width="100%" height="auto" controls muted loop preload="auto" style="border-radius: 8px;">
+              <video id="video-turn-clockwise" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
                 <source src="./resources/reward_optimization/locomotion/locomotion-7.mp4" type="video/mp4">
                 Your browser does not support the video tag.
               </video>
@@ -2158,26 +2270,162 @@
         <div class="reward-formula">
           $$R_{arm} = w_1 \cdot R_{precision} + w_2 \cdot R_{coordination} + w_3 \cdot R_{reach}$$
         </div>
-        <p><strong>Key Components:</strong></p>
-        <ul>
-          <li>Precision reward for accurate positioning</li>
-          <li>Coordination reward for bilateral arm movement</li>
-          <li>Reach reward for extending arm range</li>
-        </ul>
+        
+        <!-- Interactive Wrist Height Control -->
+        <div class="arm-control-container">
+          <div class="inference-control">
+            <h4>Reward = Right wrist & Left wrist</h4>
+            <div class="wrist-controls">
+              <div class="wrist-section">
+                <div class="wrist-input-box">
+                  <span class="wrist-label">Right wrist = </span>
+                  <div class="button-group">
+                    <button class="reward-button" data-value="high" onclick="selectReward(this, 'right')">high</button>
+                    <button class="reward-button" data-value="low" onclick="selectReward(this, 'right')">low</button>
+                  </div>
+                </div>
+              </div>
+              <div class="wrist-section">
+                <div class="wrist-input-box">
+                  <span class="wrist-label">Left wrist = </span>
+                  <div class="button-group">
+                    <button class="reward-button" data-value="high" onclick="selectReward(this, 'left')">high</button>
+                    <button class="reward-button" data-value="low" onclick="selectReward(this, 'left')">low</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="video-display">
+            <div class="video-container-arm">
+              <img id="arm-image" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+              <div class="video-placeholder">
+                <div class="placeholder-text">Select reward values to show image</div>
+              </div>
+            </div>
+            <button class="continuous-play-btn" onclick="showContinuousVideo()">Continuous Play</button>
+          </div>
+          
+          <!-- Video Modal -->
+          <div id="video-modal" class="video-modal" style="display: none;">
+            <div class="modal-content">
+              <span class="close-btn" onclick="closeContinuousVideo()">&times;</span>
+              <video id="continuous-video" width="100%" height="auto" controls muted loop preload="auto">
+                <source src="./resources/reward_optimization/arm_control/arm_control-1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
       </div>
       
       <div id="base-height" class="tab-content">
         <h3>Base Height Control</h3>
-        <p>Regulates body height and posture for different task requirements.</p>
-        <div class="reward-formula">
-          $$R_{height} = w_1 \cdot R_{posture} + w_2 \cdot R_{adaptation} + w_3 \cdot R_{stability}$$
+        
+        <!-- Base Height Control Videos -->
+        <div class="video-grid-2x2">
+          <div class="video-item">
+            <h5>Move forward low height</h5>
+            <div class="video-container">
+                <div class="video-cover" onclick="playVideo(this)">
+                  <div class="formula-cover">
+                    <video class="video-bg" muted loop playsinline>
+                      <source src="./resources/reward_optimization/height_control/height_control-1.mp4" type="video/mp4">
+                    </video>
+                    <div class="formula-text">Base Height = <span class="height-value">0.6m</span> & Go Forward</div>
+                  </div>
+                  <div class="cover-overlay">
+                    <div class="play-button">
+                      <i class="fas fa-play"></i>
+                    </div>
+                  </div>
+                </div>
+              <video muted playsinline preload="auto" style="display: none;">
+                <source src="./resources/reward_optimization/height_control/height_control-1.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="reward-formula">
+              $$R_{height1} = \exp(-|h_{target} - h_{current}|)$$
+            </div>
+          </div>
+          <div class="video-item">
+            <h5>Sit down</h5>
+            <div class="video-container">
+              <div class="video-cover" onclick="playVideo(this)">
+                  <div class="formula-cover">
+                    <video class="video-bg" muted loop playsinline>
+                      <source src="./resources/reward_optimization/height_control/height_control-2.mp4" type="video/mp4">
+                    </video>
+                    <div class="formula-text">Base Height = <span class="height-value">0m</span></div>
+                  </div>
+                <div class="cover-overlay">
+                  <div class="play-button">
+                    <i class="fas fa-play"></i>
+                  </div>
+                </div>
+              </div>
+              <video muted playsinline preload="auto" style="display: none;">
+                <source src="./resources/reward_optimization/height_control/height_control-2.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="reward-formula">
+              $$R_{height2} = \cos(\theta_{spine}) \cdot \exp(-|\theta_{knee}|)$$
+            </div>
+          </div>
+          <div class="video-item">
+            <h5>Supported Crouch</h5>
+            <div class="video-container">
+              <div class="video-cover" onclick="playVideo(this)">
+                  <div class="formula-cover">
+                    <video class="video-bg" muted loop playsinline>
+                      <source src="./resources/reward_optimization/height_control/height_control-3.mp4" type="video/mp4">
+                    </video>
+                    <div class="formula-text">Base Height = <span class="height-value">0.25m</span> & Higher Knee</div>
+                  </div>
+                <div class="cover-overlay">
+                  <div class="play-button">
+                    <i class="fas fa-play"></i>
+                  </div>
+                </div>
+              </div>
+              <video muted playsinline preload="auto" style="display: none;">
+                <source src="./resources/reward_optimization/height_control/height_control-3.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="reward-formula">
+              $$R_{height3} = \exp(-|\omega_{COM}|) \cdot \cos(\theta_{balance})$$
+            </div>
+          </div>
+          <div class="video-item">
+            <h5>Crouch on the ground</h5>
+            <div class="video-container">
+              <div class="video-cover" onclick="playVideo(this)">
+                  <div class="formula-cover">
+                    <video class="video-bg" muted loop playsinline>
+                      <source src="./resources/reward_optimization/height_control/height_control-4.mp4" type="video/mp4">
+                    </video>
+                    <div class="formula-text">Base Height = <span class="height-value">0m</span> & Higher Knee</div>
+                  </div>
+                <div class="cover-overlay">
+                  <div class="play-button">
+                    <i class="fas fa-play"></i>
+                  </div>
+                </div>
+              </div>
+              <video muted playsinline preload="auto" style="display: none;">
+                <source src="./resources/reward_optimization/height_control/height_control-4.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="reward-formula">
+              $$R_{height4} = \alpha \cdot R_{posture} + \beta \cdot R_{adaptation}$$
+            </div>
+          </div>
         </div>
-        <p><strong>Key Components:</strong></p>
-        <ul>
-          <li>Posture reward for maintaining proper alignment</li>
-          <li>Adaptation reward for height adjustments</li>
-          <li>Stability reward for balance maintenance</li>
-        </ul>
     </div>
 
       <div id="behavior-diversity" class="tab-content">
@@ -2186,26 +2434,210 @@
         <div class="reward-formula">
           $$R_{diversity} = w_1 \cdot R_{exploration} + w_2 \cdot R_{novelty} + w_3 \cdot R_{creativity}$$
         </div>
-        <p><strong>Key Components:</strong></p>
-        <ul>
-          <li>Exploration reward for trying new movements</li>
-          <li>Novelty reward for unique behavior patterns</li>
-          <li>Creativity reward for innovative solutions</li>
-        </ul>
-    </div>
+        
+        <div class="diversity-content">
+          <div class="diversity-text">
+            <p><strong>Key Components:</strong></p>
+            <ul>
+              <li>Exploration reward for discovering new behaviors</li>
+              <li>Novelty reward for unique behavior patterns</li>
+              <li>Creativity reward for innovative solutions</li>
+            </ul>
+          </div>
+          <div class="diversity-video">
+            <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 8px;">
+              <source src="./resources/reward_optimization/diversity/diversity-1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </div>
 
       <div id="skill-combination" class="tab-content">
         <h3>Skill Combination</h3>
         <p>Integrates multiple skills for complex multi-task scenarios.</p>
         <div class="reward-formula">
           $$R_{combination} = \sum_{i=1}^{n} w_i \cdot R_{skill_i} + w_{interaction} \cdot R_{interaction}$$
-    </div>
-        <p><strong>Key Components:</strong></p>
-        <ul>
-          <li>Individual skill rewards for each component</li>
-          <li>Interaction reward for skill coordination</li>
-          <li>Weighted combination for optimal balance</li>
-        </ul>
+        </div>
+        
+        <!-- Skill Comp Video Gallery -->
+        <div class="skill-gallery">
+          <div class="gallery-grid">
+           
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-18.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">backward & arms-h-h</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-17.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">strafe-right & arms-h-h</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-16.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">strafe-left & arms-h-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-15.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">forward & arms-h-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-14.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">backward & arms-h-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-12.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">strafe-right & arms-h-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-13.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">forward & arms-l-h</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-11.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">backward & arms-l-h</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-10.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">strafe-right & arms-l-h</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-9.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">forward & arms-l-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-8.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">strafe-left & arms-l-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-7.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">backward & arms-l-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-6.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">strafe-right & arms-l-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-5.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">turn anticlockwise & arms-l-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-4.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">turn clockwise & arms-l-l</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-3.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">turn-anticlockwise & arms-h-l</div>
+            </div>
+            <!-- <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-2.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">turn-clockwise & arms-h-l</div>
+            </div> -->
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-1.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">turn-anticlockwise & arms-l-h</div>
+            </div>
+            <div class="gallery-item">
+              <video class="gallery-video" autoplay muted loop preload="auto">
+                <source src="./resources/reward_optimization/skill_comp/skill_comp-19.mp4" type="video/mp4">
+              </video>
+              <div class="video-overlay">
+                <div class="play-icon">▶</div>
+              </div>
+              <div class="video-label">strafe-left & arms-h-h</div>
+            </div>
+          </div>
+        </div>
+        
       </div>
     </div>
     </div>
