@@ -426,7 +426,7 @@
     
     // Motion Tracking 视频画廊控制
     let currentSlide = 0;
-    const totalSlides = 6;
+    const totalSlides = 7; // 更新为7个视频
     const itemWidth = 320; // 每个视频的宽度（300px + 20px gap）
     
     function moveGallery(direction) {
@@ -494,6 +494,95 @@
       const dots = document.querySelectorAll('#goalGalleryDots span');
       dots.forEach((dot, index) => {
         dot.classList.toggle('active', index === currentGoalSlide);
+      });
+    }
+    
+    // Full Video 弹窗功能
+    function showFullVideo() {
+      // 创建模态框
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      `;
+      
+      // 创建视频容器
+      const videoContainer = document.createElement('div');
+      videoContainer.style.cssText = `
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: default;
+      `;
+      
+      // 创建关闭按钮
+      const closeBtn = document.createElement('button');
+      closeBtn.innerHTML = '×';
+      closeBtn.style.cssText = `
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        font-size: 24px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      
+      // 创建视频元素
+      const video = document.createElement('video');
+      video.src = './resources/tracking/full/full-1.mp4';
+      video.controls = true;
+      video.autoplay = true;
+      video.style.cssText = `
+        width: 100%;
+        height: auto;
+        display: block;
+      `;
+      
+      // 组装元素
+      videoContainer.appendChild(closeBtn);
+      videoContainer.appendChild(video);
+      modal.appendChild(videoContainer);
+      document.body.appendChild(modal);
+      
+      // 关闭功能
+      function closeModal() {
+        video.pause();
+        document.body.removeChild(modal);
+      }
+      
+      closeBtn.onclick = closeModal;
+      modal.onclick = function(e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      };
+      
+      // ESC键关闭
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeModal();
+        }
       });
     }
     
@@ -1230,7 +1319,7 @@
   <div class="container" style="max-width: 60%; margin: 0 auto;">
     <div style="text-align: center; margin-bottom: 30px;">
         <h4 style="font-family: Georgia, serif; color: #666; margin-bottom: 20px;">
-          Check our highlight tracking video in dancing with <span style="color: #dc3545; font-weight: bold;">safe, natural, and gentle recovery</span> even when confronted with unexpected falls.<br>
+          Check our <span style="color: #dc3545; font-weight: bold;">highlight tracking video</span> in dancing with <span style="color: #dc3545; font-weight: bold;">safe, natural, and gentle recovery</span> even when confronted with unexpected falls.<br>
           <span style="font-style: italic;">(Strongly recommend turning on sound)</span>
         </h4>
       <video width="80%" height="auto" controls autoplay muted loop style="border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
@@ -1242,9 +1331,14 @@
   
   <div class="container" style="max-width: 60%; margin: 0 auto;">
     <!-- 视频画廊 -->
-    <h4 style="font-family: Georgia, serif; color: #666; margin-bottom: 20px;">
-      More motion tracking demos including styled locomotion, boxing, playing ball games and dancing. <br> <span style="color: #dc3545; font-weight: bold;">All demos come from a single, continuous video shooting with the same policy. </span>
-    </h4>
+    <div style="text-align: center; margin-bottom: 20px;">
+      <h4 style="font-family: Georgia, serif; color: #666; margin-bottom: 15px;">
+        More motion tracking demos including styled locomotion, boxing, playing ball games and dancing. All demos come from <span style="color: #dc3545; font-weight: bold;">a single, continuous video shooting with the same policy.</span>
+      </h4>
+      <button onclick="showFullVideo()" class="full-video-btn">
+        Full Video (4x)
+      </button>
+    </div>
     <div class="video-gallery">
       <!-- 左箭头按钮 -->
       <button class="gallery-arrow gallery-arrow-left" onclick="moveGallery(-1)"></button>
@@ -1253,147 +1347,80 @@
       <button class="gallery-arrow gallery-arrow-right" onclick="moveGallery(1)"></button>
       
       <div class="gallery-container" id="galleryContainer">
-        <!-- 视频项目1 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/motion_tracking/video1.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Real-time Tracking</h4>
-            <p>Demonstrates BFM-Zero's ability to track complex human motions in real-time with high accuracy.</p>
-      </div>
-      </div>
-    
-        <!-- 视频项目2 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/motion_tracking/video2.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Multi-joint Coordination</h4>
-            <p>Shows coordinated movement across multiple joints for complex motion patterns.</p>
-      </div>
-    </div>
-
-        <!-- 视频项目3 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/motion_tracking/video3.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Dynamic Adaptation</h4>
-            <p>Illustrates how the model adapts to changing motion patterns and environmental conditions.</p>
-  </div>
-        </div>
-        
-        <!-- 视频项目4 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/motion_tracking/video4.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Precision Control</h4>
-            <p>Demonstrates fine-grained control for precise motion tracking tasks.</p>
-      </div>
-    </div>
-    
-        <!-- 视频项目5 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/motion_tracking/video5.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Robust Performance</h4>
-            <p>Shows consistent performance across different motion types and speeds.</p>
-      </div>
-        </div>
-        
-        <!-- 视频项目6 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/motion_tracking/video6.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Zero-shot Transfer</h4>
-            <p>Demonstrates zero-shot transfer to new motion patterns without retraining.</p>
-      </div>
-    </div>
-
-        <!-- 视频项目7 - Segment 1 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/tracking/segment/seg1.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Segment 1</h4>
-            <p>Continuous motion tracking demonstration.</p>
-      </div>
-    </div>
-
-        <!-- 视频项目8 - Segment 2 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/tracking/segment/seg2.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Segment 2</h4>
-            <p>Continuous motion tracking demonstration.</p>
-      </div>
-    </div>
-
-        <!-- 视频项目9 - Segment 3 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/tracking/segment/seg3.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Segment 3</h4>
-            <p>Continuous motion tracking demonstration.</p>
-      </div>
-    </div>
-
-        <!-- 视频项目10 - Segment 4 -->
-        <div class="gallery-item">
-          <video muted playsinline autoplay loop>
-            <source src="./resources/tracking/segment/seg4.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-          <div class="video-info">
-            <h4>Segment 4</h4>
-            <p>Continuous motion tracking demonstration.</p>
-      </div>
-    </div>
-
-        <!-- 视频项目11 - Segment 5 -->
+        <!-- 视频项目1 - Segment 5 (Walk and Turn) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg5.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
           <div class="video-info">
-            <h4>Segment 5</h4>
-            <p>Continuous motion tracking demonstration.</p>
+            <h4>Walk and Turn</h4>
+          </div>
+        </div>
+
+        <!-- 视频项目2 - Segment 2 (Ball Games) -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Ball Games</h4>
       </div>
     </div>
 
-        <!-- 视频项目12 - Segment 6 -->
+        <!-- 视频项目3 - Segment 7 (Dancing with Fall and Recovery) -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg7.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Dancing (Including Fall and Recovery)</h4>
+      </div>
+    </div>
+
+        <!-- 视频项目4 - Segment 6 (Styled Walking with Salute) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg6.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
           <div class="video-info">
-            <h4>Segment 6</h4>
-            <p>Continuous motion tracking demonstration.</p>
+            <h4>Styled Walking (Salute!)</h4>
+      </div>
+    </div>
+
+        <!-- 视频项目5 - Segment 3 (Boxing) -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg3.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Boxing</h4>
+      </div>
+    </div>
+
+        <!-- 视频项目6 - Segment 4 (Walking with Different Steps) -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg4.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Walking (Small Steps and Large Steps)</h4>
+      </div>
+    </div>
+
+        <!-- 视频项目7 - Segment 1 (Dancing) -->
+        <div class="gallery-item">
+          <video muted playsinline autoplay loop>
+            <source src="./resources/tracking/segment/seg1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+          <div class="video-info">
+            <h4>Dancing</h4>
       </div>
     </div>
       </div>
@@ -1408,6 +1435,7 @@
         <span class="gallery-dot" onclick="goToSlide(3)"></span>
         <span class="gallery-dot" onclick="goToSlide(4)"></span>
         <span class="gallery-dot" onclick="goToSlide(5)"></span>
+        <span class="gallery-dot" onclick="goToSlide(6)"></span>
       </div>
     </div>
   </div>
