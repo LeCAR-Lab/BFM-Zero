@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="description" content="BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning</title>
 
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
@@ -15,6 +15,839 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <link rel="stylesheet" href="./static/css/index.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  
+  <style>
+    /* Right floating navigation bar styles */
+    .floating-nav {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .floating-nav-trigger {
+      width: 60px;
+      height: 60px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 1px solid #ddd;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1002;
+    }
+    
+    .floating-nav-trigger:hover {
+      background-color: white;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .floating-nav-trigger i {
+      color: #333;
+      font-size: 1.2rem;
+    }
+    
+    .floating-nav-content {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      transition: all 0.3s ease;
+      opacity: 0;
+      visibility: hidden;
+    }
+    
+    .floating-nav:hover .floating-nav-content {
+      width: 250px;
+      height: auto;
+      min-height: 300px;
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .floating-nav-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .floating-nav-menu li {
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .floating-nav-link {
+      display: block;
+      padding: 12px 20px;
+      color: #555;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    
+    .floating-nav-link:hover {
+      background: #f8f9fa;
+      color: #333;
+      padding-left: 25px;
+    }
+    
+    .floating-nav-link.active {
+      background: #007bff;
+      color: white;
+    }
+    
+    /* Floating nav subsection styles */
+    .floating-nav-item-with-sub {
+      position: relative;
+    }
+    
+    .floating-nav-submenu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      background: rgba(248, 249, 250, 0.9);
+      border-left: 3px solid #007bff;
+      margin-left: 10px;
+      display: none;
+    }
+    
+    .floating-nav-item-with-sub:hover .floating-nav-submenu {
+      display: block;
+    }
+    
+    .floating-nav-sublink {
+      display: block;
+      padding: 8px 20px 8px 30px;
+      color: #999;
+      text-decoration: none;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .floating-nav-sublink:hover {
+      background: #e9ecef;
+      color: #333;
+      padding-left: 35px;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+      /* iPad font scaling to 0.7x - excluding formula-related elements */
+      *:not(.reward-formula):not(.reward-formula *):not(.MathJax):not(.MathJax *):not(.MathJax_Display):not(.MathJax_Display *):not(.MathJax_Display > *):not(.MathJax_Display > * *):not(.button):not(.button *):not(.gallery-container):not(.gallery-item):not(.gallery-item *):not(.tab-content):not(.tab-content *) {
+        font-size: 0.7em !important;
+      }
+      
+      /* Force fix formula display */
+      .reward-formula {
+        font-size: 1em !important;
+        line-height: 1.5 !important;
+        margin: 1rem 0 !important;
+        padding: 0.5rem !important;
+        display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+      }
+      
+      .reward-formula * {
+        font-size: inherit !important;
+        line-height: inherit !important;
+        display: inherit !important;
+      }
+      
+      /* MathJax force fix */
+      .MathJax {
+        font-size: 1em !important;
+        line-height: 1.5 !important;
+        display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+      }
+      
+      .MathJax_Display {
+        font-size: 1em !important;
+        line-height: 1.5 !important;
+        display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+        margin: 1rem 0 !important;
+        padding: 0.5rem !important;
+      }
+      
+      .MathJax_Display * {
+        font-size: inherit !important;
+        line-height: inherit !important;
+        display: inherit !important;
+      }
+      
+      /* Navigation bar mobile optimization */
+      .floating-nav {
+        right: 15px;
+      }
+      
+      .floating-nav-trigger {
+        width: 45px;
+        height: 45px;
+        border: 1px solid #ddd;
+      border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      .floating-nav-trigger i {
+        font-size: 0.9rem;
+      }
+      
+      .floating-nav-trigger:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      }
+      
+      .floating-nav:hover .floating-nav-content {
+        width: 180px;
+        min-height: 220px;
+      }
+      
+      .floating-nav-link {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+      }
+      
+      .floating-nav-sublink {
+        padding: 5px 12px 5px 20px;
+        font-size: 0.7rem;
+      }
+      
+      /* Page content mobile optimization */
+      .container {
+        padding: 0 12px;
+      }
+      
+      .section {
+        padding: 1.5rem 0;
+      }
+      
+      /* Video mobile optimization */
+      video {
+        max-width: 100%;
+        height: auto;
+      }
+      
+      /* Flip cards mobile optimization */
+      .flip-cards-container {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .flip-card-left,
+      .flip-cards-right {
+        width: 100%;
+      }
+      
+      .flip-card {
+        width: 100%;
+        max-width: 250px;
+        margin: 0 auto;
+      }
+      
+      /* Gallery mobile optimization */
+      .gallery-container {
+        padding: 0 8px;
+      }
+      
+      .gallery-item {
+        margin: 0 4px;
+      }
+      
+      .gallery-item video {
+      width: 100%;
+        max-width: 160px;
+        height: auto;
+      }
+      
+      /* Author info mobile optimization - further increase font size */
+      .authors {
+        font-size: 1.1em !important;
+        line-height: 1.4;
+      }
+      
+      .author-item {
+        font-size: 1.1em !important;
+        margin: 0.4rem 0;
+      }
+      
+      .author-name {
+        font-size: 1.1em !important;
+      }
+      
+      .author-affiliation {
+        font-size: 1.0em !important;
+      }
+      
+      /* Header area mobile optimization - 1/4 screen height */
+      .hero.is-fullheight {
+        height: 25vh !important;
+        min-height: 25vh !important;
+      }
+      
+      .hero-video {
+        height: 25vh !important;
+        min-height: 25vh !important;
+      }
+      
+      /* Gallery frames further reduced - fix white borders */
+      .gallery-item {
+        margin: 0 1px;
+        padding: 1px;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      .gallery-item video {
+        width: 100%;
+        max-width: 120px;
+        height: auto;
+        border-radius: 3px;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      .gallery-container {
+        padding: 0 4px;
+        gap: 4px;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      /* Remove all gallery-related borders and backgrounds */
+      .gallery-item * {
+        border: none !important;
+        background: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      .gallery-item h4 {
+        margin: 0.3rem 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      .gallery-item p {
+        margin: 0.2rem 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      /* Ensure formulas display normally */
+      .reward-formula {
+        font-size: 1em !important;
+      }
+      
+      .reward-formula * {
+        font-size: inherit !important;
+      }
+      
+      /* MathJax formula container */
+      .MathJax {
+        font-size: 1em !important;
+      }
+      
+      .MathJax_Display {
+        font-size: 1em !important;
+      }
+      
+      /* Ensure PDF button displays normally - more specific fix */
+      .button {
+        font-size: 1em !important;
+        padding: 0.5rem 1rem !important;
+        min-height: 2.5rem !important;
+        min-width: 4rem !important;
+      }
+      
+      .button span {
+        font-size: 1em !important;
+        line-height: 1.2 !important;
+      }
+      
+      .button .icon {
+        font-size: 1em !important;
+        width: 1em !important;
+        height: 1em !important;
+      }
+      
+      .button i {
+        font-size: 1em !important;
+      }
+      
+      /* PDF button specific styles */
+      .external-link.button {
+        font-size: 1em !important;
+        padding: 0.5rem 1rem !important;
+        min-height: 2.5rem !important;
+        min-width: 4rem !important;
+      }
+      
+      .external-link.button span {
+        font-size: 1em !important;
+        line-height: 1.2 !important;
+      }
+      
+      .external-link.button .icon {
+        font-size: 1em !important;
+        width: 1em !important;
+        height: 1em !important;
+      }
+      
+      .external-link.button i {
+        font-size: 1em !important;
+      }
+      
+      /* Ensure Gallery displays normally */
+      .gallery-container {
+        font-size: 1em !important;
+      }
+      
+      .gallery-item {
+        font-size: 1em !important;
+      }
+      
+      .gallery-item video {
+        font-size: inherit !important;
+      }
+      
+      .gallery-item h4 {
+        font-size: 1em !important;
+      }
+      
+      .gallery-item p {
+        font-size: 1em !important;
+      }
+      
+      /* Ensure tab content displays normally */
+      .tab-content {
+        font-size: 1em !important;
+      }
+      
+      .tab-content * {
+        font-size: inherit !important;
+      }
+      
+      .sub-tab-content {
+        font-size: 1em !important;
+      }
+      
+      .sub-tab-content * {
+        font-size: inherit !important;
+      }
+      
+      .container {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      
+      .section {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      
+      /* Logo maintains original size */
+      .logo, .logo img {
+        max-width: none;
+        width: auto;
+        height: auto;
+      }
+      
+      /* Navigation bar logo maintains original size */
+      .floating-nav-trigger {
+        background-size: 80%;
+      }
+      
+      .floating-nav-trigger:hover {
+        background-size: 80%;
+      }
+      
+      /* Table does not overflow */
+      .table {
+        max-width: 100%;
+        overflow-x: auto;
+      }
+      
+      /* Gallery does not overflow */
+    .gallery-container {
+        max-width: 100%;
+        overflow-x: auto;
+      }
+      
+      /* Flip cards do not overflow */
+      .flip-cards-container {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      
+      /* Text does not overflow */
+      p, h1, h2, h3, h4, h5, h6 {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      
+      /* Button mobile optimization */
+      .button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+      }
+      
+      /* Table mobile optimization */
+      .table {
+        font-size: 0.7rem;
+      }
+      
+      .table th,
+      .table td {
+        padding: 0.4rem 0.2rem;
+      }
+    }
+    
+    /* iPhone specific optimization */
+    @media (max-width: 414px) {
+      /* iPhone font scaling to 0.5x - excluding formula-related elements */
+      *:not(.reward-formula):not(.reward-formula *):not(.MathJax):not(.MathJax *):not(.MathJax_Display):not(.MathJax_Display *):not(.MathJax_Display > *):not(.MathJax_Display > * *):not(.button):not(.button *):not(.gallery-container):not(.gallery-item):not(.gallery-item *):not(.tab-content):not(.tab-content *) {
+        font-size: 0.5em !important;
+      }
+      
+      /* iPhone force fix formula display - container larger, formula smaller */
+      .reward-formula {
+        font-size: 1.2em !important;
+        line-height: 1.8 !important;
+        margin: 1.5rem 0 !important;
+        padding: 1rem !important;
+        display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+        min-height: 3rem !important;
+      }
+      
+      .reward-formula * {
+        font-size: 0.8em !important;
+        line-height: inherit !important;
+        display: inherit !important;
+      }
+      
+      /* MathJax force fix - container larger, formula smaller */
+      .MathJax {
+        font-size: 1.2em !important;
+        line-height: 1.8 !important;
+        display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+      }
+      
+      .MathJax_Display {
+        font-size: 1.2em !important;
+        line-height: 1.8 !important;
+        display: block !important;
+        width: 100% !important;
+        overflow: visible !important;
+        margin: 1.5rem 0 !important;
+        padding: 1rem !important;
+        min-height: 3rem !important;
+      }
+      
+      .MathJax_Display * {
+        font-size: 0.8em !important;
+        line-height: inherit !important;
+        display: inherit !important;
+      }
+      
+      .floating-nav {
+        right: 8px;
+      }
+      
+      .floating-nav-trigger {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .floating-nav-trigger i {
+        font-size: 0.8rem;
+      }
+      
+      .floating-nav:hover .floating-nav-content {
+        width: 160px;
+        min-height: 180px;
+      }
+      
+      .container {
+        padding: 0 8px;
+      }
+      
+      .section {
+        padding: 1.2rem 0;
+      }
+      
+      .flip-card {
+        max-width: 200px;
+      }
+      
+      /* iPhone author info optimization - further increase font size */
+      .authors {
+        font-size: 1.0em !important;
+        line-height: 1.3;
+      }
+      
+      .author-item {
+        font-size: 1.0em !important;
+        margin: 0.35rem 0;
+      }
+      
+      .author-name {
+        font-size: 1.0em !important;
+      }
+      
+      .author-affiliation {
+        font-size: 0.9em !important;
+      }
+      
+      /* iPhone Header area optimization - reduce header size */
+      .hero.is-fullheight {
+        height: 20vh !important;
+        min-height: 20vh !important;
+      }
+      
+      .hero-video {
+        height: 20vh !important;
+        min-height: 20vh !important;
+      }
+      
+      /* iPhone Gallery frames further reduced - fix white borders */
+      .gallery-item {
+        margin: 0 0.5px;
+        padding: 0.5px;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      .gallery-item video {
+        width: 100%;
+        max-width: 80px;
+        height: auto;
+        border-radius: 2px;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      .gallery-container {
+        padding: 0 2px;
+        gap: 2px;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      /* Remove all gallery-related borders and backgrounds */
+      .gallery-item * {
+        border: none !important;
+        background: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      .gallery-item h4 {
+        margin: 0.2rem 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      .gallery-item p {
+        margin: 0.1rem 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+      }
+      
+      /* iPhone ensure formulas display normally */
+      .reward-formula {
+        font-size: 1em !important;
+      }
+      
+      .reward-formula * {
+        font-size: inherit !important;
+      }
+      
+      /* MathJax formula container */
+      .MathJax {
+        font-size: 1em !important;
+      }
+      
+      .MathJax_Display {
+        font-size: 1em !important;
+      }
+      
+      /* iPhone fix button icon overlap issue */
+      .button {
+        font-size: 1em !important;
+        padding: 0.5rem 1rem !important;
+        min-height: 2.5rem !important;
+        min-width: 4rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+      }
+      
+      .button span {
+        font-size: 0.8em !important;
+        line-height: 1.2 !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .button .icon {
+        font-size: 0.8em !important;
+        width: 0.8em !important;
+        height: 0.8em !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .button i {
+        font-size: 0.8em !important;
+      }
+      
+      /* PDF button specific styles - fix icon overlap */
+      .external-link.button {
+        font-size: 1em !important;
+        padding: 0.5rem 1rem !important;
+        min-height: 2.5rem !important;
+        min-width: 4rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+      }
+      
+      .external-link.button span {
+        font-size: 0.8em !important;
+        line-height: 1.2 !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .external-link.button .icon {
+        font-size: 0.8em !important;
+        width: 0.8em !important;
+        height: 0.8em !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .external-link.button i {
+        font-size: 0.8em !important;
+      }
+      
+      /* iPhone ensure Gallery displays normally */
+      .gallery-container {
+        font-size: 1em !important;
+      }
+      
+      .gallery-item {
+        font-size: 1em !important;
+      }
+      
+      .gallery-item video {
+        font-size: inherit !important;
+      }
+      
+      .gallery-item h4 {
+        font-size: 1em !important;
+      }
+      
+      .gallery-item p {
+        font-size: 1em !important;
+      }
+      
+      /* iPhone ensure tab content displays normally */
+      .tab-content {
+        font-size: 1em !important;
+      }
+      
+      .tab-content * {
+        font-size: inherit !important;
+      }
+      
+      .sub-tab-content {
+        font-size: 1em !important;
+      }
+      
+      .sub-tab-content * {
+        font-size: inherit !important;
+      }
+      
+      /* iPhone Logo maintains original size */
+      .floating-nav-trigger {
+        background-size: 80%;
+      }
+      
+      .floating-nav-trigger:hover {
+        background-size: 80%;
+      }
+      
+      .floating-nav-link {
+        padding: 6px 10px;
+        font-size: 0.7rem;
+      }
+      
+      .floating-nav-sublink {
+        padding: 4px 10px 4px 18px;
+        font-size: 0.65rem;
+      }
+    }
+    
+    /* Mobile touch optimization */
+    @media (max-width: 768px) {
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      a, button, .floating-nav-trigger {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      
+      /* Prevent iOS Safari zoom */
+      input, textarea, select {
+        font-size: 16px;
+      }
+      
+      /* Optimize scroll performance */
+      body {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden;
+      }
+      
+      /* Video playback optimization */
+      video {
+        -webkit-playsinline: true;
+      }
+    }
+  </style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="./static/js/bulma-carousel.min.js"></script>
   <script src="./static/js/bulma-slider.min.js"></script>
@@ -32,11 +865,16 @@
     console.log("Current cookies:", cookies); // Debug log
     console.log("Auth cookie value:", cookies.auth); // Debug log
 
-    if(cookies.auth !== "1") {
+    // Check if running locally (localhost or file://)
+    const isLocal = window.location.hostname === 'localhost' || 
+                    window.location.hostname === '127.0.0.1' || 
+                    window.location.protocol === 'file:';
+
+    if (!isLocal && cookies.auth !== "1") {
       console.log("Not authenticated, redirecting to login"); // Debug log
       window.location.href = "/login.html"; // Redirect to login page if not authenticated
     } else {
-      console.log("Authenticated successfully"); // Debug log
+      console.log("Authenticated successfully or running locally"); // Debug log
     }
 
     window.MathJax = {
@@ -46,7 +884,7 @@
       }
     };
     
-    // 全局变量和函数
+    // Global variables and functions
     let currentVideoIndex = 0;
     let isAutoPlaying = false;
     const videoOrder = [
@@ -59,21 +897,21 @@
       'video-turn-clockwise'
     ];
     
-    // 全局函数
+    // Global functions
     function handleSubTabClick(subTabId, event) {
-      // 如果正在自动播放，显示提示
+      // If auto-playing, show notification
       if (isAutoPlaying) {
         showStopPlayFirstTip();
         return;
       }
       
-      // 正常切换选项卡（不重置视频）
+      // Normal tab switching (no video reset)
       showSubTab(subTabId, event ? event.target : null);
     }
     
-    // 显示停止播放提示
+    // Show stop playback notification
     function showStopPlayFirstTip() {
-      // 创建提示元素
+      // Create notification element
       const tip = document.createElement('div');
       tip.textContent = 'Stop play first';
       tip.style.cssText = `
@@ -93,7 +931,7 @@
       
       document.body.appendChild(tip);
       
-      // 2秒后移除提示
+      // Remove notification after 2 seconds
       setTimeout(() => {
         if (tip.parentNode) {
           tip.parentNode.removeChild(tip);
@@ -101,7 +939,7 @@
       }, 2000);
     }
     
-    // 页面加载后立即设置timeline颜色
+    // Set timeline color immediately after page load
     window.addEventListener('load', function() {
       const timelineSlider = document.getElementById('timelineSlider');
       if (timelineSlider) {
@@ -109,7 +947,7 @@
         timelineSlider.style.backgroundColor = '#5a8a2a';
         timelineSlider.style.background = '#5a8a2a';
         
-        // 添加动态样式
+        // Add dynamic styles
         const dynamicStyle = document.createElement('style');
         dynamicStyle.id = 'timeline-green-style';
         dynamicStyle.textContent = `
@@ -128,7 +966,78 @@
       }
     });
     
-    // 动态调整翻转框高度以匹配图片
+    // Navigation bar functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const floatingNavLinks = document.querySelectorAll('.floating-nav-link');
+      const floatingNavSublinks = document.querySelectorAll('.floating-nav-sublink');
+      
+      // Smooth scroll to target section
+      function smoothScrollTo(targetId) {
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+      
+      // Smooth scroll when clicking floating nav links
+      floatingNavLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href').substring(1);
+          smoothScrollTo(targetId);
+        });
+      });
+      
+      // Smooth scroll when clicking floating subsection links
+      floatingNavSublinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href').substring(1);
+          smoothScrollTo(targetId);
+        });
+      });
+      
+      // Highlight current section on scroll
+      function highlightCurrentSection() {
+        const sections = document.querySelectorAll('section[id]');
+        const scrollPos = window.scrollY + 100;
+        
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.offsetHeight;
+          const sectionId = section.getAttribute('id');
+          
+          if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+            // Update right floating navigation bar
+            floatingNavLinks.forEach(link => {
+              link.classList.remove('active');
+              if (link.getAttribute('href') === '#' + sectionId) {
+                link.classList.add('active');
+              }
+            });
+            
+            // Update right floating subsection navigation bar
+            floatingNavSublinks.forEach(link => {
+              link.classList.remove('active');
+              if (link.getAttribute('href') === '#' + sectionId) {
+                link.classList.add('active');
+              }
+            });
+          }
+        });
+      }
+      
+      // Listen to scroll events
+      window.addEventListener('scroll', highlightCurrentSection);
+      
+      // Initialize highlighting
+      highlightCurrentSection();
+    });
+    
+    // Dynamically adjust flip box height to match image
     document.addEventListener('DOMContentLoaded', function() {
       const flipCards = document.querySelectorAll('.flip-card');
       flipCards.forEach(card => {
@@ -145,20 +1054,20 @@
             card.querySelector('.flip-card-inner').style.height = calculatedHeight + 'px';
           };
           
-          // 如果图片已经加载完成
+          // If image is already loaded
           if (img.complete) {
             img.onload();
           }
         }
       });
       
-      // 视频时间轴控制功能
+      // Video timeline control functionality
       const timelineSlider = document.getElementById('timelineSlider');
       const frameVideo = document.getElementById('frameVideo');
       const currentTimeDisplay = document.getElementById('currentTime');
       
       if (timelineSlider && frameVideo) {
-        // 关键时间点（秒）
+        // Key time points (seconds)
         const keyPoints = [0, 5, 9, 11.5, 16.5, 18.2, 19.5, 22, 25.1, 28.8];
         const keyImages = [
           './resources/goal_reaching/rendered/goal1.png',
@@ -173,46 +1082,46 @@
           './resources/goal_reaching/rendered/goal1.png'
         ];
         
-        // 创建关键点标记
+        // Create key point markers
         const timelineMarks = document.getElementById('timelineMarks');
         const timelineContainer = document.querySelector('.video-timeline-container');
         
-        // 创建播放按钮
+        // Create play buttons
         const playButton = document.createElement('button');
         playButton.className = 'play-button paused';
-        playButton.title = '播放/暂停';
+        playButton.title = 'Play/Pause';
         timelineContainer.appendChild(playButton);
         
-        // 播放按钮点击事件
+        // Play button click events
         playButton.addEventListener('click', function() {
           if (frameVideo.paused) {
             frameVideo.play();
             this.className = 'play-button playing';
-            this.title = '暂停';
+            this.title = 'Pause';
           } else {
             frameVideo.pause();
             this.className = 'play-button paused';
-            this.title = '播放';
+            this.title = 'Play';
           }
         });
         
-        // 视频播放状态监听
+        // Video playback status monitoring
         frameVideo.addEventListener('play', function() {
           playButton.className = 'play-button playing';
-          playButton.title = '暂停';
+          playButton.title = 'Pause';
         });
         
         frameVideo.addEventListener('pause', function() {
           playButton.className = 'play-button paused';
-          playButton.title = '播放';
+          playButton.title = 'Play';
         });
         
         keyPoints.forEach((point, index) => {
-          // 创建进度条上的关键点
+          // Create key points on progress bar
           const keyPoint = document.createElement('div');
           keyPoint.style.position = 'absolute';
           keyPoint.style.left = (point / 30 * 100) + '%';
-          keyPoint.style.top = '70px'; // 与进度条对齐
+          keyPoint.style.top = '70px'; // Align with progress bar
           keyPoint.style.width = '8px';
           keyPoint.style.height = '8px';
           keyPoint.style.backgroundColor = '#3a6902';
@@ -222,12 +1131,12 @@
           keyPoint.style.border = '2px solid #fff';
           keyPoint.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
           
-          // 创建图片元素
+          // Create image element
           const img = document.createElement('img');
           img.src = keyImages[index];
           img.style.width = '60px';
-          img.style.height = 'auto'; // 让高度自适应
-          img.style.objectFit = 'contain'; // 保持原始比例，不被裁剪
+          img.style.height = 'auto'; // Let height adapt automatically
+          img.style.objectFit = 'contain'; // Maintain original ratio, no cropping
           img.style.borderRadius = '8px';
           img.style.position = 'absolute';
           img.style.left = (point / 30 * 100) + '%';
@@ -241,7 +1150,7 @@
           img.style.transition = 'all 0.3s ease';
           img.alt = `Keyframe ${index + 1}`;
           
-          // 创建连接线
+          // Create connecting lines
           const line = document.createElement('div');
           line.style.position = 'absolute';
           line.style.left = (point / 30 * 100) + '%';
@@ -250,20 +1159,20 @@
           line.style.backgroundColor = '#3a6902';
           line.style.zIndex = '5';
           
-          // 根据索引决定图片和线的位置
+          // Determine image and line position based on index
           if (index % 2 === 0) {
-            // 偶数索引：图片在上方
+            // Even index: image above
             img.style.top = '0px';
             line.style.top = '40px';
             line.style.height = '36px';
           } else {
-            // 奇数索引：图片在下方
+            // Odd index: image below
             img.style.top = '90px';
             line.style.top = '70px';
             line.style.height = '20px';
           }
           
-          // 悬停效果
+          // Hover effects
           img.addEventListener('mouseenter', function() {
             this.style.transform = 'translateX(-50%) scale(1.3)';
             this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
@@ -280,10 +1189,10 @@
             line.style.backgroundColor = '#3a6902';
           });
           
-          // 图片加载错误处理
+          // Image loading error handling
           img.onerror = function() {
-            console.log('图片加载失败:', keyImages[index]);
-            console.log('图片路径:', this.src);
+            console.log('Image loading failed:', keyImages[index]);
+            console.log('Image path:', this.src);
             this.style.backgroundColor = '#ff6b6b';
             this.style.color = 'white';
             this.style.display = 'flex';
@@ -294,43 +1203,43 @@
           };
           
           img.onload = function() {
-            console.log('图片加载成功:', keyImages[index]);
+            console.log('Image loaded successfully:', keyImages[index]);
           };
           
-          // 点击图片跳转到对应时间
+          // Click image to jump to corresponding time
           img.addEventListener('click', function() {
             timelineSlider.value = point;
             frameVideo.currentTime = point;
             updateTimeDisplay(point);
           });
           
-          // 点击关键点也跳转
+          // Click key point to also jump
           keyPoint.addEventListener('click', function() {
             timelineSlider.value = point;
             frameVideo.currentTime = point;
             updateTimeDisplay(point);
           });
           
-          // 添加到timelineMarks容器
+          // Add to timelineMarks container
           timelineMarks.appendChild(keyPoint);
           timelineMarks.appendChild(line);
           timelineMarks.appendChild(img);
         });
         
-        // 滑块变化事件
+        // Slider change events
         timelineSlider.addEventListener('input', function() {
           const time = parseFloat(this.value);
           frameVideo.currentTime = time;
           updateTimeDisplay(time);
         });
         
-        // 视频时间更新事件
+        // Video time update events
         frameVideo.addEventListener('timeupdate', function() {
           timelineSlider.value = this.currentTime;
           updateTimeDisplay(this.currentTime);
         });
         
-        // 更新时间显示
+        // Update time display
         function updateTimeDisplay(time) {
           const minutes = Math.floor(time / 60);
           const seconds = Math.floor(time % 60);
@@ -339,12 +1248,12 @@
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
         }
         
-        // 强制设置timeline颜色 - 多重保障
+        // Force set timeline color - multiple safeguards
         timelineSlider.style.setProperty('background', '#5a8a2a', 'important');
         timelineSlider.style.backgroundColor = '#5a8a2a';
         timelineSlider.style.background = '#5a8a2a';
         
-        // 设置滑块thumb颜色
+        // Set slider thumb color
         const style = document.createElement('style');
         style.textContent = `
           #timelineSlider::-webkit-slider-thumb {
@@ -359,17 +1268,17 @@
         `;
         document.head.appendChild(style);
         
-        // 初始化
+        // Initialize
         timelineSlider.max = frameVideo.duration || 30;
         updateTimeDisplay(0);
         
-        // 确保视频加载完成后初始化
+        // Ensure initialization after video loads
         frameVideo.addEventListener('loadedmetadata', function() {
           timelineSlider.max = this.duration;
           updateTimeDisplay(0);
         });
         
-        // 如果视频已经加载完成，立即初始化
+        // If video is already loaded, initialize immediately
         if (frameVideo.readyState >= 1) {
           timelineSlider.max = frameVideo.duration;
           updateTimeDisplay(0);
@@ -377,23 +1286,23 @@
       }
     });
     
-    // 选项卡切换功能
+    // Tab switching functionality
     function showTab(tabId) {
-      // 隐藏所有选项卡内容
+      // Hide all tab content
       const allTabs = document.querySelectorAll('.tab-content');
       allTabs.forEach(tab => tab.classList.remove('active'));
       
-      // 移除所有按钮的active类
+      // Remove active class from all buttons
       const allButtons = document.querySelectorAll('.tab-button');
       allButtons.forEach(button => button.classList.remove('active'));
       
-      // 显示选中的选项卡内容
+      // Show selected tab content
       document.getElementById(tabId).classList.add('active');
       
-      // 激活对应的按钮
+      // Activate corresponding button
       event.target.classList.add('active');
       
-      // 如果是Base Height Control tab，重新初始化视频背景
+      // If Base Height Control tab, reinitialize video background
       if (tabId === 'base-height') {
         setTimeout(() => {
           initializeVideoCovers();
@@ -401,26 +1310,26 @@
       }
     }
     
-    // 子选项卡切换功能
+    // Sub-tab switching functionality
     function showSubTab(subTabId, buttonElement = null) {
-      // 隐藏所有子选项卡内容
+      // Hide all sub-tab content
       const allSubTabs = document.querySelectorAll('.sub-tab-content');
       allSubTabs.forEach(tab => tab.classList.remove('active'));
       
-      // 移除所有子按钮的active类
+      // Remove active class from all sub-buttons
       const allSubButtons = document.querySelectorAll('.sub-tab-button');
       allSubButtons.forEach(button => button.classList.remove('active'));
       
-      // 显示选中的子选项卡内容
+      // Show selected sub-tab content
       document.getElementById(subTabId).classList.add('active');
       
-      // 激活对应的子按钮
+      // Activate corresponding sub-button
       if (buttonElement) {
         buttonElement.classList.add('active');
       } else if (event && event.target) {
         event.target.classList.add('active');
       } else {
-        // 自动播放时，通过按钮文本找到对应的按钮
+        // When auto-playing, find corresponding button through button text
         const targetButton = Array.from(allSubButtons).find(button => {
           const buttonText = button.textContent.trim();
           const tabTexts = {
@@ -440,32 +1349,32 @@
       }
     }
     
-    // Motion Tracking 视频画廊控制
+    // Motion Tracking video gallery control
     let currentSlide = 0;
-    const totalSlides = 7; // 更新为7个视频
-    const itemWidth = 320; // 每个视频的宽度（300px + 20px gap）
+    const totalSlides = 7; // Updated to 7 videos
+    const itemWidth = 320; // Width of each video (300px + 20px gap)
     
     function moveGallery(direction) {
       const container = document.getElementById('galleryContainer');
       
       currentSlide += direction;
       
-      // 循环往复逻辑
+      // Loop logic
       if (currentSlide < 0) {
-        currentSlide = totalSlides - 1; // 从最后一个开始
+        currentSlide = totalSlides - 1; // Start from last one
       } else if (currentSlide >= totalSlides) {
-        currentSlide = 0; // 回到第一个
+        currentSlide = 0; // Back to first one
       }
       
-      // 计算移动距离 - 每次移动一个视频的距离
+      // Calculate movement distance - move one video distance each time
       const translateX = -currentSlide * itemWidth;
       container.style.transform = `translateX(${translateX}px)`;
       
-      // 更新圆点状态
+      // Update dot status
       updateDots();
     }
     
-      // Goal Reaching 视频画廊控制
+      // Goal Reaching video gallery control
       let currentGoalSlide = 0;
       const totalGoalSlides = 10;
     
@@ -474,18 +1383,18 @@
       
       currentGoalSlide += direction;
       
-      // 循环往复逻辑
+      // Loop logic
       if (currentGoalSlide < 0) {
-        currentGoalSlide = totalGoalSlides - 1; // 从最后一个开始
+        currentGoalSlide = totalGoalSlides - 1; // Start from last one
       } else if (currentGoalSlide >= totalGoalSlides) {
-        currentGoalSlide = 0; // 回到第一个
+        currentGoalSlide = 0; // Back to first one
       }
       
-      // 计算移动距离 - 每次移动一个视频的距离
+      // Calculate movement distance - move one video distance each time
       const translateX = -currentGoalSlide * itemWidth;
       container.style.transform = `translateX(${translateX}px)`;
       
-      // 更新圆点状态
+      // Update dot status
       updateGoalDots();
     }
     
@@ -513,9 +1422,9 @@
       });
     }
     
-    // Full Video 弹窗功能
+    // Full Video modal functionality
     function showFullVideo() {
-      // 创建模态框
+      // Create modal
       const modal = document.createElement('div');
       modal.style.cssText = `
         position: fixed;
@@ -531,7 +1440,7 @@
         cursor: pointer;
       `;
       
-      // 创建视频容器
+      // Create video container
       const videoContainer = document.createElement('div');
       videoContainer.style.cssText = `
         position: relative;
@@ -543,7 +1452,7 @@
         cursor: default;
       `;
       
-      // 创建关闭按钮
+      // Create close button
       const closeBtn = document.createElement('button');
       closeBtn.innerHTML = '×';
       closeBtn.style.cssText = `
@@ -564,7 +1473,7 @@
         justify-content: center;
       `;
       
-      // 创建视频元素
+      // Create video element
       const video = document.createElement('video');
       video.src = './resources/tracking/full/full-1.mp4';
       video.controls = true;
@@ -575,13 +1484,13 @@
         display: block;
       `;
       
-      // 组装元素
+      // Assemble elements
       videoContainer.appendChild(closeBtn);
       videoContainer.appendChild(video);
       modal.appendChild(videoContainer);
       document.body.appendChild(modal);
       
-      // 关闭功能
+      // Close functionality
       function closeModal() {
         video.pause();
         document.body.removeChild(modal);
@@ -594,7 +1503,7 @@
         }
       };
       
-      // ESC键关闭
+      // ESC key close
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
           closeModal();
@@ -602,12 +1511,12 @@
       });
     }
     
-    // 初始化画廊
+    // Initialize gallery
     document.addEventListener('DOMContentLoaded', function() {
       updateDots();
       updateGoalDots();
       
-      // 添加视频悬停播放功能 - Motion Tracking only
+      // Add video hover play functionality - Motion Tracking only
       const motionVideos = document.querySelectorAll('#motionGalleryContainer .gallery-item video');
       motionVideos.forEach(video => {
         video.addEventListener('mouseenter', function() {
@@ -622,47 +1531,47 @@
       
       // Goal Reaching videos now autoplay continuously without hover interaction
 
-      // Basic Locomotion 子选项卡自动播放功能
+      // Basic Locomotion sub-tab auto-play functionality
       let autoPlayInterval;
       
       function startAutoPlay() {
-        // 停止之前的自动播放
+        // Stop previous auto-play
         if (autoPlayInterval) {
           clearInterval(autoPlayInterval);
         }
         
-        isAutoPlaying = true; // 设置自动播放状态
+        isAutoPlaying = true; // Set auto-play status
         
-        // 预加载所有视频并隐藏进度条
+        // Preload all videos and hide progress bars
         videoOrder.forEach(videoId => {
           const video = document.getElementById(videoId);
           if (video) {
             video.pause();
             video.currentTime = 0;
             video.preload = 'auto';
-            video.loop = false; // 禁用循环播放
-            // 隐藏进度条
+            video.loop = false; // Disable loop playback
+            // Hide progress bar
             video.style.outline = 'none';
-            video.controls = false; // 暂时隐藏控制条
+            video.controls = false; // Temporarily hide controls
           }
         });
         
-        // 开始自动播放
+        // Start auto-play
         autoPlayInterval = setInterval(() => {
-          // 暂停当前视频（不重置到第一帧）
+          // Pause current video (do not reset to first frame)
           const currentVideo = document.getElementById(videoOrder[currentVideoIndex]);
           if (currentVideo) {
             currentVideo.pause();
-            // 不重置 currentTime，保持当前帧
+            // Do not reset currentTime, maintain current frame
           }
           
-          // 切换到下一个视频
+          // Switch to next video
           const previousIndex = currentVideoIndex;
           currentVideoIndex = (currentVideoIndex + 1) % videoOrder.length;
           
-          // 检查是否完成了一轮播放（从最后一个回到第一个）
+          // Check if completed one round of playback (from last back to first)
           if (currentVideoIndex === 0 && previousIndex === videoOrder.length - 1) {
-            // 完成一轮播放，重置所有视频到开头
+            // Completed one round, reset all videos to beginning
             videoOrder.forEach(videoId => {
               const video = document.getElementById(videoId);
               if (video) {
@@ -671,22 +1580,22 @@
             });
           }
           
-          // 播放新视频
+          // Play new video
           const nextVideo = document.getElementById(videoOrder[currentVideoIndex]);
           if (nextVideo) {
-            // 确保视频已加载，不重置进度
+            // Ensure video is loaded, do not reset progress
             if (nextVideo.readyState >= 3) { // HAVE_FUTURE_DATA
-              // 直接播放，不重置currentTime
+              // Play directly, do not reset currentTime
               nextVideo.play().catch(e => {
                 console.log('Video play failed:', e);
-                // 如果播放失败，尝试重新加载
+                // If playback fails, try reloading
                 nextVideo.load();
                 nextVideo.play();
               });
             } else {
-              // 等待视频加载完成
+              // Wait for video to load
               nextVideo.addEventListener('canplay', function() {
-                // 不重置currentTime，保持当前位置
+                // Do not reset currentTime, maintain current position
                 this.play().catch(e => {
                   console.log('Video play failed:', e);
                   this.load();
@@ -695,7 +1604,7 @@
               }, { once: true });
             }
             
-            // 切换到对应的子选项卡
+            // Switch to corresponding sub-tab
             const tabIds = [
               'stand-still',
               'go-forward',
@@ -709,7 +1618,7 @@
             const targetTabId = tabIds[currentVideoIndex];
             showSubTab(targetTabId);
           }
-        }, 3000); // 每3秒切换一次
+        }, 3000); // Switch every 3 seconds
       }
       
       function stopAutoPlay() {
@@ -718,22 +1627,22 @@
           autoPlayInterval = null;
         }
         
-        isAutoPlaying = false; // 清除自动播放状态
+        isAutoPlaying = false; // Clear auto-play status
         
-        // 暂停所有视频，重置到第一帧并恢复控制条
+        // Pause all videos, reset to first frame and restore controls
         videoOrder.forEach(videoId => {
           const video = document.getElementById(videoId);
           if (video) {
             video.pause();
             video.currentTime = 0;
-            video.loop = true; // 恢复循环播放
-            video.controls = true; // 恢复控制条
+            video.loop = true; // Restore loop playback
+            video.controls = true; // Restore controls
           }
         });
       }
       
       
-      // 添加自动播放控制按钮
+      // Add auto-play control button
       const basicLocomotionTab = document.getElementById('basic-locomotion');
       if (basicLocomotionTab) {
         const autoPlayButton = document.createElement('button');
@@ -774,36 +1683,36 @@
 
     function playVideo(coverElement) {
       const videoContainer = coverElement.parentElement;
-      const video = videoContainer.querySelector('video[style*="display: none"]'); // 选择隐藏的播放视频
+      const video = videoContainer.querySelector('video[style*="display: none"]'); // Select hidden playback video
       const cover = videoContainer.querySelector('.video-cover');
       
-      // 隐藏封面，显示视频
+      // Hide cover, show video
       cover.style.display = 'none';
       video.style.display = 'block';
       
-      // 播放视频
+      // Play video
       video.currentTime = 0;
       video.play();
       
-      // 监听视频结束事件
+      // Listen to video end event
       video.addEventListener('ended', function() {
-        // 视频结束后回到封面
+        // After video ends, return to cover
         video.style.display = 'none';
         cover.style.display = 'block';
       });
     }
 
-    // 页面加载完成后初始化视频封面
+    // Initialize video covers after page load
     document.addEventListener('DOMContentLoaded', function() {
-      // 不再需要复杂的背景生成，直接使用视频作为背景
+      // No longer need complex background generation, use video directly as background
     });
 
-    // 初始化视频封面函数（简化版）
+    // Initialize video cover function (simplified)
     function initializeVideoCovers() {
-      // 不再需要生成背景图片
+      // No longer need to generate background images
     }
 
-    // Arm Control 交互功能
+    // Arm Control interaction functionality
     let rightWristValue = null;
     let leftWristValue = null;
     
@@ -885,16 +1794,40 @@
 
 
 <body>
-  <section class="hero is-link is-fullheight video" style="overflow: hidden; position:relative;">
+  <!-- Right floating navigation -->
+  <nav class="floating-nav" id="floatingNav">
+    <div class="floating-nav-trigger">
+      <i class="fas fa-list"></i>
+    </div>
+    <div class="floating-nav-content">
+      <ul class="floating-nav-menu">
+        <li><a href="#video" class="floating-nav-link">Video</a></li>
+        <li><a href="#abstract" class="floating-nav-link">Abstract</a></li>
+        <li><a href="#approach" class="floating-nav-link">Approach</a></li>
+        <li class="floating-nav-item-with-sub">
+          <a href="#zero-shot" class="floating-nav-link">Zero-shot Inference</a>
+          <ul class="floating-nav-submenu">
+            <li><a href="#goal-reaching" class="floating-nav-sublink">Goal Reaching</a></li>
+            <li><a href="#motion-tracking" class="floating-nav-sublink">Motion Tracking</a></li>
+            <li><a href="#reward-optimization" class="floating-nav-sublink">Reward Optimization</a></li>
+          </ul>
+        </li>
+        <li><a href="#disturbance-rejection" class="floating-nav-link">Disturbance Rejection</a></li>
+        <li><a href="#few-shot-adaptation" class="floating-nav-link">Few-shot Adaptation</a></li>
+        <li><a href="#space-interpolation" class="floating-nav-link">Space Interpolation</a></li>
+      </ul>
+    </div>
+  </nav>
+  <section class="hero is-link is-fullheight video" style="overflow: hidden; position:relative;" id="video">
     <div class="hero-video" style="height: 100%; width: 177.77777778vh; min-width: 100%;min-height: 56.25vw;">
       <video playsinline autoplay muted loop>
-        <source src="./resources/hold-my-beer-header-dark.mp4" type="video/mp4">
+        <source src="./resources/head/head-1.mp4" type="video/mp4">
       </video>
     </div>
     <div class="hero-video is-hidden-tablet is-inline-block-mobile"
       style="height: 154.28571428vw; width: 100%; min-width:64.81481481vh;min-height:100%;">
       <video playsinline autoplay muted loop>
-        <source src="./resources/hold-my-beer-header-dark.mp4" type="video/mp4">
+        <source src="./resources/head/head-1.mp4" type="video/mp4">
       </video>
     </div>
     <div class="overlay"></div>
@@ -959,7 +1892,7 @@
                 <!-- PDF Link. -->
                 <span class="link-block">
                   <!-- TODO:update -->
-                  <a href="./resources/Main-Paper.pdf"
+                  <a href="./static/images/meta.png"
                      class="external-link button is-normal is-rounded is-dark" target="_blank">
                     <span class="icon">
                         <i class="fas fa-file-pdf"></i>
@@ -970,7 +1903,7 @@
                 <!-- arXiv Link. -->
                 <span class="link-block">
                   <!-- TODO:update -->
-                  <a href="https://lecar-lab.github.io/SoFTA/"
+                  <a href="./static/images/meta.png"
                      class="external-link button is-normal is-rounded is-dark" target="_blank">
                     <span class="icon">
                         <i class="ai ai-arxiv"></i>
@@ -999,7 +1932,7 @@
                 <!-- twitter Link. -->
                 <span class="link-block">
                   <!-- TODO:update -->
-                  <a href="https://lecar-lab.github.io/SoFTA/"
+                  <a href="./static/images/meta.png"
                      class="external-link button is-normal is-rounded is-dark" target="_blank">
                     <span class="icon">
                         <i class="fab fa-twitter"></i>
@@ -1010,7 +1943,7 @@
                 <!-- Code Link. -->
                 <span class="link-block">
                   <!-- TODO:update -->
-                  <a href="https://github.com/LeCAR-Lab/SoFTA" class="external-link button is-normal is-rounded is-dark" target="_blank">
+                  <a href="./static/images/meta.png" class="external-link button is-normal is-rounded is-dark" target="_blank">
                     <span class="icon">
                       <i class="fab fa-github"></i>
                     </span>
@@ -1026,7 +1959,7 @@
   </section>
 <section class="section"></section>
 
-<section class="section">
+<!-- <section class="section">
   <div class="container">
     <div class="columns is-centered has-text-centered">
       <div class="column is-two-thirds">
@@ -1043,11 +1976,11 @@
       </div>
     </div>
   </div>
-</section>
+</section> -->
 
 
 <!-- <h2 class="title is-2" style="text-align: center;">Abstract</h2> -->
-<section class="section">
+<section class="section" id="abstract">
   <h2 class="title is-2" style="text-align: center;">Abstract</h2>
   <div class="container" style="width:65%;">
     <!-- <div class="columns is-centered">
@@ -1061,11 +1994,20 @@
 
 
 
-<section class="section">
+<section class="section" id="approach">
   <h2 class="title is-2" style="text-align: center;">Approach</h2>
-  <div class="container" style="max-width: 100%; display: flex; justify-content: flex-start; padding-left: 20%;">
-    <div class="flip-cards-container">
-      <!-- 左侧：第一个翻转卡片 -->
+  <div class="container" style="width:75%; margin: 0 auto;">
+    <!-- <div class="columns is-centered">
+      <img src="./resources/approach.png" ></img>
+    </div> -->
+    <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; text-align: center;">
+     <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span> consists of three main components: pre-training, inference, and adaptation.
+    </p>
+  </div>
+  <div class="container" style="display: flex; justify-content: center;">
+    
+    <div class="flip-cards-container" style="margin-left: 10%;">
+      <!-- Left: First flip card -->
       <div class="flip-card-left">
         <div class="flip-card">
           <div class="flip-card-inner">
@@ -1079,9 +2021,9 @@
     </div>
   </div>
       
-      <!-- 右侧：上下排列的两个翻转卡片 -->
+      <!-- Right: Two flip cards arranged vertically -->
       <div class="flip-cards-right">
-        <!-- 第二个翻转卡片 -->
+        <!-- Second flip card -->
         <div class="flip-card-item">
           <div class="flip-card">
             <div class="flip-card-inner">
@@ -1095,7 +2037,7 @@
       </div>
     </div>
 
-        <!-- 第三个翻转卡片 -->
+        <!-- Third flip card -->
         <div class="flip-card-item">
           <div class="flip-card">
             <div class="flip-card-inner">
@@ -1114,12 +2056,19 @@
 </section>
 
 
-<section class="section">
+<section class="section" id="zero-shot">
   <h2 class="title is-2" style="text-align: center;">Zero-shot Inference</h2>
-  
+  <div class="container" style="width:75%; margin: 0 auto;">
+    <!-- <div class="columns is-centered">
+      <img src="./resources/approach.png" ></img>
+    </div> -->
+    <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; text-align: center;">
+     At test time, BFM-Zero can be used to solve different tasks including <span style="color:#b00202; font-weight:bold;">motion tracking</span>, <span style="color:#b00202; font-weight:bold;">goal reaching</span>, and <span style="color:#b00202; font-weight:bold;">reward optimization</span> in <span style="color:#b00202; font-weight:bold;">zero-shot</span> fashion.
+    </p>
+  </div>
   <div class="container">
     <div class="inference-cards">
-      <!-- Goal Reaching 卡片 -->
+      <!-- Goal Reaching card -->
       <div class="inference-card">
         <div class="inference-card-title">
           <div>Goal Reaching</div>
@@ -1133,7 +2082,7 @@
           </div>
       </div>
       
-      <!-- Motion Tracking 卡片 -->
+      <!-- Motion Tracking card -->
       <div class="inference-card">
         <div class="inference-card-title">
           <div>Motion Tracking</div>
@@ -1147,7 +2096,7 @@
       </div>
     </div>
 
-      <!-- Reward Inference 卡片 -->
+      <!-- Reward Inference card -->
       <div class="inference-card">
         <div class="inference-card-title">
           <div>Reward Optimization</div>
@@ -1166,10 +2115,10 @@
 </section>
 
 
-<section class="section" style="background-color: #f0f8f0;">
+<section class="section" style="background-color: #f0f8f0;" id="goal-reaching">
   <h2 class="title is-3" style="text-align: center; color: #3a6902;">Goal Reaching</h2>
   <div class="container" style="max-width: 60%; margin: 0 auto;">
-    <!-- 视频时间轴控制 -->
+    <!-- Video timeline control -->
     <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">Click image for real-world goal pose, click ▶ for natural transition, and drag the progress bar to view frame by frame.</h4>
     <div class="video-timeline-container">
       <div class="timeline-marks" id="timelineMarks"></div>
@@ -1177,21 +2126,21 @@
       <div class="timeline-current-time" id="currentTime">00:00.00</div>
       </div>
 
-    <!-- 主视频（用于逐帧查看） -->
+    <!-- Main video (for frame-by-frame viewing) -->
       <div class="column has-text-centered">
         <video id="frameVideo" width="100%" height="auto" muted playsinline src="./resources/goal_reaching/full/full-2.mp4" poster="./resources/loading-icon.gif" style="border: 1px solid #bbb; border-radius: 10px; margin: 1.0%;"></video>
       </div>
       <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We also test diverse initial on the ground pose to a standing pose. BFM-Zero can achieve relative gentle and natural transitions to any goal pose.</h4>
-    <!-- Goal Reaching 视频画廊 -->
+    <!-- Goal Reaching video gallery -->
     <div class="video-gallery">
-      <!-- 左箭头按钮 -->
+      <!-- Left arrow button -->
       <button class="gallery-arrow gallery-arrow-left" onclick="moveGoalGallery(-1)"></button>
       
-      <!-- 右箭头按钮 -->
+      <!-- Right arrow button -->
       <button class="gallery-arrow gallery-arrow-right" onclick="moveGoalGallery(1)"></button>
       
       <div class="gallery-container" id="goalGalleryContainer">
-        <!-- 视频项目2 - Any-to-Target 2 -->
+        <!-- Video item 2 - Any-to-Target 2 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/ANY2T/any2T/any2T-2.mp4" type="video/mp4">
@@ -1203,7 +2152,7 @@
     </div>
         </div>
 
-        <!-- 视频项目1 - Any-to-Target 1 -->
+        <!-- Video item 1 - Any-to-Target 1 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/ANY2T/any2T/any2T-1.mp4" type="video/mp4">
@@ -1215,7 +2164,7 @@
       </div>
       </div>
 
-        <!-- 视频项目3 - Any-to-Pose 1 -->
+        <!-- Video item 3 - Any-to-Pose 1 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-4.mp4" type="video/mp4">
@@ -1227,7 +2176,7 @@
       </div>
     </div>
 
-        <!-- 视频项目4 - Any-to-Pose 2 -->
+        <!-- Video item 4 - Any-to-Pose 2 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-2.mp4" type="video/mp4">
@@ -1239,7 +2188,7 @@
       </div>
     </div>
         
-        <!-- 视频项目5 - Any-to-Pose 3 -->
+        <!-- Video item 5 - Any-to-Pose 3 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-7.mp4" type="video/mp4">
@@ -1251,7 +2200,7 @@
       </div>
     </div>
         
-        <!-- 视频项目6 - Any-to-Pose 4 -->
+        <!-- Video item 6 - Any-to-Pose 4 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-3.mp4" type="video/mp4">
@@ -1263,7 +2212,7 @@
     </div>
   </div>
         
-        <!-- 视频项目7 - Any-to-Pose 5 -->
+        <!-- Video item 7 - Any-to-Pose 5 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-5.mp4" type="video/mp4">
@@ -1275,7 +2224,7 @@
       </div>
       </div>
         
-        <!-- 视频项目8 - Any-to-Pose 6 -->
+        <!-- Video item 8 - Any-to-Pose 6 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-1.mp4" type="video/mp4">
@@ -1287,7 +2236,7 @@
       </div>
       </div>
         
-        <!-- 视频项目9 - Any-to-Pose 7 -->
+        <!-- Video item 9 - Any-to-Pose 7 -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/goal_reaching/any2pose/any2pose-6.mp4" type="video/mp4">
@@ -1311,7 +2260,7 @@
       </div>
     </div>
     
-      <!-- 指示点 -->
+      <!-- Navigation dots -->
       <div class="gallery-dots" id="goalGalleryDots">
         <span class="gallery-dot active" onclick="goToGoalSlide(0)"></span>
         <span class="gallery-dot" onclick="goToGoalSlide(1)"></span>
@@ -1328,7 +2277,7 @@
   </div>
 </section>
 
-<section class="section" style="background-color: #f8f0f0;">
+<section class="section" style="background-color: #f8f0f0;" id="motion-tracking">
   <h2 class="title is-3" style="text-align: center; color: #b63620;">Motion Tracking</h2>
   
   <!-- Highlight Video Section -->
@@ -1346,7 +2295,7 @@
   </div>
   
   <div class="container" style="max-width: 60%; margin: 0 auto;">
-    <!-- 视频画廊 -->
+    <!-- Video gallery -->
     <div style="text-align: center; margin-bottom: 20px;">
       <h4 style="font-family: 'Google Sans', sans-serif; color: #666; margin-bottom: 15px;">
         More motion tracking demos including styled locomotion, boxing, playing ball games and dancing. All demos come from <span style="color: #dc3545; font-weight: bold;">a single, continuous video shooting with the same policy.</span>
@@ -1356,14 +2305,14 @@
       </button>
     </div>
     <div class="video-gallery">
-      <!-- 左箭头按钮 -->
+      <!-- Left arrow button -->
       <button class="gallery-arrow gallery-arrow-left" onclick="moveGallery(-1)"></button>
       
-      <!-- 右箭头按钮 -->
+      <!-- Right arrow button -->
       <button class="gallery-arrow gallery-arrow-right" onclick="moveGallery(1)"></button>
       
       <div class="gallery-container" id="galleryContainer">
-        <!-- 视频项目1 - Segment 5 (Walk and Turn) -->
+        <!-- Video item 1 - Segment 5 (Walk and Turn) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg5.mp4" type="video/mp4">
@@ -1371,10 +2320,10 @@
         </video>
           <div class="video-info">
             <h4>Walk and Turn</h4>
-          </div>
-        </div>
-
-        <!-- 视频项目2 - Segment 2 (Ball Games) -->
+      </div>
+      </div>
+    
+        <!-- Video item 2 - Segment 2 (Ball Games) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg2.mp4" type="video/mp4">
@@ -1385,7 +2334,7 @@
       </div>
     </div>
 
-        <!-- 视频项目3 - Segment 7 (Dancing with Fall and Recovery) -->
+        <!-- Video item 3 - Segment 7 (Dancing with Fall and Recovery) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg7.mp4" type="video/mp4">
@@ -1393,10 +2342,10 @@
         </video>
           <div class="video-info">
             <h4>Dancing (Including Fall and Recovery)</h4>
-      </div>
-    </div>
-
-        <!-- 视频项目4 - Segment 6 (Styled Walking with Salute) -->
+  </div>
+        </div>
+        
+        <!-- Video item 4 - Segment 6 (Styled Walking with Salute) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg6.mp4" type="video/mp4">
@@ -1406,8 +2355,8 @@
             <h4>Styled Walking (Salute!)</h4>
       </div>
     </div>
-
-        <!-- 视频项目5 - Segment 3 (Boxing) -->
+    
+        <!-- Video item 5 - Segment 3 (Boxing) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg3.mp4" type="video/mp4">
@@ -1416,9 +2365,9 @@
           <div class="video-info">
             <h4>Boxing</h4>
       </div>
-    </div>
-
-        <!-- 视频项目6 - Segment 4 (Walking with Different Steps) -->
+        </div>
+        
+        <!-- Video item 6 - Segment 4 (Walking with Different Steps) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg4.mp4" type="video/mp4">
@@ -1429,7 +2378,7 @@
       </div>
     </div>
 
-        <!-- 视频项目7 - Segment 1 (Dancing) -->
+        <!-- Video item 7 - Segment 1 (Dancing) -->
         <div class="gallery-item">
           <video muted playsinline autoplay loop>
             <source src="./resources/tracking/segment/seg1.mp4" type="video/mp4">
@@ -1441,9 +2390,9 @@
     </div>
       </div>
   
-      <!-- 导航按钮已移除 -->
+      <!-- Navigation buttons removed -->
       
-      <!-- 指示点 -->
+      <!-- Navigation dots -->
       <div class="gallery-dots" id="galleryDots">
         <span class="gallery-dot active" onclick="goToSlide(0)"></span>
         <span class="gallery-dot" onclick="goToSlide(1)"></span>
@@ -1457,7 +2406,7 @@
   </div>
 </section>
 
-<section class="section" style="background-color: #f0f2f8;">
+<section class="section" style="background-color: #f0f2f8;" id="reward-optimization">
   <h2 class="title is-3" style="text-align: center; color: #004bb3;">Reward Optimization</h2>
 
   <div class="container" style="max-width: 80%; margin: 0 auto;">
@@ -1473,10 +2422,10 @@
       </div>
       
       <div id="basic-locomotion" class="tab-content active">
-        <!-- <h3>Basic Locomotion</h3>
-        <p>Optimizes fundamental walking and movement patterns for stable humanoid locomotion.</p> -->
+        <h3>Basic Locomotion</h3>
+        <p>We enable the robot to perform basic locomotion tasks including standing still, walking forward/backward/sideways, turning left/right.</p>
         
-        <!-- 子选项卡 -->
+        <!-- Sub-tabs -->
         <div class="sub-tabs-container">
           <div class="sub-tabs-header">
             <button class="sub-tab-button active" onclick="handleSubTabClick('stand-still', event)">Stand Still</button>
@@ -1490,8 +2439,8 @@
 
            <div id="stand-still" class="sub-tab-content active">
              <p>Maintains stable standing posture without movement.</p>
-             <div class="reward-formula">
-               $$R_{stand} = w_1 \cdot R_{balance} + w_2 \cdot R_{posture}$$
+             <div class="reward-formula" style="font-size: 0.8em;">
+               $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel} = 0m/s)$$
              </div>
              <div style="margin-top: 15px;">
                <video id="video-stand-still" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -1503,8 +2452,8 @@
 
           <div id="go-forward" class="sub-tab-content">
             <p>Forward walking at 0.7m/s</p>
-            <div class="reward-formula">
-              $$R_{forward} = w_1 \cdot R_{velocity} + w_2 \cdot R_{stability} + w_3 \cdot R_{efficiency}$$
+            <div class="reward-formula" style="font-size: 0.8em;">
+              $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel_forward} = 0.7m/s)$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-go-forward" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -1517,8 +2466,8 @@
                     
           <div id="strafe-left" class="sub-tab-content">
             <p>Sideways movement to the left at 0.3m/s</p>
-            <div class="reward-formula">
-              $$R_{strafe\_left} = w_1 \cdot R_{lateral\_velocity} + w_2 \cdot R_{balance}$$
+            <div class="reward-formula" style="font-size: 0.8em;">
+              $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel_left} = 0.3m/s)$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-strafe-left" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -1531,8 +2480,8 @@
           
           <div id="go-backward" class="sub-tab-content">
             <p>Backward walking at 0.3m/s</p>
-            <div class="reward-formula">
-              $$R_{backward} = w_1 \cdot R_{velocity} + w_2 \cdot R_{stability} + w_3 \cdot R_{control}$$
+            <div class="reward-formula" style="font-size: 0.8em;">
+              $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel_backward} = 0.3m/s)$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-go-backward" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -1545,8 +2494,8 @@
           
           <div id="strafe-right" class="sub-tab-content">
             <p>Sideways movement to the right at 0.3m/s</p>
-            <div class="reward-formula">
-              $$R_{strafe\_right} = w_1 \cdot R_{lateral\_velocity} + w_2 \cdot R_{balance}$$
+            <div class="reward-formula" style="font-size: 0.8em;">
+              $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel_right} = 0.3m/s)$$
       </div>
             <div style="margin-top: 15px;">
               <video id="video-strafe-right" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -1558,8 +2507,8 @@
           
           <div id="turn-anticlockwise" class="sub-tab-content">
             <p>Anticlockwise turning at 5.0 rad/s</p>
-            <div class="reward-formula">
-              $$R_{turn\_left} = w_1 \cdot R_{angular\_velocity} + w_2 \cdot R_{smoothness}$$
+            <div class="reward-formula" style="font-size: 0.8em;">
+              $$R = (\texttt{base_height} > 0.5m) \land (\texttt{base_ang_vel_z} = 5.0 rad/s)$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-turn-anticlockwise" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -1571,8 +2520,8 @@
   
           <div id="turn-clockwise" class="sub-tab-content">
             <p>Clockwise turning at 5.0 rad/s</p>
-            <div class="reward-formula">
-              $$R_{turn\_right} = w_1 \cdot R_{angular\_velocity} + w_2 \cdot R_{smoothness}$$
+            <div class="reward-formula" style="font-size: 0.8em;">
+              $$R = (\texttt{base_height} > 0.5m) \land (\texttt{base_ang_vel_z} = -5.0 rad/s)$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-turn-clockwise" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -1586,9 +2535,10 @@
       
       <div id="arm-control" class="tab-content">
         <h3>Arm Control</h3>
-        <p>Fine-tunes arm movements for precise manipulation and reaching tasks.</p>
-        <div class="reward-formula">
-          $$R_{arm} = w_1 \cdot R_{precision} + w_2 \cdot R_{coordination} + w_3 \cdot R_{reach}$$
+          <p>Put down the arm <span style="color: #007bff;"><strong>(low)</strong></span> or Raise the arm <span style="color: #007bff;"><strong>(high)</strong></span></p>
+          <div class="reward-formula" style="font-size: 0.8em;">
+            $$R_{\text{low}} = 1 - \min\{|\texttt{wrist_height} - 0.7m| - 0.1m\} = (\texttt{wrist_height} \in [0.6, 0.8]m)$$
+            $$R_{\text{high}} = \min\{(\texttt{wrist_height} - 1.0m), 1\} = (\texttt{wrist_height} > 1.0m)$$
         </div>
         
         <!-- Interactive Wrist Height Control -->
@@ -1654,7 +2604,7 @@
                       <source src="./resources/reward_optimization/height_control/height_control-1.mp4" type="video/mp4">
                     </video>
                     <div class="formula-text">Base Height = <span class="height-value">0.6m</span> & Go Forward</div>
-                  </div>
+        </div>
                   <div class="cover-overlay">
                     <div class="play-button">
                       <i class="fas fa-play"></i>
@@ -1666,9 +2616,9 @@
                 Your browser does not support the video tag.
               </video>
             </div>
-            <div class="reward-formula">
+            <!-- <div class="reward-formula">
               $$R_{height1} = \exp(-|h_{target} - h_{current}|)$$
-            </div>
+            </div> -->
           </div>
           <div class="video-item">
             <h5>Sit down</h5>
@@ -1691,9 +2641,9 @@
                 Your browser does not support the video tag.
               </video>
             </div>
-            <div class="reward-formula">
+            <!-- <div class="reward-formula">
               $$R_{height2} = \cos(\theta_{spine}) \cdot \exp(-|\theta_{knee}|)$$
-            </div>
+            </div> -->
           </div>
           <div class="video-item">
             <h5>Supported Crouch</h5>
@@ -1716,9 +2666,9 @@
                 Your browser does not support the video tag.
               </video>
             </div>
-            <div class="reward-formula">
+            <!-- <div class="reward-formula">
               $$R_{height3} = \exp(-|\omega_{COM}|) \cdot \cos(\theta_{balance})$$
-            </div>
+            </div> -->
           </div>
           <div class="video-item">
             <h5>Crouch on the ground</h5>
@@ -1741,28 +2691,28 @@
                 Your browser does not support the video tag.
               </video>
             </div>
-            <div class="reward-formula">
+            <!-- <div class="reward-formula">
               $$R_{height4} = \alpha \cdot R_{posture} + \beta \cdot R_{adaptation}$$
-            </div>
+            </div> -->
           </div>
         </div>
     </div>
 
       <div id="behavior-diversity" class="tab-content">
         <h3>Behavior Diversity</h3>
-        <p>Encourages exploration of diverse movement patterns and behaviors.</p>
-        <div class="reward-formula">
-          $$R_{diversity} = w_1 \cdot R_{exploration} + w_2 \cdot R_{novelty} + w_3 \cdot R_{creativity}$$
+          <p>By sampling different sub-buffers from the replay buffer, we can find different behaviors even with the same reward function.</p>
+          <div class="reward-formula" style="font-size: 0.8em;">
+            $$R = (\texttt{left_wrist_height} \in [0.6, 0.8]m) \land (\texttt{right_wrist_height} > 1m) $$
         </div>
         
         <div class="diversity-content">
           <div class="diversity-text">
-            <p><strong>Key Components:</strong></p>
+            <p><strong>Observation:</strong></p>
             <ul>
-              <li>Exploration reward for discovering new behaviors</li>
-              <li>Novelty reward for unique behavior patterns</li>
-              <li>Creativity reward for innovative solutions</li>
-            </ul>
+              <li>1. All five poses satisfy the reward function</li>
+              <li>2. The lower-body postures have some differences</li>
+              <li>3. The upper-body postures, especially the right arm in the last pose, have significant differences</li>
+        </ul>
           </div>
           <div class="diversity-video">
             <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 8px;">
@@ -1771,15 +2721,15 @@
             </video>
           </div>
         </div>
-      </div>
+    </div>
 
       <div id="skill-combination" class="tab-content">
         <h3>Skill Combination</h3>
-        <p>Integrates multiple skills for complex multi-task scenarios.</p>
+        <p>Taking the arm control and basic locomotion as examples, we can combine them to form new skills.</p>
         <div class="reward-formula">
-          $$R_{combination} = \sum_{i=1}^{n} w_i \cdot R_{skill_i} + w_{interaction} \cdot R_{interaction}$$
-        </div>
-        
+          $$R = w_{\text{arm}} \cdot R_{\text{arm}} + w_{\text{loco}} \cdot R_{\text{loco}} $$
+    </div>
+        <p>Here, w is the corresponding weight for the reward function, we express <span style="color: #007bff;"><strong></strong>low</strong></span> as "l", <span style="color: #007bff;"><strong>high</strong></span> as "h", "arm-l-h" means the right wrist is <span style="color: #007bff;"><strong>low</strong></span> and the left wrist is <span style="color: #007bff;"><strong>high</strong></span>.</p>
         <!-- Skill Comp Video Gallery -->
         <div class="skill-gallery">
           <div class="gallery-grid">
@@ -1790,9 +2740,9 @@
               </video>
               <div class="video-overlay">
                 <div class="play-icon">▶</div>
-              </div>
+      </div>
               <div class="video-label">backward & arms-h-h</div>
-            </div>
+    </div>
             <div class="gallery-item">
               <video class="gallery-video" autoplay muted loop preload="auto">
                 <source src="./resources/reward_optimization/skill_comp/skill_comp-17.mp4" type="video/mp4">
@@ -1960,12 +2910,14 @@
         
       </div>
     </div>
+    <p style="text-align: center; margin-top: 20px; font-family: 'Google Sans', sans-serif; font-size: 0.9em; color: #666;"><strong>Note:</strong> Right/Left is relative to the robot; the reward functions are for illustration purposes, in the inference time, we also have some soft constraints and regularization terms.</p>
     </div>
 </section>
   
-<section class="section" style="background-color: #f8f8f8;">
+<section class="section" style="background-color: #f8f8f8;" id="disturbance-rejection">
   <h2 class="title is-2" style="text-align: center;">Disturbance Rejection</h2>
   <div class="container" style="max-width: 80%; margin: 0 auto;">
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We demonstrate the robustness and flexibility of BFM-Zero: The policy enables the humanoid robot to recover gracefully from various disturbances, including <span style="color: #dc3545; font-weight: bold;">heavy pushes</span>, <span style="color: #dc3545; font-weight: bold;">torso kicks</span>, <span style="color: #dc3545; font-weight: bold;">ground pulls</span>, and <span style="color: #dc3545; font-weight: bold;">leg kicks</span>.</h4>
     <div class="columns is-centered">
       <div class="column is-half">
         <div class="has-text-centered">
@@ -1973,8 +2925,8 @@
             <source src="./resources/disturbance/disturbance-1.mp4" type="video/mp4">
             Your browser does not support the video tag.
       </video>
-          <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1.1em; margin-bottom: 10px;">Disturbance Rejection 1</h4>
-          <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Demonstrates BFM-Zero's ability to maintain stability and recover from external disturbances.</p>
+          <!-- <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1.1em; margin-bottom: 10px;">Natural getup; Kick on torso; Pull to the ground; Kick on legs</h4> -->
+
     </div>
       </div>
       <div class="column is-half">
@@ -1983,25 +2935,25 @@
             <source src="./resources/disturbance/disturbance-2.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-          <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1.1em; margin-bottom: 10px;">Disturbance Rejection 2</h4>
-          <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Shows robust performance under various disturbance conditions and quick recovery.</p>
+          <!-- <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1.1em; margin-bottom: 10px;">Disturbance Rejection 2</h4> -->
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="section" style="background-color: #f5f5f5;">
+<section class="section" style="background-color: #f5f5f5;" id="few-shot-adaptation">
   <h2 class="title is-2" style="text-align: center;">Few-shot Adaptation</h2>
-  <div class="container" style="max-width: 90%; margin: 0 auto;">
-    <!-- 顶部：设置图片 -->
+  <div class="container" style="max-width: 80%; margin: 0 auto;">
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We demonstrate BFM-Zero's few-shot adaptation capability, the smooth structure of our latent space enables efficient <span style="color: #dc3545; font-weight: bold;">search-based optimization</span> over zero-shot inference within a short time.</h4>
+    <!-- Top: Setting image -->
     <div class="has-text-centered" style="margin-bottom: 30px;">
       <img src="./resources/adaptation/setting.png" alt="Adaptation Setting" style="width: 100%; max-width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
     </div>
-    
-    <!-- 底部：Before/After 视频对比 -->
+     <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">When the robot carries a <span style="color: #dc3545; font-weight: bold;">4kg payload</span> on its torso, we can perform <span style="color: #dc3545; font-weight: bold;">search-based adaptation</span> in simulation to discover a better latent instead of directly using zero-shot inference to let the robot <span style="color: #dc3545; font-weight: bold;">keep single-leg standing</span> for longer time.</h4>
+    <!-- Bottom: Before/After video comparison -->
     <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: nowrap; max-height: 60vh;">
-      <!-- Before 视频 -->
+      <!-- Before video -->
       <div style="flex: 0 0 40%; max-width: 40%;">
         <div class="has-text-centered">
           <div style="border: 3px solid #dc3545; border-radius: 8px; padding: 5px; background: rgba(220, 53, 69, 0.05);">
@@ -2014,7 +2966,7 @@
         </div>
       </div>
       
-      <!-- 箭头 -->
+      <!-- Arrow -->
       <div style="flex: 0 0 auto; text-align: center;">
         <div style="margin: 20px 0;">
           <div style="font-family: 'Google Sans', sans-serif; font-size: 1.0em; font-weight: bold; color: #666; margin-bottom: 10px; line-height: 1.3;">
@@ -2025,7 +2977,7 @@
         </div>
       </div>
       
-      <!-- After 视频 -->
+      <!-- After video -->
       <div style="flex: 0 0 40%; max-width: 40%;">
         <div class="has-text-centered">
           <div style="border: 3px solid #28a745; border-radius: 8px; padding: 5px; background: rgba(40, 167, 69, 0.05);">
@@ -2041,9 +2993,9 @@
     </div>
 </section>
 
-<section class="section">
+<section class="section" id="space-interpolation">
   <h2 class="title is-2" style="text-align: center;">Space Interpolation</h2>
-  <div class="container" style="max-width: 80%; margin: 0 auto;">\
+  <div class="container" style="max-width: 80%; margin: 0 auto;">
     <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">The structured nature of the learned space enables smooth interpolation between latent representations. We can leverage Spherical Linear Interpolation to generate intermediate latent vectors along the geodesic arc between the two end-points.</h4>
     
     <div style="text-align: center; margin: 20px 0;">
