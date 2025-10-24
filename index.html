@@ -3325,7 +3325,7 @@
 <section class="section" style="background-color: #f8f8f8;" id="disturbance-rejection">
   <h2 class="title is-2" style="text-align: center;">Disturbance Rejection</h2>
   <div class="container" style="max-width: 80%; margin: 0 auto;">
-    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We demonstrate the robustness and flexibility of BFM-Zero: The policy enables the humanoid robot to recover gracefully from various disturbances, including <span style="color: #dc3545; font-weight: bold;">heavy pushes</span>, <span style="color: #dc3545; font-weight: bold;">torso kicks</span>, <span style="color: #dc3545; font-weight: bold;">ground pulls</span>, and <span style="color: #dc3545; font-weight: bold;">leg kicks</span>.</h4>
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We demonstrate the robustness and flexibility of BFM-Zero: The policy enables the humanoid robot to recover gracefully from various disturbances, including <span style="color: #a65320; font-weight: bold;">heavy pushes</span>, <span style="color: #a65320; font-weight: bold;">torso kicks</span>, <span style="color: #a65320; font-weight: bold;">ground pulls</span>, and <span style="color: #a65320; font-weight: bold;">leg kicks</span>.</h4>
     <div class="columns is-centered">
       <div class="column is-half">
         <div class="has-text-centered">
@@ -3333,7 +3333,7 @@
             <source src="./resources/disturbance/disturbance-1.mp4" type="video/mp4">
             Your browser does not support the video tag.
       </video>
-          <!-- <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1.1em; margin-bottom: 10px;">Natural getup; Kick on torso; Pull to the ground; Kick on legs</h4> -->
+          <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.8em; margin-bottom: 10px;">Highlight: Natural recovery from pulling to the ground</h4>
 
     </div>
       </div>
@@ -3343,7 +3343,7 @@
             <source src="./resources/disturbance/disturbance-2.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-          <!-- <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1.1em; margin-bottom: 10px;">Disturbance Rejection 2</h4> -->
+           <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.8em; margin-bottom: 10px;">Highlight: Emergent behavior (running) from heavy pushes</h4>
         </div>
       </div>
     </div>
@@ -3404,22 +3404,23 @@
 <section class="section" id="space-interpolation">
   <h2 class="title is-2" style="text-align: center;">Space Interpolation</h2>
   <div class="container" style="max-width: 80%; margin: 0 auto;">
-    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">The structured nature of the learned space enables smooth interpolation between latent representations. We can leverage Spherical Linear Interpolation to generate intermediate latent vectors along the geodesic arc between the two end-points.</h4>
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">The <span style="color: #004bb3; font-weight: bold;">structured nature</span> of the learned space enables smooth interpolation between latent representations. We can leverage <span style="color: #004bb3; font-weight: bold;">Spherical Linear Interpolation</span> to generate intermediate latent vectors along the geodesic arc between the two end-points.</h4>
     
     <div style="text-align: center; margin: 20px 0;">
       <p style="margin-bottom: 10px;">$$z_{t} := \frac{\sin((1-t)\theta)}{\sin \theta}z_0 + \frac{\sin(t\theta)}{\sin \theta}z_1, \quad \theta := \arccos\left(\langle z_0, z_1 \rangle\right), \ z_0\ne z_1, t\in[0,1].$$</p>
     </div> 
-
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We can see simple interpolation shows <span style="color: #004bb3; font-weight: bold;">meaningful semantic-level changes</span>.</h4>  
     <div class="columns is-centered">
+      
       <div class="column is-half">
         <div class="has-text-centered">
           <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 8px; margin-bottom: 15px;">
             <source src="./resources/interpolation/interpolation1.mp4" type="video/mp4">
             Your browser does not support the video tag.
-      </video>
+          </video>
           <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; margin-bottom: 10px;">Interpolation between strafe-left and strafe-right</h4>
           <!-- <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Hightlight: The robot almost stop at t=0.5, demonstrates the structured nature of the learned space.</p> -->
-    </div>
+        </div>
       </div>
       <div class="column is-half">
         <div class="has-text-centered">
@@ -3432,6 +3433,8 @@
         </div>
       </div>
     </div>
+
+
    </div>
 </section>
 
