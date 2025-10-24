@@ -2394,7 +2394,7 @@
       <img src="./resources/approach.png" ></img>
     </div> -->
     <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">
-       Building <span style="color:#b36b00; font-weight:bold;">Behavioral Foundation Models</span> (BFMs) for humanoid robots has the potential to unify diverse control tasks under a single, promptable generalist policy. However, existing approaches are either exclusively deployed on simulated humanoid characters, or specialized to specific tasks such as tracking. We propose <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span>, a framework that learns an effective shared latent representation that embeds <span style="color:#3a6902; font-weight:bold;">motions</span>, <span style="color:#b63620; font-weight:bold;">goals</span>, and <span style="color:#004bb3; font-weight:bold;">rewards</span> into a common space, enabling a single policy to be prompted for multiple downstream tasks without retraining. This well-structured latent space in BFM-Zero enables versatile and robust whole-body skills on a Unitree G1 humanoid in the real world, via diverse inference methods, including zero-shot <span style="color:#3a6902; font-weight:bold;">motion tracking</span>, <span style="color:#b63620; font-weight:bold;">goal reaching</span>, and <span style="color:#004bb3; font-weight:bold;">reward optimization</span>, and few-shot optimization-based adaptation. Unlike prior on-policy reinforcement learning (RL) frameworks, BFM-Zero builds upon recent advancements in <span style="color:#b36b00; font-weight:bold;">unsupervised RL</span> and <span style="color:#b36b00; font-weight:bold;">Forward-Backward (FB)</span> models, which offer an <span style="color:#b36b00; font-weight:bold;">objective-centric, explainable, and smooth latent representation</span> of whole-body motions. We further extend BFM-Zero with critical reward shaping, domain randomization, and history-dependent asymmetric learning to bridge the sim-to-real gap. Those key design choices are quantitatively ablated in simulation. A first-of-its-kind model, BFM-Zero establishes a step toward scalable, promptable behavioral foundation models for whole-body humanoid control.
+       Building <span style="color:#b36b00; font-weight:bold;">Behavioral Foundation Models</span> (BFMs) for humanoid robots has the potential to unify diverse control tasks under a single, promptable generalist policy. However, existing approaches are either exclusively deployed on simulated humanoid characters, or specialized to specific tasks such as tracking. We propose <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span>, a framework that learns an effective shared latent representation that embeds <span style="color:#b63620; font-weight:bold;">motions</span>, <span style="color:#3a6902; font-weight:bold;">goals</span>, and <span style="color:#004bb3; font-weight:bold;">rewards</span> into a common space, enabling a single policy to be prompted for multiple downstream tasks without retraining. This well-structured latent space in BFM-Zero enables versatile and robust whole-body skills on a Unitree G1 humanoid in the real world, via diverse inference methods, including zero-shot <span style="color:#b63620; font-weight:bold;">motion tracking</span>, <span style="color:#3a6902; font-weight:bold;">goal reaching</span>, and <span style="color:#004bb3; font-weight:bold;">reward optimization</span>, and few-shot optimization-based adaptation. Unlike prior on-policy reinforcement learning (RL) frameworks, BFM-Zero builds upon recent advancements in <span style="color:#b36b00; font-weight:bold;">unsupervised RL</span> and <span style="color:#b36b00; font-weight:bold;">Forward-Backward (FB)</span> models, which offer an <span style="color:#b36b00; font-weight:bold;">objective-centric, explainable, and smooth latent representation</span> of whole-body motions. We further extend BFM-Zero with critical reward shaping, domain randomization, and history-dependent asymmetric learning to bridge the sim-to-real gap. Those key design choices are quantitatively ablated in simulation. A first-of-its-kind model, BFM-Zero establishes a step toward scalable, promptable behavioral foundation models for whole-body humanoid control.
     </p>
   </div>
 </section>
@@ -2407,8 +2407,7 @@
     <!-- <div class="columns is-centered">
       <img src="./resources/approach.png" ></img>
     </div> -->
-    <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; text-align: center;">
-     <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span> consists of three main components: pre-training, inference, and adaptation.
+    <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; text-align: center;">An overview of the  <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span>: After the pre-training stage, BFM-Zero forms a latent space that can be used for zero-shot inference and few-shot adaptation. 
     </p>
   </div>
   <div class="container" style="display: flex; justify-content: center;">
@@ -2422,7 +2421,7 @@
               <img src="./static/images/pretraining.png" alt="Pre-training Image">
       </div>
             <div class="flip-card-back">
-              <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">The objective is to learn <strong>a unified latent representation</strong> that embeds tasks (e.g., target motions, rewards, goals) into a shared space and <strong>a promptable policy</strong> that conditions on this representation to perform diverse tasks without retraining.</p>
+              <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">The objective is to learn  <span style="color:#b00202; font-weight:bold;">a unified latent representation</span> that embeds tasks (e.g., target motions, rewards, goals) into a shared space and <span style="color:#b00202; font-weight:bold;">a promptable policy</span> that conditions on this representation to perform diverse tasks without retraining.</p>
       </div>
       </div>
     </div>
@@ -2465,7 +2464,8 @@
 
 <section class="section" id="zero-shot">
   <h2 class="title is-2" style="text-align: center;">Zero-shot Inference</h2>
-  <div class="container" style="width:75%; margin: 0 auto;">
+  <h3 class="title is-6" style="text-align: center;"><strong>ALL DEMOS ARE FROM <span style="color: #b00202;"><strong></strong>THE SAME POLICY.</strong></span></strong></h3>
+  <div class="container" style="width:70%; margin: 0 auto;">
     <!-- <div class="columns is-centered">
       <img src="./resources/approach.png" ></img>
     </div> -->
@@ -2537,7 +2537,7 @@
       <div class="column has-text-centered">
         <video id="frameVideo" width="100%" height="auto" muted playsinline src="./resources/goal_reaching/full/full-2.mp4" poster="./resources/loading-icon.gif" style="border: 1px solid #bbb; border-radius: 10px; margin: 1.0%;"></video>
       </div>
-      <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We also test diverse initial on the ground pose to a standing pose. BFM-Zero can achieve relative gentle and natural transitions to any goal pose.</h4>
+      <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We also test diverse initial on the ground pose to a standing pose. <strong></strong>Follow the gallery to see the full description of the performance.</strong></h4>
     <!-- Goal Reaching video gallery -->
     <div class="video-gallery">
       <!-- Left arrow button -->
@@ -3107,7 +3107,7 @@
 
       <div id="behavior-diversity" class="tab-content">
         <h3>Behavior Diversity</h3>
-          <p>By sampling different sub-buffers from the replay buffer, we can find different behaviors even with the same reward function.</p>
+          <p>By sampling different sub-buffers from the replay buffer, we can find <span style="color: #004bb3;"><strong>different</strong></span> behaviors even with the <span style="color: #004bb3;"><strong>same</strong></span> reward function.</p>
           <div class="reward-formula" style="font-size: 0.8em;">
             $$R = (\texttt{left_wrist_height} \in [0.6, 0.8]m) \land (\texttt{right_wrist_height} > 1m) $$
         </div>
@@ -3116,9 +3116,9 @@
           <div class="diversity-text">
             <p><strong>Observation:</strong></p>
             <ul>
-              <li>1. All five poses satisfy the reward function</li>
-              <li>2. The lower-body postures have some differences</li>
-              <li>3. The upper-body postures, especially the right arm in the last pose, have significant differences</li>
+              <li>1. All five poses <span style="color: #004bb3;"><strong></strong>satisfy</strong></span> the reward function</li>
+              <li>2. The lower-body postures have some <span style="color: #004bb3;"><strong></strong>differences</strong></span></li>
+              <li>3. The upper-body postures, especially the right arm in the last pose, have significant <span style="color: #004bb3;"><strong></strong>differences</strong></span></li>
         </ul>
           </div>
           <div class="diversity-video">
@@ -3136,7 +3136,8 @@
         <div class="reward-formula">
           $$R = w_{\text{arm}} \cdot R_{\text{arm}} + w_{\text{loco}} \cdot R_{\text{loco}} $$
     </div>
-        <p>Here, w is the corresponding weight for the reward function, we express <span style="color: #007bff;"><strong>low</strong></span> as "l", <span style="color: #007bff;"><strong>high</strong></span> as "h", "arm-l-h" means the right wrist is <span style="color: #007bff;"><strong>low</strong></span> and the left wrist is <span style="color: #007bff;"><strong>high</strong></span>.</p>
+        <p>Here, w is the corresponding weight for the reward function, we express <span style="color: #004bb3;"><strong>low</strong></span> as "l", <span style="color: #004bb3;"><strong>high</strong></span> as "h", "arm-l-h" means the right wrist is <span style="color: #004bb3;"><strong>low</strong></span> and the left wrist is <span style="color: #004bb3;"><strong>high</strong></span>.</p>
+        <p><span style="color: #004bb3;">Note: All demos are from a continuous video shooting with the same policy.</strong></span></p>
         <!-- Skill Comp Video Gallery -->
         <div class="skill-gallery">
           <div class="gallery-grid">

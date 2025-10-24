@@ -2,19 +2,22 @@
 
 <div align="center">
 
-[[Website]](https://lecar-lab.github.io/SoFTA/)
+<!-- [[Website]](https://lecar-lab.github.io/SoFTA/) -->
 <!-- [[Arxiv]](https://lecar-lab.github.io/SoFTA/) -->
 <!-- [[Video]](https://www.youtube.com/) -->
 
 <img src="assets/ip.png" style="height:50px;" />
+<img src="static/images/meta.png" style="height:50px;" />
 
+## Quick Start
 
-
+- **Open `index.html`** to see the website of [BFM-Zero](https://bfm-zero.vercel.app/) with password `bfmzero`
+- **Open `resources/teaser_video.mp4`** to see the teaser video
 
 [![IsaacGym](https://img.shields.io/badge/IsaacGym-Preview4-b.svg)](https://developer.nvidia.com/isaac-gym) [![Linux platform](https://img.shields.io/badge/Platform-linux--64-orange.svg)](https://ubuntu.com/blog/tag/22-04-lts) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)]()
 
 
-<img src="assets/intro.gif" width="75%"/>
+<!-- <img src="assets/intro.gif" width="75%"/> -->
 
 </div>
 
