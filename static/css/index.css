@@ -1135,6 +1135,8 @@ body {
   border-radius: 15px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.1);
   overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tabs-header {
@@ -1186,6 +1188,7 @@ body {
   font-family: 'Google Sans', sans-serif;
   line-height: 1.6;
   margin-bottom: 15px;
+  font-size: 0.95em;
 }
 
 /* Sub-tabs Styles */
@@ -1195,6 +1198,8 @@ body {
   border-radius: 10px;
   overflow: hidden;
   display: flex;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .sub-tabs-header {
@@ -1203,6 +1208,8 @@ body {
   background: linear-gradient(135deg, #666 0%, #888 100%);
   border-bottom: 1px solid #666;
   width: 200px;
+  min-width: 180px;
+  max-width: 300px;
   flex-shrink: 0;
 }
 
@@ -1240,6 +1247,15 @@ body {
   background: white;
   flex: 1;
   min-height: 200px;
+  max-width: 100%;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+.sub-tab-content video {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 .sub-tab-content.active {
@@ -1250,12 +1266,14 @@ body {
   color: #004bb3;
   margin-bottom: 10px;
   font-family: 'Google Sans', sans-serif;
+  font-size: 1.1em;
 }
 
 .sub-tab-content p {
   margin-bottom: 15px;
   font-family: 'Google Sans', sans-serif;
   line-height: 1.5;
+  font-size: 0.9em;
 }
 
 .sub-tab-content .reward-formula {
@@ -1265,6 +1283,15 @@ body {
   margin: 15px 0;
   font-family: 'Google Sans', sans-serif;
   border-left: 4px solid #004bb3;
+  max-width: 100%;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+.sub-tab-content .reward-formula .MathJax,
+.sub-tab-content .reward-formula .MathJax_Display {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 /* Video optimization styles */
