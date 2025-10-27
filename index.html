@@ -259,6 +259,28 @@
       width: 100%;
       max-width: 250px;
         margin: 0 auto;
+        transform: scale(0.75);
+        transform-origin: center top;
+      }
+      
+      /* Exception for approach section to keep desktop original */
+      #approach .flip-card {
+        transform: none !important;
+        max-width: none !important;
+      }
+      
+      .flip-card img {
+        width: 100%;
+        height: auto;
+      }
+      
+      .flip-card p, .flip-card h1, .flip-card h2, .flip-card h3, .flip-card h4 {
+        font-size: 0.75em !important;
+      }
+      
+      /* Exception for approach section to keep desktop original */
+      #approach .flip-card p {
+        font-size: inherit !important;
       }
       
       /* Gallery mobile optimization */
@@ -523,51 +545,53 @@
     
     /* iPhone specific optimization */
     @media (max-width: 414px) {
-      /* iPhone font scaling to 0.5x - excluding formula-related elements */
+      /* iPhone font scaling to 0.55em - excluding formula-related elements */
       *:not(.reward-formula):not(.reward-formula *):not(.MathJax):not(.MathJax *):not(.MathJax_Display):not(.MathJax_Display *):not(.MathJax_Display > *):not(.MathJax_Display > * *):not(.button):not(.button *):not(.gallery-container):not(.gallery-item):not(.gallery-item *):not(.tab-content):not(.tab-content *) {
-        font-size: 0.5em !important;
+        font-size: 0.55em !important;
       }
       
       /* iPhone force fix formula display - container larger, formula smaller */
       .reward-formula {
-        font-size: 1.2em !important;
-        line-height: 1.8 !important;
-        margin: 1.5rem 0 !important;
-        padding: 1rem !important;
+        font-size: 1.1em !important;
+        line-height: 1.6 !important;
+        margin: 1rem 0 !important;
+        padding: 0.8rem !important;
         display: block !important;
         width: 100% !important;
         overflow: visible !important;
-        min-height: 3rem !important;
+        min-height: 2.5rem !important;
+        overflow-x: auto !important;
       }
       
       .reward-formula * {
-        font-size: 0.8em !important;
+        font-size: 0.85em !important;
         line-height: inherit !important;
         display: inherit !important;
       }
       
       /* MathJax force fix - container larger, formula smaller */
       .MathJax {
-        font-size: 1.2em !important;
-        line-height: 1.8 !important;
+        font-size: 1.1em !important;
+        line-height: 1.6 !important;
         display: block !important;
         width: 100% !important;
-        overflow: visible !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
       }
       
       .MathJax_Display {
-        font-size: 1.2em !important;
-        line-height: 1.8 !important;
+        font-size: 1.1em !important;
+        line-height: 1.6 !important;
         display: block !important;
         width: 100% !important;
         overflow: visible !important;
-        margin: 1.5rem 0 !important;
-        padding: 1rem !important;
-        min-height: 3rem !important;
+        margin: 1rem 0 !important;
+        padding: 0.8rem !important;
+        min-height: 2.5rem !important;
       }
       
       .MathJax_Display * {
-        font-size: 0.8em !important;
+        font-size: 0.85em !important;
         line-height: inherit !important;
         display: inherit !important;
       }
@@ -591,45 +615,219 @@
       }
       
       .container {
-        padding: 0 8px;
+        padding: 0 10px;
       }
       
       .section {
-        padding: 1.2rem 0;
+        padding: 1.5rem 0;
       }
       
       .flip-card {
         max-width: 200px;
+        transform: scale(0.33);
+        transform-origin: center top;
+        margin: 0 auto;
+      }
+      
+      .flip-card-left .flip-card,
+      .flip-cards-right .flip-card,
+      .flip-card-item .flip-card {
+        transform: scale(0.33);
+        transform-origin: center top;
+        margin: 0 auto;
+      }
+      
+      .flip-card img {
+        width: 100%;
+        height: auto;
+      }
+      
+      .flip-card p, .flip-card h1, .flip-card h2, .flip-card h3, .flip-card h4 {
+        font-size: 0.33em !important;
+        line-height: 1.3 !important;
+      }
+      
+      .flip-card-inner {
+        transform: scale(1) !important;
+      }
+      
+      .flip-card-front, .flip-card-back {
+        transform: scale(1) !important;
+      }
+      
+      .flip-cards-container {
+        gap: 4px !important;
+        transform: scale(1) !important;
+      }
+      
+      
+      .flip-card-left, .flip-cards-right {
+        transform: scale(1) !important;
+      }
+      
+      .flip-card-inner {
+        padding: 8px !important;
+      }
+      
+      .flip-card-front, .flip-card-back {
+        padding: 8px !important;
+      }
+      
+      /* iPhone tabs container optimization */
+      .tabs-container {
+        transform: scale(0.33);
+        transform-origin: center top;
+        margin: 0 auto;
+      }
+      
+      .tabs-container * {
+        font-size: 1em !important;
+      }
+      
+      .tabs-header {
+        transform: scale(1);
+      }
+      
+      .tab-button {
+        font-size: 0.9em !important;
+        padding: 8px 6px !important;
+      }
+      
+      .sub-tabs-container {
+        transform: scale(0.5);
+        transform-origin: center top;
+      }
+      
+      .sub-tabs-header {
+        width: 60px;
+        font-size: 1em !important;
+      }
+      
+      .sub-tab-button {
+        font-size: 0.9em !important;
+        padding: 6px 4px !important;
+      }
+      
+      /* Specific scaling for reward optimization sub-tabs */
+      #reward-optimization .sub-tabs-container {
+        transform: scale(0.5);
+        transform-origin: center top;
+      }
+      
+      #reward-optimization .sub-tabs-header {
+        width: 60px;
+      }
+      
+      #reward-optimization .sub-tab-button {
+        font-size: 0.8em !important;
+        padding: 5px 3px !important;
+      }
+      
+      #reward-optimization .sub-tab-content {
+        transform: scale(1);
+      }
+      
+      .sub-tab-content {
+        font-size: 1em !important;
+      }
+      
+      .sub-tab-content p, .sub-tab-content h3, .sub-tab-content h4 {
+        font-size: 0.9em !important;
+      }
+      
+      .reward-formula {
+        font-size: 1.2em !important;
+      }
+      
+      .reward-formula * {
+        font-size: 0.9em !important;
+      }
+      
+      /* iPhone video optimization in tabs */
+      .sub-tab-content video {
+        max-width: 100%;
+        height: auto;
+        transform: scale(0.85);
+        transform-origin: center;
+      }
+      
+      /* Fix reward optimization formula display on iPhone */
+      #reward-optimization .sub-tab-content .reward-formula {
+        font-size: 1.5em !important;
+        padding: 10px !important;
+        overflow-x: auto !important;
+        display: block !important;
+        line-height: 1.5 !important;
+      }
+      
+      #reward-optimization .reward-formula * {
+        font-size: 1em !important;
+        line-height: 1.5 !important;
+      }
+      
+      #reward-optimization .reward-formula .MathJax,
+      #reward-optimization .reward-formula .MathJax_Display {
+        font-size: 1em !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+      }
+      
+      #reward-optimization .reward-formula .MathJax_Display * {
+        font-size: 1em !important;
+      }
+      
+      /* Scale down all text in reward optimization tabs */
+      #reward-optimization .tabs-container * {
+        font-size: 0.5em !important;
+      }
+      
+      #reward-optimization .tab-button {
+        font-size: 0.7em !important;
+      }
+      
+      #reward-optimization .sub-tab-button {
+        font-size: 0.7em !important;
+      }
+      
+      #reward-optimization .sub-tab-content p,
+      #reward-optimization .sub-tab-content h3,
+      #reward-optimization .sub-tab-content h4 {
+        font-size: 0.7em !important;
+      }
+      
+      #reward-optimization .tab-content p,
+      #reward-optimization .tab-content h3 {
+        font-size: 0.7em !important;
       }
       
       /* iPhone author info optimization - further increase font size */
       .authors {
-        font-size: 1.0em !important;
-        line-height: 1.3;
+        font-size: 1.1em !important;
+        line-height: 1.4;
       }
       
       .author-item {
-        font-size: 1.0em !important;
-        margin: 0.35rem 0;
+        font-size: 1.1em !important;
+        margin: 0.4rem 0;
       }
       
       .author-name {
-        font-size: 1.0em !important;
+        font-size: 1.1em !important;
       }
       
       .author-affiliation {
-        font-size: 0.9em !important;
+        font-size: 1.0em !important;
       }
       
       /* iPhone Header area optimization - reduce header size */
       .hero.is-fullheight {
-        height: 20vh !important;
-        min-height: 20vh !important;
+        height: 25vh !important;
+        min-height: 25vh !important;
       }
       
       .hero-video {
-        height: 20vh !important;
-        min-height: 20vh !important;
+        height: 25vh !important;
+        min-height: 25vh !important;
       }
       
       /* iPhone Gallery frames further reduced - fix white borders */
@@ -680,20 +878,20 @@
       
       /* iPhone ensure formulas display normally */
       .reward-formula {
-        font-size: 1em !important;
+        font-size: 1.05em !important;
       }
       
       .reward-formula * {
-        font-size: inherit !important;
+        font-size: 0.9em !important;
       }
       
       /* MathJax formula container */
       .MathJax {
-        font-size: 1em !important;
+        font-size: 1.05em !important;
       }
       
       .MathJax_Display {
-        font-size: 1em !important;
+        font-size: 1.05em !important;
       }
       
       /* iPhone fix button icon overlap issue */
@@ -890,8 +1088,21 @@
   <script src="./static/js/bulma-slider.min.js"></script>
   <script src="./static/js/index.js"></script>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  <!-- Configure MathJax before loading -->
   <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  <script>
+
     // Check HTTP Only Cookie
     const cookies = document.cookie.split("; ").reduce((acc, c) => {
       const [key, val] = c.split("=");
@@ -914,12 +1125,21 @@
       console.log("Authenticated successfully or running locally"); // Debug log
     }
 
-    window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']]
-      }
-    };
+    // Re-render MathJax on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Try multiple times to ensure MathJax renders
+      setTimeout(function() {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          window.MathJax.typesetPromise();
+        }
+      }, 100);
+      
+      setTimeout(function() {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          window.MathJax.typesetPromise();
+        }
+      }, 1000);
+    });
     
     // Global variables and functions
     let currentVideoIndex = 0;
@@ -1898,15 +2118,7 @@
       }
       
       
-      // Performance monitoring and adaptive loading
-      let performanceMetrics = {
-        loadingVideos: 0,
-        maxConcurrentLoads: 3,
-        networkSpeed: 'unknown',
-        totalVideos: 0,
-        loadedVideos: 0,
-        failedVideos: 0
-      };
+      // Performance monitoring and adaptive loading (removed duplicate definition)
       
       // Global loading state monitoring
       function updateLoadingState() {
@@ -2487,7 +2699,7 @@
           <li style="margin-bottom: 20px; padding-left: 15px; word-wrap: break-word; overflow-wrap: break-word;">The Q-function of $\pi_z$ is given by <span style="color: #004bb3; font-weight: bold;">$\boldsymbol{F}^\top $</span>$z$ but not learned with supervision from any specific rewards.</li>
           <li style="margin-bottom: 20px; padding-left: 15px; word-wrap: break-word; overflow-wrap: break-word;">In inference time, for various objectives (goal reaching, tracking, reward optimization), we can use following fomulas to compute $z$ in a <strong style="color: #b63620;">zero-shot</strong> way:</li>
         </ol>
-      </div>
+  </div>
       
       <!-- Three inference cards -->
       <div class="inference-cards" style="margin-top: 40px;">
@@ -2550,7 +2762,7 @@
         The <em><strong>well-regularized, dynamics-aware</strong></em> latent space ✨ also enables <em>natural and smooth</em> transitions during <a href="#goal-reaching" style="color: #3a6902; text-decoration: underline;">goal reaching</a>, <em>natural and gentle</em> recovery in <a href="#motion-tracking" style="color: #b63620; text-decoration: underline;">motion tracking</a> and <a href="#disturbance-rejection" style="color: #666; text-decoration: underline;">disturbance rejection</a>, <em>near-optimal</em> zero-shot <a href="#reward-optimization" style="color: #004bb3; text-decoration: underline;">reward optimization</a>, and <em>efficient</em> <a href="#few-shot-adaptation" style="color: #666; text-decoration: underline;">few-shot adaptation</a> ⚡.
       </p>
     </div>
-  </div>
+    </div>
   </div>
 </section>
 
@@ -2583,7 +2795,7 @@
 
     <!-- Main video (for frame-by-frame viewing) -->
       <div class="column has-text-centered">
-        <video id="frameVideo" width="100%" height="auto" muted playsinline src="./resources/goal_reaching/full/full-2.mp4" poster="./resources/loading-icon.gif" style="border: 1px solid #bbb; border-radius: 10px; margin: 1.0%;"></video>
+        <video id="frameVideo" width="100%" height="auto" muted playsinline src="./resources/goal_reaching/full/full-2.mp4" style="border: 1px solid #bbb; border-radius: 10px; margin: 1.0%;"></video>
       </div>
       <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We also test diverse initial on the ground pose to a standing pose. <strong></strong>Follow the gallery to see the full description of the performance.</strong></h4>
     <!-- Goal Reaching video gallery -->
@@ -2746,8 +2958,8 @@
         <source src="./resources/tracking/tracking_highlight2/tracking_highlight2-1.mp4" type="video/mp4">
         Your browser does not support the video tag.
       </video>
-    </div>
-    
+  </div>
+  
     <!-- Video gallery -->
     <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
       <h4 style="font-family: 'Google Sans', sans-serif; color: #666; margin-bottom: 15px;">
@@ -2855,8 +3067,8 @@
         <span class="gallery-dot" onclick="goToSlide(5)"></span>
         <span class="gallery-dot" onclick="goToSlide(6)"></span>
       </div>
+      </div>
     </div>
-  </div>
   </div>
 </section>
 
@@ -3464,10 +3676,10 @@
           <video width="100%" height="auto" controls autoplay muted loop style="border-radius: 8px; margin-bottom: 15px;">
             <source src="./resources/interpolation/interpolation1.mp4" type="video/mp4">
             Your browser does not support the video tag.
-          </video>
+      </video>
           <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1em; margin-bottom: 10px;">$z_0: \text{strafe-left}, z_1: \text{strafe-right}$</h4>
           <!-- <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Hightlight: The robot almost stop at t=0.5, demonstrates the structured nature of the learned space.</p> -->
-        </div>
+    </div>
       </div>
       <div class="column is-half">
         <div class="has-text-centered">
@@ -3511,5 +3723,25 @@
     </div>
   </div>
 </footer>
+
+<script>
+  // Ensure MathJax renders on mobile
+  window.addEventListener('load', function() {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(function(err) {
+        console.log('MathJax typeset error:', err);
+      });
+    }
+  });
+  
+  // Also retry after a delay for slow connections
+  setTimeout(function() {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      MathJax.typesetPromise().catch(function(err) {
+        console.log('MathJax retry typeset error:', err);
+      });
+    }
+  }, 2000);
+</script>
 </body>
 </html>
