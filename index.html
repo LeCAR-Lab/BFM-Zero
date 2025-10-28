@@ -2724,8 +2724,9 @@
           <div class="inference-card-content">
             <p><strong>Input:</strong> Target reference motion $\{s_1, ..., s_T\}$</p>
             <div class="formula">
-              $$z_t = \sum_{t} \lambda^t B(s_{t+1})$$
+              $$z_t = \sum_{n}^N \lambda^n B(s_{t+n})$$
       </div>
+      <p>$N$ is the window-size for tracking.</p>
       </div>
     </div>
 
