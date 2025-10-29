@@ -1092,16 +1092,22 @@
   <script src="./static/js/index.js"></script>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']]
-      }
-    };
-  </script>
-  
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    onload="
+    document.addEventListener('DOMContentLoaded', function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\[', right: '\\]', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ]
+      });
+    });
+    "></script>
     
   <script>
 
@@ -1127,7 +1133,6 @@
       console.log("Authenticated successfully or running locally"); // Debug log
     }
 
-    // MathJax rendering will be handled by the load event at the bottom of the page
     
     // Global variables and functions
     let currentVideoIndex = 0;
@@ -1149,6 +1154,32 @@
         showStopPlayFirstTip();
         return;
       }
+      
+      // Stop all other videos when switching tabs
+      // Map subTabId to videoId
+      const tabToVideoMap = {
+        'stand-still': 'video-stand-still',
+        'go-forward': 'video-go-forward',
+        'strafe-left': 'video-strafe-left',
+        'go-backward': 'video-go-backward',
+        'strafe-right': 'video-strafe-right',
+        'turn-anticlockwise': 'video-turn-anticlockwise',
+        'turn-clockwise': 'video-turn-clockwise'
+      };
+      
+      // Get the current tab's video ID
+      const currentVideoId = tabToVideoMap[subTabId];
+      
+      // Stop all videos except the current one
+      videoOrder.forEach(videoId => {
+        if (videoId !== currentVideoId) {
+          const video = document.getElementById(videoId);
+          if (video && !video.paused) {
+            video.pause();
+            video.currentTime = 0; // Reset to beginning
+          }
+        }
+      });
       
       // Normal tab switching (no video reset)
       showSubTab(subTabId, event ? event.target : null);
@@ -1803,6 +1834,27 @@
         
         isAutoPlaying = true; // Set auto-play status
         
+        // Map subTabId to index
+        const tabIds = [
+          'stand-still',
+          'go-forward',
+          'strafe-left', 
+          'go-backward',
+          'strafe-right',
+          'turn-anticlockwise',
+          'turn-clockwise'
+        ];
+        
+        // Find current active sub-tab
+        const activeSubTab = document.querySelector('#basic-locomotion .sub-tab-content.active');
+        if (activeSubTab) {
+          const activeTabId = activeSubTab.id;
+          const tabIndex = tabIds.indexOf(activeTabId);
+          if (tabIndex !== -1) {
+            currentVideoIndex = tabIndex;
+          }
+        }
+        
         // Preload all videos and hide progress bars
         videoOrder.forEach(videoId => {
           const video = document.getElementById(videoId);
@@ -1816,6 +1868,15 @@
             video.controls = false; // Temporarily hide controls
           }
         });
+        
+        // Play current video immediately (reset and play from beginning)
+        const currentVideo = document.getElementById(videoOrder[currentVideoIndex]);
+        if (currentVideo) {
+          currentVideo.currentTime = 0;
+          currentVideo.play().catch(e => {
+            console.log('Video play failed:', e);
+          });
+        }
         
         // Start auto-play
         autoPlayInterval = setInterval(() => {
@@ -1866,16 +1927,6 @@
             }
             
             // Switch to corresponding sub-tab
-            const tabIds = [
-              'stand-still',
-              'go-forward',
-              'strafe-left', 
-              'go-backward',
-              'strafe-right',
-              'turn-anticlockwise',
-              'turn-clockwise'
-            ];
-            
             const targetTabId = tabIds[currentVideoIndex];
             showSubTab(targetTabId);
           }
@@ -2448,14 +2499,16 @@
   </nav>
   <section class="hero is-link is-fullheight video" style="overflow: hidden; position:relative;" id="video">
     <div class="hero-video" style="height: 100%; width: 177.77777778vh; min-width: 100%;min-height: 56.25vw;">
-      <video playsinline autoplay muted loop>
+      <video playsinline autoplay muted loop preload="auto" style="width: 100%; height: 100%; object-fit: cover;">
         <source src="./resources/head/head_new.mp4" type="video/mp4">
+        Your browser does not support the video tag.
       </video>
     </div>
     <div class="hero-video is-hidden-tablet is-inline-block-mobile"
       style="height: 154.28571428vw; width: 100%; min-width:64.81481481vh;min-height:100%;">
-      <video playsinline autoplay muted loop>
+      <video playsinline autoplay muted loop preload="auto" style="width: 100%; height: 100%; object-fit: cover;">
         <source src="./resources/head/head_new.mp4" type="video/mp4">
+        Your browser does not support the video tag.
       </video>
     </div>
     <div class="overlay"></div>
@@ -2640,14 +2693,14 @@
           <div class="flip-card-inner">
             <div class="flip-card-front">
               <img src="./static/images/pretraining.png" alt="Pre-training Image">
-      </div>
+            </div>
             <div class="flip-card-back">
               <p style="font-family: 'Google Sans', sans-serif; font-size: 0.7em;">Objective: Learn a <span style="color:#b00202; font-weight:bold;">unified latent representation</span> that embeds tasks (e.g., target motions, rewards, goals) into a shared space and a <span style="color:#b00202; font-weight:bold;">promptable policy</span> that conditions on this representation to perform diverse tasks without retraining.</p>
+            </div>
+          </div>
+        </div>
       </div>
-      </div>
-    </div>
-  </div>
-      
+
       <!-- Right: Two flip cards arranged vertically -->
       <div class="flip-cards-right">
         <!-- Second flip card -->
@@ -2656,13 +2709,13 @@
             <div class="flip-card-inner">
               <div class="flip-card-front">
                 <img src="./static/images/inference.png" alt="Inference Image">
-      </div>
+              </div>
               <div class="flip-card-back">
                 <p style="font-family: 'Google Sans', sans-serif; font-size: 0.7em;">BFM-Zero can <span style="color:#b00202; font-weight:bold;">zero-shot</span> perform tasks including motion tracking, goal reaching, and reward optimization.</p>
-      </div>
-      </div>
-      </div>
-    </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Third flip card -->
         <div class="flip-card-item">
@@ -2670,13 +2723,13 @@
             <div class="flip-card-inner">
               <div class="flip-card-front">
                 <img src="./static/images/adaptation.png" alt="Adaptation Image">
-      </div>
+              </div>
               <div class="flip-card-back">
                 <p style="font-family: 'Google Sans', sans-serif; font-size: 0.7em;">BFM-Zero supports <span style="color:#b00202; font-weight:bold;">few-shot adaptation</span> to quickly adapt to specific requirements with minimal additional training.</p>
-      </div>
-    </div>
-    </div>
-  </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2794,7 +2847,7 @@
 
     <!-- Main video (for frame-by-frame viewing) -->
       <div class="column has-text-centered">
-        <video id="frameVideo" width="100%" height="auto" muted playsinline src="./resources/goal_reaching/full/full-2.mp4" style="border: 1px solid #bbb; border-radius: 10px; margin: 1.0%;"></video>
+        <video id="frameVideo" width="90%" height="auto" muted playsinline src="./resources/goal_reaching/full/full-2.mp4" style="border: 1px solid #bbb; border-radius: 10px; margin: 1.0%;"></video>
       </div>
       <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We also test diverse initial on the ground pose to a standing pose. <strong></strong>Follow the gallery to see the full description of the performance.</strong></h4>
     <!-- Goal Reaching video gallery -->
@@ -3105,7 +3158,7 @@
            <div id="stand-still" class="sub-tab-content active">
              <p>Maintains stable standing posture without movement.</p>
              <div class="reward-formula" style="font-size: 0.8em;">
-               $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel} = 0m/s)$$
+              $$R = (\mathrm{head\_height} = 1.2\mathrm{m}) \wedge (\mathrm{base\_vel} = 0\mathrm{m/s})$$
              </div>
              <div style="margin-top: 15px;">
                <video id="video-stand-still" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -3118,7 +3171,7 @@
           <div id="go-forward" class="sub-tab-content">
             <p>Forward walking at 0.7m/s</p>
             <div class="reward-formula" style="font-size: 0.8em;">
-              $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel_forward} = 0.7m/s)$$
+              $$R = (\mathrm{head\_height} = 1.2\mathrm{m}) \wedge (\mathrm{base\_vel\_forward} = 0.7\mathrm{m/s})$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-go-forward" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -3132,7 +3185,7 @@
           <div id="strafe-left" class="sub-tab-content">
             <p>Sideways movement to the left at 0.3m/s</p>
             <div class="reward-formula" style="font-size: 0.8em;">
-              $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel_left} = 0.3m/s)$$
+              $$R = (\mathrm{head\_height} = 1.2\mathrm{m}) \wedge (\mathrm{base\_vel\_left} = 0.3\mathrm{m/s})$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-strafe-left" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -3146,7 +3199,7 @@
           <div id="go-backward" class="sub-tab-content">
             <p>Backward walking at 0.3m/s</p>
             <div class="reward-formula" style="font-size: 0.8em;">
-              $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel_backward} = 0.3m/s)$$
+              $$R = (\mathrm{head\_height} = 1.2\mathrm{m}) \wedge (\mathrm{base\_vel\_backward} = 0.3\mathrm{m/s})$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-go-backward" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -3160,7 +3213,7 @@
           <div id="strafe-right" class="sub-tab-content">
             <p>Sideways movement to the right at 0.3m/s</p>
             <div class="reward-formula" style="font-size: 0.8em;">
-              $$R = (\texttt{head_height} = 1.2m) \land (\texttt{base_vel_right} = 0.3m/s)$$
+              $$R = (\mathrm{head\_height} = 1.2\mathrm{m}) \wedge (\mathrm{base\_vel\_right} = 0.3\mathrm{m/s})$$
       </div>
             <div style="margin-top: 15px;">
               <video id="video-strafe-right" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -3173,7 +3226,7 @@
           <div id="turn-anticlockwise" class="sub-tab-content">
             <p>Anticlockwise turning at 5.0 rad/s</p>
             <div class="reward-formula" style="font-size: 0.8em;">
-              $$R = (\texttt{base_height} > 0.5m) \land (\texttt{base_ang_vel_z} = 5.0 rad/s)$$
+              $$R = (\mathrm{base\_height} > 0.5\mathrm{m}) \wedge (\mathrm{base\_ang\_vel\_z} = 5.0\mathrm{rad/s})$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-turn-anticlockwise" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -3186,7 +3239,7 @@
           <div id="turn-clockwise" class="sub-tab-content">
             <p>Clockwise turning at 5.0 rad/s</p>
             <div class="reward-formula" style="font-size: 0.8em;">
-              $$R = (\texttt{base_height} > 0.5m) \land (\texttt{base_ang_vel_z} = -5.0 rad/s)$$
+              $$R = (\mathrm{base\_height} > 0.5\mathrm{m}) \wedge (\mathrm{base\_ang\_vel\_z} = -5.0\mathrm{rad/s})$$
             </div>
             <div style="margin-top: 15px;">
               <video id="video-turn-clockwise" width="100%" height="auto" controls autoplay muted loop preload="auto" style="border-radius: 8px;">
@@ -3202,8 +3255,8 @@
         <h3>Arm Control</h3>
           <p>Put down the arm <span style="color: #007bff;"><strong>(low)</strong></span> or Raise the arm <span style="color: #007bff;"><strong>(high)</strong></span></p>
           <div class="reward-formula" style="font-size: 0.8em;">
-            $$R_{\text{low}} = 1 - \min\{|\texttt{wrist_height} - 0.7m| - 0.1m\} = (\texttt{wrist_height} \in [0.6, 0.8]m)$$
-            $$R_{\text{high}} = \min\{(\texttt{wrist_height} - 1.0m), 1\} = (\texttt{wrist_height} > 1.0m)$$
+            $$R_{\text{low}} = 1 - \min\{|\mathrm{wrist\_height} - 0.7\mathrm{m}| - 0.1\mathrm{m}\} = (\mathrm{wrist\_height} \in [0.6, 0.8]\mathrm{m})$$
+            $$R_{\text{high}} = \min\{(\mathrm{wrist\_height} - 1.0\mathrm{m}), 1\} = (\mathrm{wrist\_height} > 1.0\mathrm{m})$$
         </div>
         
         <!-- Interactive Wrist Height Control -->
@@ -3367,7 +3420,7 @@
         <h3>Behavior Diversity</h3>
           <p>By sampling different sub-buffers from the replay buffer, we can find <span style="color: #004bb3;"><strong>different</strong></span> behaviors even with the <span style="color: #004bb3;"><strong>same</strong></span> reward function.</p>
           <div class="reward-formula" style="font-size: 0.8em;">
-            $$R = (\texttt{left_wrist_height} \in [0.6, 0.8]m) \land (\texttt{right_wrist_height} > 1m) $$
+            $$R = (\mathrm{left\_wrist\_height} \in [0.6, 0.8]\mathrm{m}) \wedge (\mathrm{right\_wrist\_height} > 1\mathrm{m})$$
         </div>
         
         <div class="diversity-content">
@@ -3722,45 +3775,5 @@
   </div>
 </footer>
 
-<script>
-  // Ensure MathJax renders
-  window.addEventListener('load', function() {
-    console.log('Page loaded, attempting to render MathJax...');
-    if (window.MathJax && window.MathJax.typesetPromise) {
-      console.log('MathJax found, rendering...');
-      MathJax.typesetPromise().then(function() {
-        console.log('MathJax render successful');
-      }).catch(function(err) {
-        console.log('MathJax typeset error:', err);
-      });
-    } else {
-      console.log('MathJax not found');
-    }
-  });
-  
-  // Also retry after a delay for slow connections
-  setTimeout(function() {
-    console.log('Retrying MathJax render after 2 seconds...');
-    if (window.MathJax && window.MathJax.typesetPromise) {
-      MathJax.typesetPromise().then(function() {
-        console.log('MathJax retry render successful');
-      }).catch(function(err) {
-        console.log('MathJax retry typeset error:', err);
-      });
-    }
-  }, 2000);
-  
-  // Additional retry after 5 seconds for very slow connections
-  setTimeout(function() {
-    console.log('Final MathJax render attempt after 5 seconds...');
-    if (window.MathJax && window.MathJax.typesetPromise) {
-      MathJax.typesetPromise().then(function() {
-        console.log('MathJax final render successful');
-      }).catch(function(err) {
-        console.log('MathJax final render error:', err);
-      });
-    }
-  }, 5000);
-</script>
 </body>
 </html>
