@@ -9,13 +9,18 @@
   <!-- Favicon removed - no custom icon -->
   
   <!-- Preconnect to CDNs for faster loading (preconnect includes DNS lookup) -->
+  <link rel="preload" href="./resources/head/head_new_firefox_720p.mp4" as="video" type="video/mp4" fetchpriority="high">
+  
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://ajax.googleapis.com">
   
-  <!-- Preload critical CSS for faster first paint -->
-  <link rel="preload" href="./static/css/bulma.min.css" as="style">
-  <link rel="preload" href="./static/css/index.css" as="style">
+  <!-- Preload hero video FIRST - highest priority for fastest loading -->
+  <link rel="preload" href="./resources/head/head_new_firefox_720p.mp4" as="video" type="video/mp4" fetchpriority="high">
+  
+  <!-- Preload critical CSS for faster first paint (lower priority than video) -->
+  <link rel="preload" href="./static/css/bulma.min.css" as="style" fetchpriority="high">
+  <link rel="preload" href="./static/css/index.css" as="style" fetchpriority="high">
   
   <!-- Critical CSS - load immediately for page layout -->
   <link rel="stylesheet" href="./static/css/bulma.min.css">
@@ -23,12 +28,9 @@
   
   <!-- Non-critical CSS - will be loaded after hero video (see loadKaTeXAfterHeroVideo function) -->
   
-  <!-- Preload critical JavaScript -->
-  <link rel="preload" href="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" as="script">
-  <link rel="preload" href="./static/js/index.js" as="script">
-  
-  <!-- Note: Hero video preload is handled by video element's preload="auto" attribute -->
-  <!-- Using link rel="preload" would cause duplicate requests -->
+  <!-- Preload critical JavaScript (lowest priority) -->
+  <link rel="preload" href="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" as="script" fetchpriority="low">
+  <link rel="preload" href="./static/js/index.js" as="script" fetchpriority="low">
   
   <style>
     /* System font stack - faster loading, no external fonts needed */
