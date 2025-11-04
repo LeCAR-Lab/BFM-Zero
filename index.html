@@ -7,16 +7,12 @@
   <title>BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning</title>
 
   <!-- Favicon -->
-  <!-- <link rel="icon" type="image/png" href="./resources/logo.png"> -->
+  <link rel="icon" type="image/png" href="./resources/logo.png">
   
-  <!-- Preconnect to font CDNs for faster loading -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Preconnect to CDNs for faster loading -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://ajax.googleapis.com">
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
   <link rel="dns-prefetch" href="https://ajax.googleapis.com">
@@ -24,10 +20,6 @@
   <!-- Preload critical CSS for faster first paint -->
   <link rel="preload" href="./static/css/bulma.min.css" as="style">
   <link rel="preload" href="./static/css/index.css" as="style">
-  
-  <!-- Load fonts with font-display=swap to avoid slow network warnings -->
-  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@400;700&family=Castoro&display=swap"
-        rel="stylesheet">
   
   <!-- Critical CSS - load immediately for page layout -->
   <link rel="stylesheet" href="./static/css/bulma.min.css">
@@ -41,6 +33,16 @@
   <link rel="preload" href="./static/js/index.js" as="script">
   
   <style>
+    /* System font stack - faster loading, no external fonts needed */
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      --font-serif: Georgia, 'Times New Roman', Times, serif;
+    }
+    
+    body, html {
+      font-family: var(--font-sans);
+    }
+    
     /* Right floating navigation bar styles */
     .floating-nav {
       position: fixed;
@@ -1080,7 +1082,7 @@
       video:not([src])::before {
         content: "Loading...";
         color: #666;
-        font-family: 'Google Sans', sans-serif;
+        font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);
       }
       
       .video-error {
@@ -1129,8 +1131,8 @@
       appearance: none !important;
     }
   </style>
-  <!-- jQuery must load first (no defer) as other scripts may depend on it -->
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <!-- jQuery with defer - loads asynchronously but maintains execution order -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" defer></script>
   <!-- Other scripts can defer to improve initial page load -->
   <script src="./static/js/bulma-carousel.min.js" defer></script>
   <script src="./static/js/bulma-slider.min.js" defer></script>
@@ -1227,8 +1229,14 @@
         if (video.readyState >= 1) {
           // Metadata already available
           startProgressiveLoad();
+          // Mark as loaded early if metadata is ready (allows other videos to start loading)
+          markHeroVideoLoaded();
         } else {
-          video.addEventListener('loadedmetadata', startProgressiveLoad, { once: true });
+          video.addEventListener('loadedmetadata', () => {
+            startProgressiveLoad();
+            // Mark as loaded when metadata is ready (progressive loading)
+            markHeroVideoLoaded();
+          }, { once: true });
         }
         
         // Try to show immediately if already loaded
@@ -1245,13 +1253,15 @@
           }, 2000);
         }
         
-        // Mark as loaded when video can play (at least one hero video ready)
+        // Also mark as loaded when video can play (backup)
         if (video.readyState >= 2) {
           markHeroVideoLoaded();
         } else {
           video.addEventListener('canplay', markHeroVideoLoaded, { once: true });
           // Fallback: mark as loaded after playing starts
           video.addEventListener('playing', markHeroVideoLoaded, { once: true });
+          // Additional fallback: mark on loadeddata (when enough data is loaded)
+          video.addEventListener('loadeddata', markHeroVideoLoaded, { once: true });
         }
       }
       
@@ -1444,7 +1454,7 @@
         color: white;
         padding: 10px 20px;
         border-radius: 5px;
-        font-family: 'Google Sans', sans-serif;
+        font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);
         font-size: 14px;
         z-index: 10000;
         pointer-events: none;
@@ -2434,7 +2444,7 @@
           padding: 8px 16px;
           border-radius: 4px;
           cursor: pointer;
-          font-family: 'Google Sans', sans-serif;
+          font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);
           font-size: 0.9em;
         `;
         
@@ -2511,14 +2521,14 @@
         } else {
           // Wait for hero video to load
           window.addEventListener('heroVideoLoaded', callback, { once: true });
-          // Fallback: timeout after 30 seconds
+          // Fallback: timeout after 10 seconds (reduced from 30s since metadata loads quickly)
           setTimeout(() => {
             if (!window.heroVideoLoaded) {
               console.warn('⚠️ Hero video loading timeout, proceeding with other videos');
               window.heroVideoLoaded = true; // Proceed anyway
               callback();
             }
-          }, 30000);
+          }, 10000);
         }
       };
       
@@ -2883,7 +2893,7 @@
               border: 2px dashed #ccc;
               border-radius: 8px;
               color: #666;
-              font-family: 'Google Sans', sans-serif;
+              font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);
             ">
               <div style="text-align: center;">
                 <i class="fas fa-exclamation-triangle" style="font-size: 2em; margin-bottom: 10px; color: #ff6b6b;"></i>
@@ -3233,7 +3243,7 @@
     <!-- <div class="columns is-centered">
       <img src="./resources/approach.png" ></img>
     </div> -->
-    <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">
+    <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">
        Building <span style="color:#b36b00; font-weight:bold;">Behavioral Foundation Models</span> (BFMs) for humanoid robots has the potential to unify diverse control tasks under a single, promptable generalist policy. However, existing approaches are either exclusively deployed on simulated humanoid characters, or specialized to specific tasks such as tracking. We propose <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span>, a framework that learns an effective shared latent representation that embeds <span style="color:#b63620; font-weight:bold;">motions</span>, <span style="color:#3a6902; font-weight:bold;">goals</span>, and <span style="color:#004bb3; font-weight:bold;">rewards</span> into a common space, enabling a single policy to be prompted for multiple downstream tasks without retraining. This well-structured latent space in BFM-Zero enables versatile and robust whole-body skills on a Unitree G1 humanoid in the real world, via diverse inference methods, including zero-shot <span style="color:#b63620; font-weight:bold;">motion tracking</span>, <span style="color:#3a6902; font-weight:bold;">goal reaching</span>, and <span style="color:#004bb3; font-weight:bold;">reward optimization</span>, and few-shot optimization-based adaptation. Unlike prior on-policy reinforcement learning (RL) frameworks, BFM-Zero builds upon recent advancements in <span style="color:#b36b00; font-weight:bold;">unsupervised RL</span> and <span style="color:#b36b00; font-weight:bold;">Forward-Backward (FB)</span> models, which offer an <span style="color:#b36b00; font-weight:bold;">objective-centric, explainable, and smooth latent representation</span> of whole-body motions. We further extend BFM-Zero with critical reward shaping, domain randomization, and history-dependent asymmetric learning to bridge the sim-to-real gap. Those key design choices are quantitatively ablated in simulation. A first-of-its-kind model, BFM-Zero establishes a step toward scalable, promptable behavioral foundation models for whole-body humanoid control.
     </p>
   </div>
@@ -3247,7 +3257,7 @@
     <!-- <div class="columns is-centered">
       <img src="./resources/approach.png" ></img>
     </div> -->
-    <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; text-align: center;">An overview of the  <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span>: After the pre-training stage, BFM-Zero forms a latent space that can be used for zero-shot inference and few-shot adaptation. 
+    <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em; text-align: center;">An overview of the  <span style="color:#3a6902; font-weight:bold;">B</span><span style="color:#b63620; font-weight:bold;">F</span><span style="color:#004bb3; font-weight:bold;">M</span><span style="color:#b36b00; font-weight:bold;">-Zero</span></span>: After the pre-training stage, BFM-Zero forms a latent space that can be used for zero-shot inference and few-shot adaptation. 
     </p>
   </div>
   <div class="container" style="display: flex; justify-content: center; margin-top: 40px;">
@@ -3261,7 +3271,7 @@
               <img src="./static/images/pretraining.png" alt="Pre-training Image">
             </div>
             <div class="flip-card-back">
-              <p style="font-family: 'Google Sans', sans-serif; font-size: 0.7em;">Objective: Learn a <span style="color:#b00202; font-weight:bold;">unified latent representation</span> that embeds tasks (e.g., target motions, rewards, goals) into a shared space and a <span style="color:#b00202; font-weight:bold;">promptable policy</span> that conditions on this representation to perform diverse tasks without retraining.</p>
+              <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.7em;">Objective: Learn a <span style="color:#b00202; font-weight:bold;">unified latent representation</span> that embeds tasks (e.g., target motions, rewards, goals) into a shared space and a <span style="color:#b00202; font-weight:bold;">promptable policy</span> that conditions on this representation to perform diverse tasks without retraining.</p>
             </div>
           </div>
         </div>
@@ -3277,7 +3287,7 @@
                 <img src="./static/images/inference.png" alt="Inference Image">
               </div>
               <div class="flip-card-back">
-                <p style="font-family: 'Google Sans', sans-serif; font-size: 0.7em;">BFM-Zero can <span style="color:#b00202; font-weight:bold;">zero-shot</span> perform tasks including motion tracking, goal reaching, and reward optimization.</p>
+                <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.7em;">BFM-Zero can <span style="color:#b00202; font-weight:bold;">zero-shot</span> perform tasks including motion tracking, goal reaching, and reward optimization.</p>
               </div>
             </div>
           </div>
@@ -3291,7 +3301,7 @@
                 <img src="./static/images/adaptation.png" alt="Adaptation Image">
               </div>
               <div class="flip-card-back">
-                <p style="font-family: 'Google Sans', sans-serif; font-size: 0.7em;">BFM-Zero supports <span style="color:#b00202; font-weight:bold;">few-shot adaptation</span> to quickly adapt to specific requirements with minimal additional training.</p>
+                <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.7em;">BFM-Zero supports <span style="color:#b00202; font-weight:bold;">few-shot adaptation</span> to quickly adapt to specific requirements with minimal additional training.</p>
               </div>
             </div>
           </div>
@@ -3307,11 +3317,11 @@
     
     <!-- Pre-training overview -->
     <div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px;">
-      <p style="font-family: 'Google Sans', sans-serif; font-size: 1em; text-align: left; margin-bottom: 20px; color: #333; max-width: 100%; padding-left: 35px;">
+      <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 1em; text-align: left; margin-bottom: 20px; color: #333; max-width: 100%; padding-left: 35px;">
         In pre-training, BFM-Zero aims to learn a latent space $z\in Z$, a forward <span style="color: #004bb3; font-weight: bold;">$\boldsymbol{F}(s, a, z)$</span> and a backward <span style="color: #3a6902; font-weight: bold;">$\boldsymbol{B}(s)$</span> representations, and a $z$-conditioned policy $\pi_z$ such that:
       </p>
       <div style="margin: 10px 0; padding-left: 60px;">
-        <ol style="text-align: left; max-width: 100%; margin: 0 auto; font-family: 'Google Sans', sans-serif; font-size: clamp(0.75em, 1.2vw, 0.95em); line-height: 2.0; padding-left: 0; padding-right: 35px;">
+        <ol style="text-align: left; max-width: 100%; margin: 0 auto; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: clamp(0.75em, 1.2vw, 0.95em); line-height: 2.0; padding-left: 0; padding-right: 35px;">
           <li style="margin-bottom: 20px; padding-left: 15px; word-wrap: break-word; overflow-wrap: break-word;">Starting from $\{s,a\}$ and follow $\pi_z$, the visitation probability of $s'$ is approximately <span style="color: #004bb3; font-weight: bold;">$\boldsymbol{F}(s, a, z)^\top$</span><span style="color: #3a6902; font-weight: bold;">$\boldsymbol{B}(s')$</span>.</li>
           <li style="margin-bottom: 20px; padding-left: 15px; word-wrap: break-word; overflow-wrap: break-word;">The Q-function of $\pi_z$ is given by <span style="color: #004bb3; font-weight: bold;">$\boldsymbol{F}^\top $</span>$z$ but not learned with supervision from any specific rewards.</li>
           <li style="margin-bottom: 20px; padding-left: 15px; word-wrap: break-word; overflow-wrap: break-word;">In inference time, for various objectives (goal reaching, tracking, reward optimization), we can use following fomulas to compute $z$ in a <strong style="color: #b63620;">zero-shot</strong> way:</li>
@@ -3367,7 +3377,7 @@
     
     <!-- Remark box -->
     <div style="background: linear-gradient(135deg, #fff5f5 0%, #fef0f0 100%); padding: 30px; border-radius: 12px; border-left: 5px solid #b63620; box-shadow: 0 2px 8px rgba(182, 54, 32, 0.1); margin-top: 30px;">
-      <p style="font-family: 'Google Sans', sans-serif; font-size: 0.95em; margin: 0; color: #333; line-height: 1.6;">
+      <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.95em; margin: 0; color: #333; line-height: 1.6;">
         <span style="color: #b63620; font-weight: bold; font-size: 1.1em;">🔑 Remark:</span> Compared to other frameworks, we don't give the model any specific reward in the training, i.e., it is an <strong style="color: #b63620;">unsupervised RL</strong> problem. Moreover, the learned representation <span style="color: #004bb3; font-weight: bold;">$\boldsymbol{F}$</span>, <span style="color: #3a6902; font-weight: bold;">$\boldsymbol{B}$</span> and latent $Z$ are <strong style="color: #b63620;">aware of humanoid dynamics</strong>.
       </p>
     </div>
@@ -3376,7 +3386,7 @@
   <!-- Description paragraph -->
   <div class="container" style="width:85%; margin: 40px auto 0;">
     <div style="background: white; padding: 40px 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-      <p style="font-family: 'Google Sans', sans-serif; font-size: 1.15em; margin: 0; color: #333; line-height: 1.7; text-align: center;">
+      <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 1.15em; margin: 0; color: #333; line-height: 1.7; text-align: center;">
         The <em><strong>well-regularized, dynamics-aware</strong></em> latent space ✨ also enables <em>natural and smooth</em> transitions during <a href="#goal-reaching" style="color: #3a6902; text-decoration: underline;">goal reaching</a>, <em>natural and gentle</em> recovery in <a href="#motion-tracking" style="color: #b63620; text-decoration: underline;">motion tracking</a> and <a href="#disturbance-rejection" style="color: #666; text-decoration: underline;">disturbance rejection</a>, <em>zero-shot</em> <a href="#reward-optimization" style="color: #004bb3; text-decoration: underline;">reward optimization</a> (for any given reward at test time), and <em>efficient</em> <a href="#few-shot-adaptation" style="color: #666; text-decoration: underline;">few-shot adaptation</a> ⚡.
       </p>
     </div>
@@ -3393,7 +3403,7 @@
     <!-- <div class="columns is-centered">
       <img src="./resources/approach.png" ></img>
     </div> -->
-    <!-- <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; text-align: center;">
+    <!-- <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em; text-align: center;">
      At test time, BFM-Zero can be used to solve different tasks including <span style="color:#b00202; font-weight:bold;">motion tracking</span>, <span style="color:#b00202; font-weight:bold;">goal reaching</span>, and <span style="color:#b00202; font-weight:bold;">reward optimization</span> in <span style="color:#b00202; font-weight:bold;">zero-shot</span> fashion.
     </p> -->
   <!-- </div> -->
@@ -3404,7 +3414,7 @@
   <h2 class="title is-3" style="text-align: center; color: #3a6902;">Goal Reaching</h2>
   <div class="container" style="max-width: 75%; margin: 0 auto; background: #f0f8f0; padding: 40px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
     <!-- Video timeline control -->
-    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">Click image for real-world goal pose, click ▶ for natural transition, and drag the progress bar to view frame by frame.</h4>
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">Click image for real-world goal pose, click ▶ for natural transition, and drag the progress bar to view frame by frame.</h4>
     <div class="video-timeline-container">
       <div class="timeline-marks" id="timelineMarks"></div>
       <input type="range" id="timelineSlider" class="timeline-slider" min="0" max="25" step="0.1" value="0" style="background: #5a8a2a !important;">
@@ -3417,7 +3427,7 @@
           <source src="./resources/goal_reaching/full/full-2_firefox_720p.mp4" type="video/mp4">
         </video>
       </div>
-      <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We also test diverse initial on the ground pose to a standing pose. <strong></strong>Follow the gallery to see the full description of the performance.</strong></h4>
+      <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">We also test diverse initial on the ground pose to a standing pose. <strong></strong>Follow the gallery to see the full description of the performance.</strong></h4>
     <!-- Goal Reaching video gallery -->
     <div class="video-gallery">
       <!-- Left arrow button -->
@@ -3434,8 +3444,8 @@
             Your browser does not support the video tag.
           </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: T-Pose <img src="./resources/tpose.png" alt="T-Pose" style="width: 51px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">BFM-Zero enables a natural and smooth transition from the ground to T-Pose.</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: T-Pose <img src="./resources/tpose.png" alt="T-Pose" style="width: 51px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">BFM-Zero enables a natural and smooth transition from the ground to T-Pose.</p>
     </div>
         </div>
 
@@ -3446,8 +3456,8 @@
             Your browser does not support the video tag.
           </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: T-Pose <img src="./resources/tpose.png" alt="T-Pose" style="width: 51px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">A brief running-like adjustment occurs before achieving full stability.</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: T-Pose <img src="./resources/tpose.png" alt="T-Pose" style="width: 51px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">A brief running-like adjustment occurs before achieving full stability.</p>
       </div>
       </div>
 
@@ -3458,8 +3468,8 @@
             Your browser does not support the video tag.
         </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">Smooth and natural transitions to Hands-on-hips posture.</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">Smooth and natural transitions to Hands-on-hips posture.</p>
       </div>
     </div>
 
@@ -3470,8 +3480,8 @@
             Your browser does not support the video tag.
         </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">Rapid stabilization occurs when the initial stand-up is unsteady.</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">Rapid stabilization occurs when the initial stand-up is unsteady.</p>
       </div>
     </div>
         
@@ -3482,8 +3492,8 @@
             Your browser does not support the video tag.
         </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">Successfully recovers even after the first failed attempt to stand.</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">Successfully recovers even after the first failed attempt to stand.</p>
       </div>
     </div>
         
@@ -3494,8 +3504,8 @@
             Your browser does not support the video tag.
           </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">If the initial pose is not natural, it prioritizes standing up quickly before fine adjustments.</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">If the initial pose is not natural, it prioritizes standing up quickly before fine adjustments.</p>
     </div>
   </div>
         
@@ -3506,8 +3516,8 @@
             Your browser does not support the video tag.
           </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">Besides, BFM-Zero maintains a high rate of efficient goal reaching...</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">Besides, BFM-Zero maintains a high rate of efficient goal reaching...</p>
       </div>
       </div>
         
@@ -3518,8 +3528,8 @@
             Your browser does not support the video tag.
           </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">...a high rate of efficient goal reaching...</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">...a high rate of efficient goal reaching...</p>
       </div>
       </div>
         
@@ -3530,8 +3540,8 @@
             Your browser does not support the video tag.
           </video>
           <div class="video-info">
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-            <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">...a high rate of efficient goal reaching.</p>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+            <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">...a high rate of efficient goal reaching.</p>
       </div>
       </div>
       
@@ -3541,8 +3551,8 @@
           Your browser does not support the video tag.
         </video>
         <div class="video-info">
-          <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
-          <p style="font-family: 'Google Sans', sans-serif; font-size: 0.85em;">Robust even under severe wrist breakage.</p>
+          <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Target: Hands-on-hips posture <img src="./resources/pose.png" alt="Pose" style="width: 30px; height: auto; vertical-align: middle; margin-left: 5px;"></h4>
+          <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.85em;">Robust even under severe wrist breakage.</p>
       </div>
       </div>
     </div>
@@ -3570,7 +3580,7 @@
   <!-- Highlight Video Section -->
   <div class="container" style="max-width: 75%; margin: 0 auto; background: #f8f0f0; padding: 40px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
     <div style="text-align: center; margin-bottom: 30px;">
-        <h4 style="font-family: 'Google Sans', sans-serif; color: #666; margin-bottom: 20px;">
+        <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); color: #666; margin-bottom: 20px;">
           Check our <span style="color: #dc3545; font-weight: bold;">highlight tracking video</span> in dancing with <span style="color: #dc3545; font-weight: bold;">safe, natural, and gentle recovery</span> even when confronted with unexpected falls.<br>
           <!-- <span style="font-style: italic;">(Strongly recommend turning on sound)</span> -->
         </h4>
@@ -3582,7 +3592,7 @@
   
     <!-- Video gallery -->
     <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
-      <h4 style="font-family: 'Google Sans', sans-serif; color: #666; margin-bottom: 15px;">
+      <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); color: #666; margin-bottom: 15px;">
         More motion tracking demos including styled locomotion, boxing, playing ball games and dancing. All demos come from <span style="color: #dc3545; font-weight: bold;">a single, continuous video shooting with the same policy.</span>
       </h4>
       <button onclick="showFullVideo()" class="full-video-btn">
@@ -3697,7 +3707,7 @@
 
   <div class="container" style="max-width: 75%; margin: 0 auto; background: #f0f2f8; padding: 40px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
       
-   <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif; font-size: 0.95em;">We do not have <span style="color: #004bb3; font-weight: bold;">any labeled rewards</span> in training. The reward inference (optimization) happens in the test time. Users can <span style="color: #004bb3; font-weight: bold;">prompt in any type of reward function</span> w.r.t. the robot states, and the policy <span style="color: #004bb3; font-weight: bold;">zero-shot</span> output the optimized skills without retraining. ($R$ below is the rewards.)</h4>
+   <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.95em;">We do not have <span style="color: #004bb3; font-weight: bold;">any labeled rewards</span> in training. The reward inference (optimization) happens in the test time. Users can <span style="color: #004bb3; font-weight: bold;">prompt in any type of reward function</span> w.r.t. the robot states, and the policy <span style="color: #004bb3; font-weight: bold;">zero-shot</span> output the optimized skills without retraining. ($R$ below is the rewards.)</h4>
     <div class="tabs-container" style="max-width: 100%;">
       <div class="tabs-header">
         <button class="tab-button active" onclick="showTab('basic-locomotion')">Basic Locomotion</button>
@@ -4196,14 +4206,14 @@
         
       </div>
     </div>
-    <p style="text-align: center; margin-top: 20px; font-family: 'Google Sans', sans-serif; font-size: 0.9em; color: #666;"><strong>Note:</strong> Right/Left is relative to the robot; the reward functions are for illustration purposes, in the inference time, we also have some soft constraints and regularization terms.</p>
+    <p style="text-align: center; margin-top: 20px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em; color: #666;"><strong>Note:</strong> Right/Left is relative to the robot; the reward functions are for illustration purposes, in the inference time, we also have some soft constraints and regularization terms.</p>
     </div>
 </section>
   
 <section class="section" style="background-color: #f8f8f8;" id="disturbance-rejection">
   <h2 class="title is-2" style="text-align: center;">Natural Recovery from Large Disturbance</h2>
   <div class="container" style="max-width: 80%; margin: 0 auto;">
-    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We demonstrate the robustness and flexibility of BFM-Zero: The policy enables the humanoid robot to recover gracefully from various disturbances, including <span style="color: #a65320; font-weight: bold;">heavy pushes</span>, <span style="color: #a65320; font-weight: bold;">torso kicks</span>, <span style="color: #a65320; font-weight: bold;">ground pulls</span>, and <span style="color: #a65320; font-weight: bold;">leg kicks</span>.</h4>
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">We demonstrate the robustness and flexibility of BFM-Zero: The policy enables the humanoid robot to recover gracefully from various disturbances, including <span style="color: #a65320; font-weight: bold;">heavy pushes</span>, <span style="color: #a65320; font-weight: bold;">torso kicks</span>, <span style="color: #a65320; font-weight: bold;">ground pulls</span>, and <span style="color: #a65320; font-weight: bold;">leg kicks</span>.</h4>
     <div class="columns is-centered">
       <div class="column is-half">
         <div class="has-text-centered">
@@ -4211,7 +4221,7 @@
             <source src="./resources/disturbance/disturbance-1_firefox_720p.mp4" type="video/mp4">
             Your browser does not support the video tag.
       </video>
-          <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1em; margin-bottom: 10px;">Highlight: <strong style="color: #a65320;">Natural</strong> recovery from pulling to the ground</h4>
+          <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 1em; margin-bottom: 10px;">Highlight: <strong style="color: #a65320;">Natural</strong> recovery from pulling to the ground</h4>
 
     </div>
       </div>
@@ -4221,7 +4231,7 @@
             <source src="./resources/disturbance/disturbance-2_firefox_720p.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-           <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1em; margin-bottom: 10px;">Highlight: <strong style="color: #a65320;">Emergent behavior</strong> (running) from heavy pushes</h4>
+           <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 1em; margin-bottom: 10px;">Highlight: <strong style="color: #a65320;">Emergent behavior</strong> (running) from heavy pushes</h4>
         </div>
       </div>
     </div>
@@ -4231,12 +4241,12 @@
 <section class="section" style="background-color: #f5f5f5;" id="few-shot-adaptation">
   <h2 class="title is-2" style="text-align: center;">Few-shot Adaptation</h2>
   <div class="container" style="max-width: 80%; margin: 0 auto;">
-    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We demonstrate BFM-Zero's few-shot adaptation capability, the smooth structure of our latent space enables efficient <span style="color: #dc3545; font-weight: bold;">search-based optimization</span> in simulation to discover a better latent instead of directly using zero-shot inference within a short time.</h4>
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">We demonstrate BFM-Zero's few-shot adaptation capability, the smooth structure of our latent space enables efficient <span style="color: #dc3545; font-weight: bold;">search-based optimization</span> in simulation to discover a better latent instead of directly using zero-shot inference within a short time.</h4>
     <!-- Top: Setting image -->
     <div class="has-text-centered" style="margin-bottom: 30px;">
       <img src="./resources/adaptation/setting.png" alt="Adaptation Setting" style="width: 100%; max-width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
     </div>
-     <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">When the robot carries a <span style="color: #dc3545; font-weight: bold;">4kg payload</span> on its torso, we can perform adaptation to let the robot keep single-leg standing for longer time.</h4>
+     <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">When the robot carries a <span style="color: #dc3545; font-weight: bold;">4kg payload</span> on its torso, we can perform adaptation to let the robot keep single-leg standing for longer time.</h4>
     <!-- Bottom: Before/After video comparison -->
     <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: nowrap; max-height: 60vh;">
       <!-- Before video -->
@@ -4247,7 +4257,7 @@
               <source src="./resources/adaptation/before_adapt_firefox_720p.mp4" type="video/mp4">
               Your browser does not support the video tag.
             </video>
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; margin-top: 8px; color: #dc3545;">Before Adaptation</h4>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em; margin-top: 8px; color: #dc3545;">Before Adaptation</h4>
           </div>
         </div>
       </div>
@@ -4255,7 +4265,7 @@
       <!-- Arrow -->
       <div style="flex: 0 0 auto; text-align: center;">
         <div style="margin: 20px 0;">
-          <div style="font-family: 'Google Sans', sans-serif; font-size: 1.0em; font-weight: bold; color: #666; margin-bottom: 10px; line-height: 1.3;">
+          <div style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 1.0em; font-weight: bold; color: #666; margin-bottom: 10px; line-height: 1.3;">
             <div>Adaptation in Sim</div>
             <div style="font-size: 0.8em; margin-top: 5px;">for less than 2 minutes</div>
           </div>
@@ -4271,7 +4281,7 @@
               <source src="./resources/adaptation/after_adapt_firefox_720p.mp4" type="video/mp4">
               Your browser does not support the video tag.
             </video>
-            <h4 style="font-family: 'Google Sans', sans-serif; font-size: 0.9em; margin-top: 8px; color: #28a745;">After Adaptation</h4>
+            <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em; margin-top: 8px; color: #28a745;">After Adaptation</h4>
           </div>
         </div>
       </div>
@@ -4282,12 +4292,12 @@
 <section class="section" id="space-interpolation">
   <h2 class="title is-2" style="text-align: center;">Space Interpolation</h2>
   <div class="container" style="max-width: 80%; margin: 0 auto;">
-    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">The <span style="color: #004bb3; font-weight: bold;">structured nature</span> of the learned space enables smooth interpolation between latent representations. We can leverage <span style="color: #004bb3; font-weight: bold;">Spherical Linear Interpolation</span> to generate intermediate latent vectors along the geodesic arc between the two end-points.</h4>
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">The <span style="color: #004bb3; font-weight: bold;">structured nature</span> of the learned space enables smooth interpolation between latent representations. We can leverage <span style="color: #004bb3; font-weight: bold;">Spherical Linear Interpolation</span> to generate intermediate latent vectors along the geodesic arc between the two end-points.</h4>
     
     <div style="text-align: center; margin: 20px 0;">
       <p style="margin-bottom: 10px;">$$z_{t} := \frac{\sin((1-t)\theta)}{\sin \theta}z_0 + \frac{\sin(t\theta)}{\sin \theta}z_1, \quad \theta := \arccos\left(\langle z_0, z_1 \rangle\right), \ z_0\ne z_1, t\in[0,1].$$</p>
     </div> 
-    <h4 style="text-align: center; margin-bottom: 15px; font-family: 'Google Sans', sans-serif;">We can see simple interpolation shows <span style="color: #004bb3; font-weight: bold;">meaningful semantic-level changes</span>.</h4>  
+    <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">We can see simple interpolation shows <span style="color: #004bb3; font-weight: bold;">meaningful semantic-level changes</span>.</h4>  
     <div class="columns is-centered">
       
       <div class="column is-half">
@@ -4296,8 +4306,8 @@
             <source src="./resources/interpolation/interpolation1_firefox_720p.mp4" type="video/mp4">
             Your browser does not support the video tag.
       </video>
-          <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1em; margin-bottom: 10px;">$z_0: \text{strafe-left}, z_1: \text{strafe-right}$</h4>
-          <!-- <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Hightlight: The robot almost stop at t=0.5, demonstrates the structured nature of the learned space.</p> -->
+          <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 1em; margin-bottom: 10px;">$z_0: \text{strafe-left}, z_1: \text{strafe-right}$</h4>
+          <!-- <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Hightlight: The robot almost stop at t=0.5, demonstrates the structured nature of the learned space.</p> -->
     </div>
       </div>
       <div class="column is-half">
@@ -4306,8 +4316,8 @@
             <source src="./resources/interpolation/interpolation2_firefox_720p.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-          <h4 style="font-family: 'Google Sans', sans-serif; font-size: 1em; margin-bottom: 10px;">$z_0: \text{arms-low-low}, z_1: \text{arms-low-high}$</h4>
-          <!-- <p style="font-family: 'Google Sans', sans-serif; font-size: 0.9em;">Shows robust performance under various disturbance conditions and quick recovery.</p> -->
+          <h4 style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 1em; margin-bottom: 10px;">$z_0: \text{arms-low-low}, z_1: \text{arms-low-high}$</h4>
+          <!-- <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.9em;">Shows robust performance under various disturbance conditions and quick recovery.</p> -->
         </div>
       </div>
     </div>
@@ -4320,7 +4330,7 @@
   <h2 class="title is-2" style="text-align: center;">Scaling Effects in Both Data and Model Size</h2>
   <div class="container" style="max-width: 70%; margin: 0 auto;">
     <div style="max-width: 100%; margin-top: 30px;">
-      <p style="font-family: 'Google Sans', sans-serif; line-height: 1.8; color: #333; font-size: 0.95em; margin-bottom: 25px; text-align: left;">
+      <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); line-height: 1.8; color: #333; font-size: 0.95em; margin-bottom: 25px; text-align: left;">
         <span style="color: #004bb3; font-weight: bold;">Scaling ablations are significant, as they reveal how the Behavior Foundation Model benefits from additional data and larger model capacity, providing insights for model design and data collection.</span> In these experiments, we leverage the CMU and BMLHandball subsets of the AMASS dataset in addition to LAFAN1. We consider individual datasets (LAFAN1 and AMASS) as well as merged datasets containing 12.5%, 25%... of both. For tracking, the test set is completely disjoint from the training datasets. For reward inference, all configurations use 600,000 samples from LAFAN1. Results with a single random seed are reported in the figure below.
       </p>
       
@@ -4339,8 +4349,8 @@
             </div>
             
             <div id="tracking-analysis" class="tab-content active" style="flex: 1; display: flex !important; flex-direction: column; justify-content: center; padding: 30px;">
-               <h3 style="color: #004bb3; margin-bottom: 15px; font-family: 'Google Sans', sans-serif; font-size: 1.3em;">Tracking Performance Analysis</h3> 
-              <p style="font-family: 'Google Sans', sans-serif; line-height: 1.8; color: #333; font-size: 0.95em;">
+               <h3 style="color: #004bb3; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 1.3em;">Tracking Performance Analysis</h3> 
+              <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); line-height: 1.8; color: #333; font-size: 0.95em;">
                 <span style="color: #004bb3; font-weight: bold;">Performance Scaling:</span> Increasing the total model capacity improves tracking performance on nearly all training mocap datasets, although performance on LAFAN1 saturates early.
                 <br><br>
                 <span style="color: #004bb3; font-weight: bold;">Network Architecture Comparison:</span> Residual architectures outperform simple MLPs and can be scaled to larger sizes, whereas scaling MLPs often leads to unstable training.
@@ -4348,7 +4358,7 @@
             </div>
             
             <div id="reward-analysis" class="tab-content" style="flex: 1; display: none; flex-direction: column; justify-content: center; padding: 30px;">
-              <p style="font-family: 'Google Sans', sans-serif; line-height: 1.8; color: #333; font-size: 0.95em;">
+              <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); line-height: 1.8; color: #333; font-size: 0.95em;">
                 <span style="color: #004bb3; font-weight: bold;">Performance Scaling:</span> Reward inference performance improves with the training dataset size, demonstrating the positive correlation between data volume and reward prediction accuracy.
                 <br><br>
                 <span style="color: #004bb3; font-weight: bold;">Importance of Including LAFAN1:</span> Including a certain proportion of LAFAN1 data in training is crucial; performance degrades when training with only AMASS subsets.
