@@ -1196,17 +1196,7 @@
           video.setAttribute('fetchpriority', 'high');
         }
         
-        // Progressive loading: first get metadata, then load video data
-        const startProgressiveLoad = () => {
-          // Metadata loaded, now switch to auto to load video data
-          if (video.preload === 'metadata') {
-            video.preload = 'auto';
-            video.load(); // Reload with auto preload
-            console.log('📹 Hero video metadata loaded, starting progressive data load');
-          }
-        };
-        
-        // Show video when it can play
+        // Show video as soon as we have enough data to start playing
         const showVideo = () => {
           video.style.opacity = '1';
           video.play().catch(err => {
@@ -1214,53 +1204,40 @@
           });
         };
         
-        // Mark hero video as loaded when it can play
+        // Mark hero video as loaded early - when we have enough data (loadeddata)
+        // This allows other videos to start loading sooner
         const markHeroVideoLoaded = () => {
           if (!window.heroVideoLoaded) {
             window.heroVideoLoaded = true;
-            console.log('✅ Hero video fully loaded! Other videos can now load.');
+            console.log('✅ Hero video ready! Other videos can now load.');
             // Trigger event to notify other scripts
             window.dispatchEvent(new CustomEvent('heroVideoLoaded'));
           }
         };
         
-        // Wait for metadata first (faster)
-        if (video.readyState >= 1) {
-          // Metadata already available
-          startProgressiveLoad();
-          // Mark as loaded early if metadata is ready (allows other videos to start loading)
-          markHeroVideoLoaded();
-        } else {
-          video.addEventListener('loadedmetadata', () => {
-            startProgressiveLoad();
-            // Mark as loaded when metadata is ready (progressive loading)
-            markHeroVideoLoaded();
-          }, { once: true });
-        }
-        
-        // Try to show immediately if already loaded
+        // Mark as loaded when we have enough data to play (loadeddata event)
+        // This is earlier than canplay, allowing other videos to start loading sooner
         if (video.readyState >= 2) {
+          // Already have enough data
+          markHeroVideoLoaded();
           showVideo();
         } else {
-          // Wait for video to be ready to play
+          // Listen for loadeddata - happens when we have enough data to start playing
+          video.addEventListener('loadeddata', () => {
+            markHeroVideoLoaded();
+            showVideo();
+          }, { once: true });
+          
+          // Fallback: also listen for canplay (when it can definitely play)
           video.addEventListener('canplay', showVideo, { once: true });
-          // Fallback: show after a delay even if canplay doesn't fire
+          
+          // Fallback: show after a delay even if events don't fire
           setTimeout(() => {
             if (video.readyState >= 2) {
+              markHeroVideoLoaded();
               showVideo();
             }
-          }, 2000);
-        }
-        
-        // Also mark as loaded when video can play (backup)
-        if (video.readyState >= 2) {
-          markHeroVideoLoaded();
-        } else {
-          video.addEventListener('canplay', markHeroVideoLoaded, { once: true });
-          // Fallback: mark as loaded after playing starts
-          video.addEventListener('playing', markHeroVideoLoaded, { once: true });
-          // Additional fallback: mark on loadeddata (when enough data is loaded)
-          video.addEventListener('loadeddata', markHeroVideoLoaded, { once: true });
+          }, 1000);
         }
       }
       
@@ -3076,13 +3053,13 @@
   </nav>
   <section class="hero is-link is-fullheight video" style="overflow: hidden; position:relative; background: linear-gradient(135deg, #004bb3 0%, #1a5fcc 50%, #004bb3 100%);" id="video">
     <div class="hero-video" style="height: 100%; width: 177.77777778vh; min-width: 100%;min-height: 56.25vw;">
-      <video id="hero-video-main" autoplay muted loop playsinline preload="metadata" style="width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease-in-out;">
+      <video id="hero-video-main" autoplay muted loop playsinline preload="auto" style="width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease-in-out;">
         <source src="./resources/head/head_new_firefox_720p.mp4" type="video/mp4">
       </video>
     </div>
     <div class="hero-video is-hidden-tablet is-inline-block-mobile"
       style="height: 154.28571428vw; width: 100%; min-width:64.81481481vh;min-height:100%;">
-      <video id="hero-video-mobile" autoplay muted loop playsinline preload="metadata" style="width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease-in-out;">
+      <video id="hero-video-mobile" autoplay muted loop playsinline preload="auto" style="width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease-in-out;">
         <source src="./resources/head/head_new_firefox_720p.mp4" type="video/mp4">
       </video>
     </div>

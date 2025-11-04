@@ -1,5 +1,5 @@
 body {
-  font-family: 'Open Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 18px;
 }
 
@@ -29,7 +29,7 @@ body {
 }
 
 .teaser {
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 
@@ -53,11 +53,11 @@ body {
 }
 
 .publication-title {
-    font-family: 'Google Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 .publication-authors {
-    font-family: 'Google Sans', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 .publication-venue {
@@ -283,7 +283,7 @@ body {
 }
 
 .formula-text {
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1em;
   font-weight: 400;
   color: #495057;
@@ -392,7 +392,7 @@ body {
 }
 
 .inference-control h4 {
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1.2em;
   font-weight: bold;
   color: #495057;
@@ -424,7 +424,7 @@ body {
 }
 
 .wrist-label {
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1em;
   font-weight: bold;
   color: #495057;
@@ -439,7 +439,7 @@ body {
 
 .reward-button {
   padding: 12px 24px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1em;
   font-weight: bold;
   color: white;
@@ -475,7 +475,7 @@ body {
 .continuous-play-btn {
   margin-top: 15px;
   padding: 10px 20px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1em;
   font-weight: bold;
   color: white;
@@ -624,7 +624,7 @@ body {
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 0.8em;
   font-weight: bold;
   z-index: 10;
@@ -669,7 +669,7 @@ body {
   border: none;
   padding: 8px 16px;
   border-radius: 5px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 0.9em;
   cursor: pointer;
   transition: background-color 0.3s;
@@ -725,7 +725,7 @@ body {
   background-color: #ffffff;
   transform: rotateY(180deg);
   padding: 20px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 0.9em;
   line-height: 1.6;
 }
@@ -855,7 +855,7 @@ body {
   background-color: #ffffff;
   transform: rotateY(180deg);
   padding: 20px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 0.9em;
   line-height: 1.6;
   font-size: clamp(0.8em, 1vw, 1em);
@@ -1005,7 +1005,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
 .timeline-current-time {
   text-align: center;
   margin-top: 30px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   color: #333;
 }
 
@@ -1092,7 +1092,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
   font-size: 1.2rem;
   font-weight: bold;
   text-align: center;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   transition: opacity 0.3s ease;
 }
 
@@ -1155,7 +1155,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
 
 .inference-card-content p {
   margin: 5px 0;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 .inference-card-content .formula {
@@ -1207,7 +1207,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   text-align: center;
 }
 
@@ -1237,7 +1237,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
 }
 
 .tab-content p {
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.6;
   margin-bottom: 15px;
   font-size: 0.95em;
@@ -1275,7 +1275,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   text-align: left;
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
@@ -1317,13 +1317,13 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
 .sub-tab-content h4 {
   color: #004bb3;
   margin-bottom: 10px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1.1em;
 }
 
 .sub-tab-content p {
   margin-bottom: 15px;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.5;
   font-size: 0.9em;
 }
@@ -1333,7 +1333,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
   padding: 15px;
   border-radius: 8px;
   margin: 15px 0;
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   border-left: 4px solid #004bb3;
   max-width: 100%;
   overflow-x: auto;
@@ -1595,7 +1595,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
 }
 
 .placeholder-text {
-  font-family: 'Google Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   font-size: 1em;
   color: #6c757d;
   text-align: center;
