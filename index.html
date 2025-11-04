@@ -8,9 +8,74 @@
 
   <!-- Favicon removed - no custom icon -->
   
-  <!-- Preconnect to CDNs for faster loading (preconnect includes DNS lookup) -->
-  <link rel="preload" href="./resources/head/head_new_firefox_720p.mp4" as="video" type="video/mp4" fetchpriority="high">
+  <!-- CRITICAL: Block all non-hero videos BEFORE HTML parsing starts -->
+  <script>
+    (function() {
+      // Block videos immediately when they're created during HTML parsing
+      const blockVideo = function(video) {
+        const videoId = video.id || '';
+        // Skip hero videos
+        if (videoId !== 'hero-video-main' && videoId !== 'hero-video-mobile') {
+          // Immediately block this video - set preload to none BEFORE browser can start loading
+          video.preload = 'none';
+          video.pause();
+          // Remove src from video and source elements immediately
+          if (video.src) {
+            video.setAttribute('data-temp-src', video.src);
+            video.removeAttribute('src');
+          }
+          const source = video.querySelector('source');
+          if (source) {
+            const srcAttr = source.getAttribute('src');
+            if (srcAttr) {
+              source.setAttribute('data-temp-src', srcAttr);
+              source.removeAttribute('src');
+            }
+          }
+        }
+      };
+      
+      // Use MutationObserver to catch videos as they're added to DOM
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1) { // Element node
+              // Check if it's a video element
+              if (node.tagName === 'VIDEO') {
+                blockVideo(node);
+              }
+              // Also check children for video elements
+              if (node.querySelectorAll) {
+                const videos = node.querySelectorAll('video');
+                videos.forEach(blockVideo);
+              }
+            }
+          });
+        });
+      });
+      
+      // Start observing at document level as early as possible
+      // Observe document.documentElement to catch all changes
+      if (document.documentElement) {
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+      }
+      
+      // Also block any existing videos immediately (in case script runs after some videos are already parsed)
+      if (document.readyState === 'loading') {
+        // DOM is still loading, set up early blocking
+        document.addEventListener('DOMContentLoaded', function() {
+          const allVideos = document.querySelectorAll('video');
+          allVideos.forEach(blockVideo);
+        });
+      } else {
+        // DOM already loaded, block immediately
+        const allVideos = document.querySelectorAll('video');
+        allVideos.forEach(blockVideo);
+      }
+    })();
+  </script>
   
+  <!-- Preconnect to CDNs for faster loading (preconnect includes DNS lookup) -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://ajax.googleapis.com">
