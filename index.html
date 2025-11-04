@@ -1297,28 +1297,63 @@
         // Load KaTeX after hero video is ready
         console.log('📚 Loading KaTeX after hero video is ready...');
         
-        // Preload critical KaTeX fonts
-        const katexFonts = [
-          'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/fonts/KaTeX_Main-Regular.woff2',
-          'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/fonts/KaTeX_Math-Italic.woff2',
-          'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/fonts/KaTeX_Math-BoldItalic.woff2',
-          'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/fonts/KaTeX_Size2-Regular.woff2'
-        ];
-        
-        katexFonts.forEach(fontUrl => {
-          const link = document.createElement('link');
-          link.rel = 'preload';
-          link.href = fontUrl;
-          link.as = 'font';
-          link.type = 'font/woff2';
-          link.crossOrigin = 'anonymous';
-          document.head.appendChild(link);
-        });
-        
         // Load KaTeX CSS
         const katexCSS = document.createElement('link');
         katexCSS.rel = 'stylesheet';
         katexCSS.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css';
+        katexCSS.onload = function() {
+          // Inject CSS to override KaTeX fonts with system fonts
+          // This prevents loading external font files
+          const style = document.createElement('style');
+          style.textContent = `
+            /* Override KaTeX fonts to use system fonts - no external loading */
+            .katex {
+              font-family: "Times New Roman", "Latin Modern Math", "STIX Two Math", serif !important;
+            }
+            .katex .mathnormal {
+              font-family: "Times New Roman", "Latin Modern Math", serif !important;
+            }
+            .katex .mathit {
+              font-family: "Times New Roman", "Latin Modern Math", serif !important;
+              font-style: italic !important;
+            }
+            .katex .mathbf {
+              font-family: "Times New Roman", "Latin Modern Math", serif !important;
+              font-weight: bold !important;
+            }
+            .katex .boldsymbol {
+              font-family: "Times New Roman", "Latin Modern Math", serif !important;
+              font-weight: bold !important;
+              font-style: italic !important;
+            }
+            /* Disable font loading by removing @font-face rules */
+            @font-face {
+              font-family: 'KaTeX_Main';
+              src: local('Times New Roman');
+            }
+            @font-face {
+              font-family: 'KaTeX_Math';
+              src: local('Times New Roman');
+            }
+            @font-face {
+              font-family: 'KaTeX_Size1';
+              src: local('Times New Roman');
+            }
+            @font-face {
+              font-family: 'KaTeX_Size2';
+              src: local('Times New Roman');
+            }
+            @font-face {
+              font-family: 'KaTeX_Size3';
+              src: local('Times New Roman');
+            }
+            @font-face {
+              font-family: 'KaTeX_Size4';
+              src: local('Times New Roman');
+            }
+          `;
+          document.head.appendChild(style);
+        };
         document.head.appendChild(katexCSS);
         
         // Load KaTeX JS
@@ -1331,7 +1366,7 @@
           autoRenderJS.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js';
           autoRenderJS.defer = true;
           autoRenderJS.onload = function() {
-            // Initialize KaTeX rendering after both scripts are loaded
+            // Initialize KaTeX rendering (using system fonts, no external font loading)
             if (typeof renderMathInElement !== 'undefined') {
               renderMathInElement(document.body, {
                 delimiters: [
@@ -1339,9 +1374,10 @@
                   {left: '$', right: '$', display: false},
                   {left: '\\[', right: '\\]', display: true},
                   {left: '\\(', right: '\\)', display: false}
-                ]
+                ],
+                throwOnError: false
               });
-              console.log('✅ KaTeX loaded and initialized');
+              console.log('✅ KaTeX loaded and initialized (using system fonts, no external font loading)');
             }
           };
           document.head.appendChild(autoRenderJS);
@@ -2552,25 +2588,31 @@
               }
               
               // Change preload from "none" to appropriate value
+              // Use metadata first, then upgrade to auto only for visible videos
               if (video.preload === 'none') {
-                if (video.closest('.gallery-item') || video.hasAttribute('controls')) {
-                  video.preload = 'metadata';
-                  video.load(); // Apply new preload setting
-                } else {
-                  video.preload = 'metadata';
+                video.preload = 'metadata';
+                // Only load metadata, not full video yet
+                if (video.readyState === 0) {
                   video.load();
                 }
               }
               
-              // Only set auto for videos that are actually visible and needed
+              // Only set auto preload for videos that are actually visible and needed
+              // Add staggered delay to prevent too many videos loading simultaneously
               if (video.closest('.gallery-item') || video.hasAttribute('controls')) {
-                // Delay loading to avoid competing with hero video
+                // Calculate delay based on video position to stagger loading
+                const videoIndex = Array.from(document.querySelectorAll('video')).indexOf(video);
+                const delay = Math.min((videoIndex % 5) * 500, 2000); // Stagger by 500ms per video, max 2s
+                
                 setTimeout(() => {
-                  if (entry.isIntersecting && window.heroVideoLoaded) { // Check again if still visible
+                  if (entry.isIntersecting && window.heroVideoLoaded && video.readyState <= 1) {
+                    // Only upgrade to auto if video is still in viewport and not already loading fully
                     video.preload = 'auto';
-                    video.load();
+                    if (video.readyState <= 1) {
+                      video.load();
+                    }
                   }
-                }, 1000);
+                }, 2000 + delay); // Base 2s delay + staggered delay
               }
               
               // Start auto-play if it's a gallery video
@@ -2678,12 +2720,13 @@
         performanceMetrics.networkSpeed = connection.effectiveType || 'unknown';
         
         // Adjust max concurrent loads based on network speed
+        // Reduced to prevent bandwidth competition with hero video
         if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
           performanceMetrics.maxConcurrentLoads = 1;
         } else if (connection.effectiveType === '3g') {
-          performanceMetrics.maxConcurrentLoads = 2;
+          performanceMetrics.maxConcurrentLoads = 1;
         } else {
-          performanceMetrics.maxConcurrentLoads = 3;
+          performanceMetrics.maxConcurrentLoads = 2; // Reduced from 3 to 2
         }
       }
       
@@ -2758,18 +2801,28 @@
             }
             
             // Change preload from "none" to appropriate value
+            // Use metadata first, then upgrade to auto only for visible videos
             if (video.preload === 'none') {
               video.preload = 'metadata';
-              video.load(); // Apply new preload setting
+              if (video.readyState === 0) {
+                video.load(); // Load metadata only
+              }
             }
             
             // Delay setting auto preload to avoid competing with hero video
+            // Stagger loading to prevent multiple videos loading simultaneously
+            const videoIndex = Array.from(document.querySelectorAll('video')).indexOf(video);
+            const delay = Math.min((videoIndex % 5) * 500, 2000); // Stagger by 500ms per video, max 2s
+            
             setTimeout(() => {
-              if (entry.isIntersecting && window.heroVideoLoaded) { // Check again if still visible
+              if (entry.isIntersecting && window.heroVideoLoaded && video.readyState <= 1) {
+                // Only upgrade to auto if video is still in viewport and not already loading fully
                 video.preload = 'auto';
-                video.load();
+                if (video.readyState <= 1) {
+                  video.load();
+                }
               }
-            }, 1000); // Wait 1 second after hero video starts
+            }, 2000 + delay); // Base 2s delay + staggered delay
             
             // Start auto-play if it's a gallery video (both Motion Tracking and Goal Reaching)
             if (video.closest('.gallery-item')) {
