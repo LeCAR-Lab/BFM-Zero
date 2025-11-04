@@ -9,7 +9,24 @@
   <!-- Favicon -->
   <!-- <link rel="icon" type="image/png" href="./resources/logo.png"> -->
   
-  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+  <!-- Preconnect to font CDNs for faster loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://ajax.googleapis.com">
+  
+  <!-- Preload critical CSS for faster first paint -->
+  <link rel="preload" href="./static/css/bulma.min.css" as="style">
+  <link rel="preload" href="./static/css/index.css" as="style">
+  
+  <!-- Load fonts with font-display=swap to avoid slow network warnings -->
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@400;700&family=Castoro&display=swap"
         rel="stylesheet">
   <link rel="stylesheet" href="./static/css/bulma.min.css">
   <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
@@ -21,6 +38,10 @@
   
   <!-- Preload hero video for faster loading -->
   <link rel="preload" href="./resources/head/head_new_firefox_720p.mp4" as="video" type="video/mp4" fetchpriority="high">
+  
+  <!-- Preload critical JavaScript -->
+  <link rel="preload" href="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" as="script">
+  <link rel="preload" href="./static/js/index.js" as="script">
   
   <style>
     /* Right floating navigation bar styles */
@@ -1111,11 +1132,13 @@
       appearance: none !important;
     }
   </style>
+  <!-- jQuery must load first (no defer) as other scripts may depend on it -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="./static/js/bulma-carousel.min.js"></script>
-  <script src="./static/js/bulma-slider.min.js"></script>
-  <script src="./static/js/index.js"></script>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <!-- Other scripts can defer to improve initial page load -->
+  <script src="./static/js/bulma-carousel.min.js" defer></script>
+  <script src="./static/js/bulma-slider.min.js" defer></script>
+  <script src="./static/js/index.js" defer></script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
 
   <!-- KaTeX for math rendering -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
