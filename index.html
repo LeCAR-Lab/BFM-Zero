@@ -8,13 +8,10 @@
 
   <!-- Favicon removed - no custom icon -->
   
-  <!-- Preconnect to CDNs for faster loading -->
+  <!-- Preconnect to CDNs for faster loading (preconnect includes DNS lookup) -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://ajax.googleapis.com">
-  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-  <link rel="dns-prefetch" href="https://ajax.googleapis.com">
   
   <!-- Preload critical CSS for faster first paint -->
   <link rel="preload" href="./static/css/bulma.min.css" as="style">
@@ -1136,7 +1133,7 @@
   <script src="./static/js/bulma-carousel.min.js" defer></script>
   <script src="./static/js/bulma-slider.min.js" defer></script>
   <script src="./static/js/index.js" defer></script>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+  <!-- Polyfill removed - modern browsers don't need ES6 polyfill, and polyfill.io can be slow -->
 
   <!-- KaTeX for math rendering - will be loaded after hero video -->
   <!-- Note: KaTeX loading is deferred until hero video is ready -->
@@ -3110,9 +3107,9 @@
             </div>
   
             <div class="column">
-              <image src="./static/images/ip.png" style="width: 30%;"></image>
+              <img src="./static/images/ip.png" alt="IP" loading="lazy" style="width: 30%;">
               <br>
-              <image src="./static/images/meta.png" style="width: 20%;"></image>
+              <img src="./static/images/meta.png" alt="Meta" loading="lazy" style="width: 20%;">
             </div>
   
   
@@ -3244,7 +3241,7 @@
         <div class="flip-card">
           <div class="flip-card-inner">
             <div class="flip-card-front">
-              <img src="./static/images/pretraining.png" alt="Pre-training Image">
+              <img src="./static/images/pretraining.png" alt="Pre-training Image" loading="lazy">
             </div>
             <div class="flip-card-back">
               <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.7em;">Objective: Learn a <span style="color:#b00202; font-weight:bold;">unified latent representation</span> that embeds tasks (e.g., target motions, rewards, goals) into a shared space and a <span style="color:#b00202; font-weight:bold;">promptable policy</span> that conditions on this representation to perform diverse tasks without retraining.</p>
@@ -3260,7 +3257,7 @@
           <div class="flip-card">
             <div class="flip-card-inner">
               <div class="flip-card-front">
-                <img src="./static/images/inference.png" alt="Inference Image">
+                <img src="./static/images/inference.png" alt="Inference Image" loading="lazy">
               </div>
               <div class="flip-card-back">
                 <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.7em;">BFM-Zero can <span style="color:#b00202; font-weight:bold;">zero-shot</span> perform tasks including motion tracking, goal reaching, and reward optimization.</p>
@@ -3274,7 +3271,7 @@
           <div class="flip-card">
             <div class="flip-card-inner">
               <div class="flip-card-front">
-                <img src="./static/images/adaptation.png" alt="Adaptation Image">
+                <img src="./static/images/adaptation.png" alt="Adaptation Image" loading="lazy">
               </div>
               <div class="flip-card-back">
                 <p style="font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif); font-size: 0.7em;">BFM-Zero supports <span style="color:#b00202; font-weight:bold;">few-shot adaptation</span> to quickly adapt to specific requirements with minimal additional training.</p>
@@ -4220,7 +4217,7 @@
     <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">We demonstrate BFM-Zero's few-shot adaptation capability, the smooth structure of our latent space enables efficient <span style="color: #dc3545; font-weight: bold;">search-based optimization</span> in simulation to discover a better latent instead of directly using zero-shot inference within a short time.</h4>
     <!-- Top: Setting image -->
     <div class="has-text-centered" style="margin-bottom: 30px;">
-      <img src="./resources/adaptation/setting.png" alt="Adaptation Setting" style="width: 100%; max-width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <img src="./resources/adaptation/setting.png" alt="Adaptation Setting" loading="lazy" style="width: 100%; max-width: 300px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
     </div>
      <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">When the robot carries a <span style="color: #dc3545; font-weight: bold;">4kg payload</span> on its torso, we can perform adaptation to let the robot keep single-leg standing for longer time.</h4>
     <!-- Bottom: Before/After video comparison -->
@@ -4313,7 +4310,7 @@
       <div class="columns" style="margin: 0; align-items: stretch;">
         <div class="column is-half" style="display: flex; align-items: stretch;">
           <div class="has-text-centered" style="width: 100%; display: flex; align-items: center;">
-            <img src="./resources/scaling/scaling_plot_mix_linear.png" alt="Scaling Plot Mix Linear" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+            <img src="./resources/scaling/scaling_plot_mix_linear.png" alt="Scaling Plot Mix Linear" loading="lazy" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
           </div>
         </div>
         
