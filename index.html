@@ -330,6 +330,27 @@
         padding: 1.5rem 0;
       }
       
+      /* Section titles and content mobile optimization */
+      .section .title.is-2 {
+        font-size: 1.5rem !important;
+      }
+      
+      .section .title.is-3 {
+        font-size: 1.25rem !important;
+      }
+      
+      .section .title.is-5 {
+        font-size: 1.1rem !important;
+      }
+      
+      .section p {
+        font-size: 0.9em !important;
+      }
+      
+      .section .container p {
+        font-size: 0.9em !important;
+      }
+      
       /* Video mobile optimization */
       video {
         max-width: 100%;
@@ -409,15 +430,15 @@
         font-size: 1.0em !important;
       }
       
-      /* Header area mobile optimization - 1/4 screen height */
+      /* Header area mobile optimization - 1/3 screen height */
       .hero.is-fullheight {
-        height: 25vh !important;
-        min-height: 25vh !important;
+        height: 33vh !important;
+        min-height: 33vh !important;
       }
       
       .hero-video {
-        height: 25vh !important;
-        min-height: 25vh !important;
+        height: 33vh !important;
+        min-height: 33vh !important;
       }
       
       /* Gallery frames further reduced - fix white borders */
@@ -620,8 +641,49 @@
       
       /* Button mobile optimization */
       .button {
-        padding: 0.4rem 0.8rem;
-      font-size: 0.8rem;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.9rem !important;
+        min-height: 2.5rem !important;
+        min-width: 4rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+      }
+      
+      .button span {
+        font-size: 0.9rem !important;
+        line-height: 1.2 !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .button .icon,
+      .button i {
+        font-size: 0.9rem !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .external-link.button {
+        font-size: 0.9rem !important;
+        padding: 0.5rem 1rem !important;
+        min-height: 2.5rem !important;
+        min-width: 4rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+      }
+      
+      .external-link.button span {
+        font-size: 0.9rem !important;
+        line-height: 1.2 !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .external-link.button .icon,
+      .external-link.button i {
+        font-size: 0.9rem !important;
+        flex-shrink: 0 !important;
       }
       
       /* Table mobile optimization */
@@ -712,6 +774,27 @@
       
       .section {
         padding: 1.5rem 0;
+      }
+      
+      /* Section titles and content iPhone optimization */
+      .section .title.is-2 {
+        font-size: 1.5rem !important;
+      }
+      
+      .section .title.is-3 {
+        font-size: 1.25rem !important;
+      }
+      
+      .section .title.is-5 {
+        font-size: 1.1rem !important;
+      }
+      
+      .section p {
+        font-size: 0.9em !important;
+      }
+      
+      .section .container p {
+        font-size: 0.9em !important;
       }
       
       .flip-card {
@@ -911,15 +994,15 @@
         font-size: 1.0em !important;
       }
       
-      /* iPhone Header area optimization - reduce header size */
+      /* iPhone Header area optimization - 1/3 screen height */
       .hero.is-fullheight {
-        height: 25vh !important;
-        min-height: 25vh !important;
+        height: 33vh !important;
+        min-height: 33vh !important;
       }
       
       .hero-video {
-        height: 25vh !important;
-        min-height: 25vh !important;
+        height: 33vh !important;
+        min-height: 33vh !important;
       }
       
       /* iPhone Gallery frames further reduced - fix white borders */
@@ -986,62 +1069,68 @@
         font-size: 1.05em !important;
       }
       
-      /* iPhone fix button icon overlap issue */
+      /* iPhone fix button icon overlap issue - ensure readable text */
       .button {
-        font-size: 1em !important;
-        padding: 0.5rem 1rem !important;
-        min-height: 2.5rem !important;
-        min-width: 4rem !important;
+        font-size: 1.1em !important;
+        padding: 0.6rem 1.2rem !important;
+        min-height: 3rem !important;
+        min-width: 5rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 0.5rem !important;
+        gap: 0.6rem !important;
+        color: #fff !important; /* Ensure white text on dark buttons */
       }
       
       .button span {
-        font-size: 0.8em !important;
-        line-height: 1.2 !important;
+        font-size: 1.1em !important;
+        line-height: 1.3 !important;
         flex-shrink: 0 !important;
+        color: inherit !important;
       }
       
       .button .icon {
-        font-size: 0.8em !important;
-        width: 0.8em !important;
-        height: 0.8em !important;
+        font-size: 1.1em !important;
+        width: auto !important;
+        height: auto !important;
         flex-shrink: 0 !important;
       }
       
       .button i {
-        font-size: 0.8em !important;
+        font-size: 1.1em !important;
+        color: inherit !important;
       }
       
-      /* PDF button specific styles - fix icon overlap */
+      /* External link button specific styles - ensure readable */
       .external-link.button {
-        font-size: 1em !important;
-        padding: 0.5rem 1rem !important;
-        min-height: 2.5rem !important;
-        min-width: 4rem !important;
+        font-size: 1.1em !important;
+        padding: 0.6rem 1.2rem !important;
+        min-height: 3rem !important;
+        min-width: 5rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 0.5rem !important;
+        gap: 0.6rem !important;
+        color: #fff !important; /* Ensure white text on dark buttons */
       }
       
       .external-link.button span {
-        font-size: 0.8em !important;
-        line-height: 1.2 !important;
+        font-size: 1.1em !important;
+        line-height: 1.3 !important;
         flex-shrink: 0 !important;
+        color: inherit !important;
       }
       
       .external-link.button .icon {
-        font-size: 0.8em !important;
-        width: 0.8em !important;
-        height: 0.8em !important;
+        font-size: 1.1em !important;
+        width: auto !important;
+        height: auto !important;
         flex-shrink: 0 !important;
       }
       
       .external-link.button i {
-        font-size: 0.8em !important;
+        font-size: 1.1em !important;
+        color: inherit !important;
       }
       
       /* iPhone ensure Gallery displays normally */
