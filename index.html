@@ -2610,6 +2610,22 @@
       waitForHeroVideo(() => {
         console.log('🎬 Hero video loaded! Starting to load other videos...');
         
+        // Restore frameVideo immediately when hero video is loaded (it's in viewport)
+        const frameVideo = document.getElementById('frameVideo');
+        if (frameVideo) {
+          if (frameVideo.hasAttribute('data-temp-src') && !frameVideo.src) {
+            frameVideo.src = frameVideo.getAttribute('data-temp-src');
+            frameVideo.removeAttribute('data-temp-src');
+            frameVideo.load();
+          }
+          const frameSource = frameVideo.querySelector('source');
+          if (frameSource && frameSource.hasAttribute('data-temp-src') && !frameSource.src) {
+            frameSource.src = frameSource.getAttribute('data-temp-src');
+            frameSource.removeAttribute('data-temp-src');
+            frameVideo.load();
+          }
+        }
+        
         // Set up smart Intersection Observer for optimized loading
         const videoObserver = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
@@ -2631,11 +2647,13 @@
               if (video.hasAttribute('data-temp-src') && !video.src) {
                 video.src = video.getAttribute('data-temp-src');
                 video.removeAttribute('data-temp-src');
+                video.load();
               }
               const source = video.querySelector('source');
               if (source && source.hasAttribute('data-temp-src') && !source.src) {
                 source.src = source.getAttribute('data-temp-src');
                 source.removeAttribute('data-temp-src');
+                video.load();
               }
               
               // Change preload from "none" to appropriate value
@@ -2689,10 +2707,27 @@
         });
         
         // Observe all videos except hero videos (after delay)
+        // Also ensure frameVideo is observed and loaded immediately since it's critical
         document.querySelectorAll('video').forEach(video => {
           // Skip hero videos - they're already loading with high priority
           if (video.id !== 'hero-video-main' && video.id !== 'hero-video-mobile') {
             videoObserver.observe(video);
+            
+            // If it's frameVideo, ensure it's loaded immediately (it's in viewport)
+            if (video.id === 'frameVideo') {
+              // Restore src if it was blocked
+              if (video.hasAttribute('data-temp-src') && !video.src) {
+                video.src = video.getAttribute('data-temp-src');
+                video.removeAttribute('data-temp-src');
+                video.load();
+              }
+              const source = video.querySelector('source');
+              if (source && source.hasAttribute('data-temp-src') && !source.src) {
+                source.src = source.getAttribute('data-temp-src');
+                source.removeAttribute('data-temp-src');
+                video.load();
+              }
+            }
           }
         });
       
