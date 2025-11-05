@@ -1576,18 +1576,10 @@
     window.addEventListener('load', function() {
       const timelineSlider = document.getElementById('timelineSlider');
       if (timelineSlider) {
-        timelineSlider.style.setProperty('background', '#5a8a2a', 'important');
-        timelineSlider.style.backgroundColor = '#5a8a2a';
-        timelineSlider.style.background = '#5a8a2a';
-        
-        // Add dynamic styles
+        // Add dynamic styles for thumb
         const dynamicStyle = document.createElement('style');
         dynamicStyle.id = 'timeline-green-style';
         dynamicStyle.textContent = `
-          #timelineSlider {
-            background: #5a8a2a !important;
-            background-color: #5a8a2a !important;
-          }
           #timelineSlider::-webkit-slider-thumb {
             background: #5a8a2a !important;
           }
@@ -2038,6 +2030,8 @@
             timelineSlider.value = point;
             frameVideo.currentTime = point;
             updateTimeDisplay(point);
+            lastUpdateTime = 0;
+            updateProgressBarColor();
           });
           
           // Click key point to also jump
@@ -2045,6 +2039,8 @@
             timelineSlider.value = point;
             frameVideo.currentTime = point;
             updateTimeDisplay(point);
+            lastUpdateTime = 0;
+            updateProgressBarColor();
           });
           
           // Add to timelineMarks container
@@ -2058,12 +2054,27 @@
           const time = parseFloat(this.value);
           frameVideo.currentTime = time;
           updateTimeDisplay(time);
+          // Force immediate update for user input
+          lastUpdateTime = 0;
+          updateProgressBarColor();
         });
+        
+        // Throttle function for performance
+        let lastUpdateTime = 0;
+        const throttleDelay = 50; // Update at most every 50ms
         
         // Video time update events
         frameVideo.addEventListener('timeupdate', function() {
-          timelineSlider.value = this.currentTime;
-          updateTimeDisplay(this.currentTime);
+          const currentTime = this.currentTime;
+          timelineSlider.value = currentTime;
+          updateTimeDisplay(currentTime);
+          
+          // Throttle progress bar color updates
+          const now = Date.now();
+          if (now - lastUpdateTime >= throttleDelay) {
+            updateProgressBarColor();
+            lastUpdateTime = now;
+          }
         });
         
         // Update time display
@@ -2075,40 +2086,95 @@
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
         }
         
-        // Force set timeline color - multiple safeguards
-        timelineSlider.style.setProperty('background', '#5a8a2a', 'important');
-        timelineSlider.style.backgroundColor = '#5a8a2a';
-        timelineSlider.style.background = '#5a8a2a';
+        // Update progress bar color (green for reached, gray for unreached)
+        let lastPercentage = -1; // Track last percentage to avoid unnecessary updates
+        function updateProgressBarColor() {
+          const value = parseFloat(timelineSlider.value) || 0;
+          const max = parseFloat(timelineSlider.max) || 25;
+          if (max <= 0) return; // Don't update if max is invalid
+          
+          const percentage = Math.max(0, Math.min(100, (value / max) * 100));
+          
+          // Only update if percentage changed significantly (avoid unnecessary updates)
+          if (Math.abs(percentage - lastPercentage) < 0.1 && lastPercentage >= 0) {
+            return;
+          }
+          lastPercentage = percentage;
+          
+          // Get or create style element - always use the same ID
+          let trackStyle = document.getElementById('timeline-track-style');
+          if (!trackStyle) {
+            trackStyle = document.createElement('style');
+            trackStyle.id = 'timeline-track-style';
+            // Insert at the end of head to ensure highest priority
+            document.head.appendChild(trackStyle);
+          }
+          
+          // Use layered backgrounds: green on top, gray below
+          // Use !important to override any static CSS
+          // Set both background and background-image for maximum compatibility
+          const gradient = `linear-gradient(to right, #5a8a2a 0%, #5a8a2a ${percentage}%, transparent ${percentage}%, transparent 100%)`;
+          
+          // Force update by removing and re-adding the style element
+          // This ensures the browser re-applies the styles
+          if (trackStyle.parentNode) {
+            trackStyle.parentNode.removeChild(trackStyle);
+          }
+          trackStyle = document.createElement('style');
+          trackStyle.id = 'timeline-track-style';
+          trackStyle.textContent = `
+            #timelineSlider::-webkit-slider-runnable-track {
+              background: #ccc !important;
+              background-image: ${gradient} !important;
+              background-size: 100% 100% !important;
+              background-repeat: no-repeat !important;
+              background-position: 0 0 !important;
+            }
+            #timelineSlider::-moz-range-track {
+              background: #ccc !important;
+              background-image: ${gradient} !important;
+              background-size: 100% 100% !important;
+              background-repeat: no-repeat !important;
+              background-position: 0 0 !important;
+            }
+          `;
+          // Append to end of head for highest priority
+          document.head.appendChild(trackStyle);
+        }
         
-        // Set slider thumb color
+        // Set slider thumb color and positioning
         const style = document.createElement('style');
         style.textContent = `
           #timelineSlider::-webkit-slider-thumb {
             background: #5a8a2a !important;
+            margin-top: -6px !important;
           }
           #timelineSlider::-moz-range-thumb {
-            background: #5a8a2a !important;
-          }
-          #timelineSlider {
             background: #5a8a2a !important;
           }
         `;
         document.head.appendChild(style);
         
+        // Initialize progress bar color
+        updateProgressBarColor();
+        
         // Initialize
         timelineSlider.max = frameVideo.duration || 30;
         updateTimeDisplay(0);
+        updateProgressBarColor();
         
         // Ensure initialization after video loads
         frameVideo.addEventListener('loadedmetadata', function() {
           timelineSlider.max = this.duration;
           updateTimeDisplay(0);
+          updateProgressBarColor();
         });
         
         // If video is already loaded, initialize immediately
         if (frameVideo.readyState >= 1) {
           timelineSlider.max = frameVideo.duration;
           updateTimeDisplay(0);
+          updateProgressBarColor();
         }
       }
     });
@@ -3674,7 +3740,7 @@
     <h4 style="text-align: center; margin-bottom: 15px; font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);">Click image for real-world goal pose, click ▶ for natural transition, and drag the progress bar to view frame by frame.</h4>
     <div class="video-timeline-container">
       <div class="timeline-marks" id="timelineMarks"></div>
-      <input type="range" id="timelineSlider" class="timeline-slider" min="0" max="25" step="0.1" value="0" style="background: #5a8a2a !important;">
+      <input type="range" id="timelineSlider" class="timeline-slider" min="0" max="25" step="0.1" value="0" style="background: #ccc;">
       <div class="timeline-current-time" id="currentTime">00:00.00</div>
       </div>
 
