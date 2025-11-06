@@ -854,10 +854,11 @@
       }
       
       /* iPhone tabs container optimization */
+      /* iPhone tabs container optimization - ensure readable size */
       .tabs-container {
-        transform: scale(0.33);
-        transform-origin: center top;
-        margin: 0 auto;
+        transform: scale(1) !important;
+        max-width: 100% !important;
+        margin: 1rem auto !important;
       }
       
       .tabs-container * {
@@ -865,42 +866,94 @@
       }
       
       .tabs-header {
-        transform: scale(1);
+        transform: scale(1) !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        padding: 10px !important;
+        justify-content: center !important;
       }
       
       .tab-button {
         font-size: 0.9em !important;
-        padding: 8px 6px !important;
+        padding: 10px 12px !important;
+        flex: 0 1 auto !important;
+        min-width: fit-content !important;
+        white-space: nowrap !important;
       }
       
       .sub-tabs-container {
-        transform: scale(0.5);
-        transform-origin: center top;
+        transform: scale(1) !important;
+        max-width: 100% !important;
+        margin: 1rem auto !important;
       }
       
       .sub-tabs-header {
-        width: 60px;
-        font-size: 1em !important;
+        transform: scale(1) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        justify-content: center !important;
+        width: 100% !important;
+        background: linear-gradient(135deg, #666 0%, #888 100%) !important;
+        border-radius: 10px !important;
+        border-bottom: none !important;
+        min-width: auto !important;
+        max-width: 100% !important;
       }
       
       .sub-tab-button {
-        font-size: 0.9em !important;
-        padding: 6px 4px !important;
+        font-size: 0.85em !important;
+        padding: 8px 10px !important;
+        flex: 0 1 auto !important;
+        min-width: fit-content !important;
+        white-space: nowrap !important;
+        width: auto !important;
+        text-align: center !important;
       }
       
-      /* Specific scaling for reward optimization sub-tabs */
+      .sub-tab-content.active {
+        display: block !important;
+      }
+      
+      .sub-tabs-container {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      
+      /* Specific scaling for reward optimization sub-tabs - removed, using responsive design instead */
       #reward-optimization .sub-tabs-container {
-        transform: scale(0.5);
-        transform-origin: center top;
+        transform: scale(1) !important;
+        max-width: 100% !important;
+        margin: 1rem auto !important;
       }
       
       #reward-optimization .sub-tabs-header {
-        width: 60px;
+        transform: scale(1) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        justify-content: center !important;
+        width: 100% !important;
+        background: linear-gradient(135deg, #666 0%, #888 100%) !important;
+        border-radius: 10px !important;
+        border-bottom: none !important;
+        min-width: auto !important;
+        max-width: 100% !important;
       }
       
       #reward-optimization .sub-tab-button {
         font-size: 0.8em !important;
-        padding: 5px 3px !important;
+        padding: 8px 10px !important;
+        flex: 0 1 auto !important;
+        min-width: fit-content !important;
+        white-space: nowrap !important;
+        width: auto !important;
+        text-align: center !important;
       }
       
       #reward-optimization .sub-tab-content {
@@ -923,7 +976,84 @@
         font-size: 0.9em !important;
       }
       
-      /* iPhone video optimization in tabs */
+      /* Exclude KaTeX internal elements from font-size inheritance - let KaTeX handle its own sizing */
+      .reward-formula .katex,
+      .reward-formula .katex-display {
+        font-size: 1em !important;
+        line-height: normal !important;
+      }
+      
+      .reward-formula .katex *,
+      .reward-formula .katex-display *,
+      .reward-formula .katex-html,
+      .reward-formula .katex-html *,
+      .reward-formula .katex svg,
+      .reward-formula .katex-display svg,
+      .reward-formula .katex svg *,
+      .reward-formula .katex-display svg * {
+        font-size: 1em !important;
+        line-height: normal !important;
+      }
+      
+      /* Sub-tab-content formula styles for iPad */
+      .sub-tab-content .reward-formula {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        white-space: nowrap !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+        display: block !important;
+      }
+      
+      .sub-tab-content .reward-formula * {
+        white-space: nowrap !important;
+      }
+      
+      .sub-tab-content .reward-formula .MathJax,
+      .sub-tab-content .reward-formula .MathJax_Display {
+        max-width: 100% !important;
+        width: 100% !important;
+        min-width: fit-content !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        white-space: nowrap !important;
+        transform: none !important;
+        zoom: 1 !important;
+      }
+      
+      .sub-tab-content .reward-formula .MathJax *,
+      .sub-tab-content .reward-formula .MathJax_Display * {
+        white-space: nowrap !important;
+        transform: none !important;
+        zoom: 1 !important;
+      }
+      
+      .sub-tab-content .reward-formula .katex,
+      .sub-tab-content .reward-formula .katex-display {
+        font-size: 1em !important;
+        line-height: normal !important;
+        min-width: fit-content !important;
+        width: auto !important;
+        max-width: none !important;
+        transform: none !important;
+        zoom: 1 !important;
+        display: inline-block !important;
+      }
+      
+      .sub-tab-content .reward-formula .katex *,
+      .sub-tab-content .reward-formula .katex-display *,
+      .sub-tab-content .reward-formula .katex-html,
+      .sub-tab-content .reward-formula .katex-html *,
+      .sub-tab-content .reward-formula .katex svg,
+      .sub-tab-content .reward-formula .katex-display svg,
+      .sub-tab-content .reward-formula .katex svg *,
+      .sub-tab-content .reward-formula .katex-display svg * {
+        font-size: 1em !important;
+        line-height: normal !important;
+        transform: none !important;
+        zoom: 1 !important;
+      }
       .sub-tab-content video {
         max-width: 100%;
         height: auto;
@@ -936,48 +1066,181 @@
         font-size: 1.5em !important;
         padding: 10px !important;
         overflow-x: auto !important;
+        overflow-y: visible !important;
+        white-space: nowrap !important;
         display: block !important;
         line-height: 1.5 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
       }
       
       #reward-optimization .reward-formula * {
         font-size: 1em !important;
         line-height: 1.5 !important;
+        white-space: nowrap !important;
       }
       
       #reward-optimization .reward-formula .MathJax,
       #reward-optimization .reward-formula .MathJax_Display {
         font-size: 1em !important;
         max-width: 100% !important;
+        width: 100% !important;
+        min-width: fit-content !important;
         overflow-x: auto !important;
+        overflow-y: visible !important;
+        white-space: nowrap !important;
+        transform: none !important;
+        zoom: 1 !important;
       }
       
       #reward-optimization .reward-formula .MathJax_Display * {
         font-size: 1em !important;
+        white-space: nowrap !important;
+        transform: none !important;
+        zoom: 1 !important;
+      }
+      
+      #reward-optimization .reward-formula .katex,
+      #reward-optimization .reward-formula .katex-display {
+        font-size: 1em !important;
+        line-height: normal !important;
+        min-width: fit-content !important;
+        width: auto !important;
+        max-width: none !important;
+        transform: none !important;
+        zoom: 1 !important;
+        display: inline-block !important;
+      }
+      
+      #reward-optimization .reward-formula .katex *,
+      #reward-optimization .reward-formula .katex-display *,
+      #reward-optimization .reward-formula .katex-html,
+      #reward-optimization .reward-formula .katex-html *,
+      #reward-optimization .reward-formula .katex svg,
+      #reward-optimization .reward-formula .katex-display svg,
+      #reward-optimization .reward-formula .katex svg *,
+      #reward-optimization .reward-formula .katex-display svg * {
+        font-size: 1em !important;
+        line-height: normal !important;
+        transform: none !important;
+        zoom: 1 !important;
+      }
+      
+      /* Sub-tab-content formula styles for iPhone */
+      .sub-tab-content .reward-formula {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        white-space: nowrap !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-width: 0 !important;
+        display: block !important;
+      }
+      
+      .sub-tab-content .reward-formula * {
+        white-space: nowrap !important;
+      }
+      
+      .sub-tab-content .reward-formula .MathJax,
+      .sub-tab-content .reward-formula .MathJax_Display {
+        max-width: 100% !important;
+        width: 100% !important;
+        min-width: fit-content !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        white-space: nowrap !important;
+        transform: none !important;
+        zoom: 1 !important;
+      }
+      
+      .sub-tab-content .reward-formula .MathJax *,
+      .sub-tab-content .reward-formula .MathJax_Display * {
+        white-space: nowrap !important;
+        transform: none !important;
+        zoom: 1 !important;
+      }
+      
+      .sub-tab-content .reward-formula .katex,
+      .sub-tab-content .reward-formula .katex-display {
+        font-size: 1em !important;
+        line-height: normal !important;
+        min-width: fit-content !important;
+        width: auto !important;
+        max-width: none !important;
+        transform: none !important;
+        zoom: 1 !important;
+        display: inline-block !important;
+      }
+      
+      .sub-tab-content .reward-formula .katex *,
+      .sub-tab-content .reward-formula .katex-display *,
+      .sub-tab-content .reward-formula .katex-html,
+      .sub-tab-content .reward-formula .katex-html *,
+      .sub-tab-content .reward-formula .katex svg,
+      .sub-tab-content .reward-formula .katex-display svg,
+      .sub-tab-content .reward-formula .katex svg *,
+      .sub-tab-content .reward-formula .katex-display svg * {
+        font-size: 1em !important;
+        line-height: normal !important;
+        transform: none !important;
+        zoom: 1 !important;
       }
       
       /* Scale down all text in reward optimization tabs */
-      #reward-optimization .tabs-container * {
-        font-size: 0.5em !important;
+      /* Reward optimization tabs - ensure proper sizing on iPhone */
+      #reward-optimization .tabs-container {
+        transform: scale(1) !important;
+        max-width: 100% !important;
+        margin: 1rem auto !important;
+      }
+      
+      #reward-optimization .tabs-header {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        justify-content: center !important;
       }
       
       #reward-optimization .tab-button {
-        font-size: 0.7em !important;
+        font-size: 0.85em !important;
+        padding: 8px 10px !important;
+        flex: 0 1 auto !important;
+        min-width: fit-content !important;
+        white-space: nowrap !important;
+      }
+      
+      #reward-optimization .sub-tabs-container {
+        transform: scale(1) !important;
+        max-width: 100% !important;
+        margin: 1rem auto !important;
+      }
+      
+      #reward-optimization .sub-tabs-header {
+        transform: scale(1) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        padding: 8px !important;
+        justify-content: center !important;
+        width: 100% !important;
+        background: linear-gradient(135deg, #666 0%, #888 100%) !important;
+        border-radius: 10px !important;
+        border-bottom: none !important;
+        min-width: auto !important;
+        max-width: 100% !important;
       }
       
       #reward-optimization .sub-tab-button {
-        font-size: 0.7em !important;
-      }
-      
-      #reward-optimization .sub-tab-content p,
-      #reward-optimization .sub-tab-content h3,
-      #reward-optimization .sub-tab-content h4 {
-        font-size: 0.7em !important;
-      }
-      
-      #reward-optimization .tab-content p,
-      #reward-optimization .tab-content h3 {
-        font-size: 0.7em !important;
+        font-size: 0.75em !important;
+        padding: 6px 8px !important;
+        flex: 0 1 auto !important;
+        min-width: fit-content !important;
+        white-space: nowrap !important;
+        width: auto !important;
+        text-align: center !important;
       }
       
       /* iPhone author info optimization - further increase font size */
@@ -1258,15 +1521,131 @@
       }
     }
     
-    /* Ensure reward formulas are contained within boxes */
+    /* Ensure reward formulas are contained within boxes - but allow horizontal scrolling on mobile */
     .reward-formula {
-      word-wrap: break-word;
-      overflow-wrap: break-word;
+      overflow-x: auto !important;
+      overflow-y: visible !important;
+      white-space: nowrap !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      min-width: 0 !important;
+      /* Prevent formula compression */
+      display: block !important;
     }
     
-    .reward-formula .MathJax {
+    .reward-formula * {
+      white-space: nowrap !important;
+    }
+    
+    .reward-formula .MathJax,
+    .reward-formula .MathJax_Display {
       max-width: 100% !important;
+      width: 100% !important;
+      min-width: fit-content !important;
+      overflow-x: auto !important;
+      overflow-y: visible !important;
+      white-space: nowrap !important;
+      display: block !important;
+      /* Prevent MathJax compression */
+      transform: none !important;
+      zoom: 1 !important;
+    }
+    
+    .reward-formula .MathJax *,
+    .reward-formula .MathJax_Display * {
+      white-space: nowrap !important;
+      /* Prevent MathJax internal compression */
+      transform: none !important;
+      zoom: 1 !important;
+    }
+    
+    /* Exclude KaTeX internal elements from font-size inheritance */
+    .reward-formula .katex,
+    .reward-formula .katex-display {
+      font-size: 1em !important;
+      line-height: normal !important;
+      /* Prevent KaTeX compression */
+      min-width: fit-content !important;
+      width: auto !important;
+      max-width: none !important;
+      transform: none !important;
+      zoom: 1 !important;
       display: inline-block !important;
+    }
+    
+    .reward-formula .katex *,
+    .reward-formula .katex-display *,
+    .reward-formula .katex-html,
+    .reward-formula .katex-html *,
+    .reward-formula .katex svg,
+    .reward-formula .katex-display svg,
+    .reward-formula .katex svg *,
+    .reward-formula .katex-display svg * {
+      font-size: 1em !important;
+      line-height: normal !important;
+      /* Prevent KaTeX internal compression */
+      transform: none !important;
+      zoom: 1 !important;
+    }
+    
+    /* Sub-tab-content formula styles */
+    .sub-tab-content .reward-formula {
+      overflow-x: auto !important;
+      overflow-y: visible !important;
+      white-space: nowrap !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      min-width: 0 !important;
+      display: block !important;
+    }
+    
+    .sub-tab-content .reward-formula * {
+      white-space: nowrap !important;
+    }
+    
+    .sub-tab-content .reward-formula .MathJax,
+    .sub-tab-content .reward-formula .MathJax_Display {
+      max-width: 100% !important;
+      width: 100% !important;
+      min-width: fit-content !important;
+      overflow-x: auto !important;
+      overflow-y: visible !important;
+      white-space: nowrap !important;
+      transform: none !important;
+      zoom: 1 !important;
+    }
+    
+    .sub-tab-content .reward-formula .MathJax *,
+    .sub-tab-content .reward-formula .MathJax_Display * {
+      white-space: nowrap !important;
+      transform: none !important;
+      zoom: 1 !important;
+    }
+    
+    .sub-tab-content .reward-formula .katex,
+    .sub-tab-content .reward-formula .katex-display {
+      font-size: 1em !important;
+      line-height: normal !important;
+      min-width: fit-content !important;
+      width: auto !important;
+      max-width: none !important;
+      transform: none !important;
+      zoom: 1 !important;
+      display: inline-block !important;
+    }
+    
+    .sub-tab-content .reward-formula .katex *,
+    .sub-tab-content .reward-formula .katex-display *,
+    .sub-tab-content .reward-formula .katex-html,
+    .sub-tab-content .reward-formula .katex-html *,
+    .sub-tab-content .reward-formula .katex svg,
+    .sub-tab-content .reward-formula .katex-display svg,
+    .sub-tab-content .reward-formula .katex svg *,
+    .sub-tab-content .reward-formula .katex-display svg * {
+      font-size: 1em !important;
+      line-height: normal !important;
+      transform: none !important;
+      zoom: 1 !important;
     }
     
     /* Fix deprecation warning for slider-vertical */
@@ -1532,7 +1911,11 @@
                         {left: '\\[', right: '\\]', display: true},
                         {left: '\\(', right: '\\)', display: false}
                       ],
-                      throwOnError: false
+                      throwOnError: false,
+                      strict: false,
+                      fleqn: false,
+                      output: 'html',
+                      trust: false
                     });
                     console.log('✅ KaTeX loaded and initialized (using system fonts, no external font loading)');
                   }

@@ -358,6 +358,26 @@ body {
   text-align: center;
   font-size: 0.9em;
   color: #2c3e50;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  white-space: nowrap !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.video-item .reward-formula * {
+  white-space: nowrap !important;
+}
+
+.video-item .reward-formula .MathJax,
+.video-item .reward-formula .MathJax_Display,
+.video-item .reward-formula .katex,
+.video-item .reward-formula .katex-display {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  white-space: nowrap !important;
+  width: 100%;
+  min-width: fit-content;
 }
 
 /* Responsive design for mobile */
@@ -375,11 +395,61 @@ body {
   
   /* Gallery responsive styles for narrow screens */
   #goal-reaching .container,
-  #motion-tracking .container {
-    max-width: 100% !important;
-    width: 100% !important;
+  #motion-tracking .container,
+  #reward-optimization .container {
+    max-width: 95% !important;
+    width: 95% !important;
     padding: 20px 10px !important;
     box-sizing: border-box !important;
+  }
+  
+  /* Ensure all formula containers allow horizontal scrolling on mobile */
+  .reward-formula,
+  .formula,
+  .video-item .reward-formula,
+  .inference-card-content .formula {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .reward-formula *,
+  .formula *,
+  .video-item .reward-formula *,
+  .inference-card-content .formula * {
+    white-space: nowrap !important;
+  }
+  
+  .reward-formula .MathJax,
+  .reward-formula .MathJax_Display,
+  .formula .MathJax,
+  .formula .MathJax_Display,
+  .video-item .reward-formula .MathJax,
+  .video-item .reward-formula .MathJax_Display,
+  .inference-card-content .formula .MathJax,
+  .inference-card-content .formula .MathJax_Display {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+    min-width: fit-content !important;
+  }
+  
+  /* Support for pre and code tags on mobile */
+  pre, code {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    white-space: pre !important;
+    word-wrap: normal !important;
+    overflow-wrap: normal !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  pre code {
+    white-space: pre !important;
   }
   
   .video-gallery {
@@ -437,9 +507,10 @@ body {
 /* Extra narrow screens */
 @media (max-width: 480px) {
   #goal-reaching .container,
-  #motion-tracking .container {
-    max-width: 100% !important;
-    width: 100% !important;
+  #motion-tracking .container,
+  #reward-optimization .container {
+    max-width: 95% !important;
+    width: 95% !important;
     padding: 10px 5px !important;
     box-sizing: border-box !important;
   }
@@ -1308,6 +1379,34 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
   font-family: monospace;
   font-size: 0.8rem;
   margin-top: 8px;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  white-space: nowrap !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.inference-card-content .formula * {
+  white-space: nowrap !important;
+}
+
+/* Prevent MathJax/KaTeX formulas from wrapping in .formula containers */
+.inference-card-content .formula .MathJax,
+.inference-card-content .formula .MathJax_Display,
+.inference-card-content .formula .katex,
+.inference-card-content .formula .katex-display {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  white-space: nowrap !important;
+  width: 100%;
+  min-width: fit-content;
+}
+
+.inference-card-content .formula .MathJax *,
+.inference-card-content .formula .MathJax_Display *,
+.inference-card-content .formula .katex *,
+.inference-card-content .formula .katex-display * {
+  white-space: nowrap !important;
 }
 
 .inference-card:nth-child(1) .inference-card-content .formula {
@@ -1410,7 +1509,7 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
 
 .sub-tab-button {
   width: 100%;
-  padding: 12px 15px;
+  padding: 8px 15px;
   background: transparent;
   border: none;
   color: white;
@@ -1479,14 +1578,31 @@ input[type="range"].slider.slider-vertical::-moz-range-thumb {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   border-left: 4px solid #004bb3;
   max-width: 100%;
-  overflow-x: auto;
+  width: 100%;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  white-space: nowrap !important;
   box-sizing: border-box;
+  min-width: 0;
+}
+
+.sub-tab-content .reward-formula * {
+  white-space: nowrap !important;
 }
 
 .sub-tab-content .reward-formula .MathJax,
 .sub-tab-content .reward-formula .MathJax_Display {
-  max-width: 100%;
-  overflow-x: auto;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-width: fit-content !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  white-space: nowrap !important;
+}
+
+.sub-tab-content .reward-formula .MathJax *,
+.sub-tab-content .reward-formula .MathJax_Display * {
+  white-space: nowrap !important;
 }
 
 /* Video optimization styles */
