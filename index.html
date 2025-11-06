@@ -349,11 +349,16 @@
       }
       
       .section p {
-        font-size: 0.9em !important;
+        font-size: 0.8em !important;
       }
       
       .section .container p {
-        font-size: 0.9em !important;
+        font-size: 0.8em !important;
+      }
+      
+      /* Make all p tags smaller on mobile */
+      p {
+        font-size: 0.8em !important;
       }
       
       /* Video mobile optimization */
@@ -795,11 +800,16 @@
       }
       
       .section p {
-        font-size: 0.9em !important;
+        font-size: 0.65em !important;
       }
       
       .section .container p {
-        font-size: 0.9em !important;
+        font-size: 0.65em !important;
+      }
+      
+      /* Make all p tags smaller on iPhone */
+      p {
+        font-size: 0.65em !important;
       }
       
       .flip-card {
@@ -1448,6 +1458,61 @@
         background-size: 80%;
       }
       
+      /* Hide "How it works" title on iPhone */
+      #how-it-works .title.is-3 {
+        display: none !important;
+      }
+      
+      /* Hide Pre-training overview in How it Works section on iPhone */
+      #how-it-works .container:first-of-type > div:first-of-type {
+        display: none !important;
+      }
+      
+      /* Keep the remark box visible on iPhone */
+      #how-it-works div[style*="background: linear-gradient(135deg, #fff5f5"] {
+        display: block !important;
+        margin-top: 20px !important;
+      }
+      
+      /* Hide interpolation formula in Space Interpolation section on iPhone */
+      /* Target the div containing the z_t formula */
+      #space-interpolation .container > div[style*="text-align: center"][style*="margin: 20px 0"] {
+        display: none !important;
+      }
+      
+      /* More specific selector - the div after h4 (formula div only) */
+      #space-interpolation .container > h4 + div[style*="text-align: center"][style*="margin: 20px 0"] {
+        display: none !important;
+      }
+      
+      /* Ensure columns container with videos is visible */
+      #space-interpolation .container > .columns {
+        display: flex !important;
+      }
+      
+      /* Fix adaptation section video layout on iPhone */
+      #few-shot-adaptation .container > div[style*="display: flex"][style*="flex-wrap: nowrap"] {
+        flex-direction: column !important;
+        flex-wrap: wrap !important;
+        gap: 15px !important;
+        max-height: none !important;
+      }
+      
+      #few-shot-adaptation .container > div[style*="display: flex"] > div[style*="flex: 0 0 40%"] {
+        flex: 1 1 auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      
+      #few-shot-adaptation .container > div[style*="display: flex"] > div[style*="flex: 0 0 auto"] {
+        flex: 0 0 auto !important;
+        order: 2 !important;
+      }
+      
+      #few-shot-adaptation video {
+        max-height: 40vh !important;
+      }
+      
       .floating-nav-link {
         padding: 6px 10px;
         font-size: 0.7rem;
@@ -1506,6 +1571,61 @@
         content: "Loading...";
         color: #666;
         font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);
+      }
+      
+      /* Hide "How it works" title on mobile */
+      #how-it-works .title.is-3 {
+        display: none !important;
+      }
+      
+      /* Hide Pre-training overview in How it Works section on mobile */
+      #how-it-works .container:first-of-type > div:first-of-type {
+        display: none !important;
+      }
+      
+      /* Keep the remark box visible on mobile */
+      #how-it-works div[style*="background: linear-gradient(135deg, #fff5f5"] {
+        display: block !important;
+        margin-top: 20px !important;
+      }
+      
+      /* Hide interpolation formula in Space Interpolation section on mobile */
+      /* Target the div containing the z_t formula */
+      #space-interpolation .container > div[style*="text-align: center"][style*="margin: 20px 0"] {
+        display: none !important;
+      }
+      
+      /* More specific selector - the second div child after h4 (formula div only) */
+      #space-interpolation .container > h4 + div[style*="text-align: center"][style*="margin: 20px 0"] {
+        display: none !important;
+      }
+      
+      /* Ensure columns container with videos is visible */
+      #space-interpolation .container > .columns {
+        display: flex !important;
+      }
+      
+      /* Fix adaptation section video layout on mobile */
+      #few-shot-adaptation .container > div[style*="display: flex"][style*="flex-wrap: nowrap"] {
+        flex-direction: column !important;
+        flex-wrap: wrap !important;
+        gap: 15px !important;
+        max-height: none !important;
+      }
+      
+      #few-shot-adaptation .container > div[style*="display: flex"] > div[style*="flex: 0 0 40%"] {
+        flex: 1 1 auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      
+      #few-shot-adaptation .container > div[style*="display: flex"] > div[style*="flex: 0 0 auto"] {
+        flex: 0 0 auto !important;
+        order: 2 !important;
+      }
+      
+      #few-shot-adaptation video {
+        max-height: 40vh !important;
       }
       
       .video-error {
