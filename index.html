@@ -17,6 +17,11 @@
         const videoId = video.id || '';
         // Skip hero videos
         if (videoId !== 'hero-video-main' && videoId !== 'hero-video-mobile') {
+          // Skip full video modal videos - they're loaded on demand
+          if (video.hasAttribute('data-full-video')) {
+            return;
+          }
+          
           // Immediately block this video - set preload to none BEFORE browser can start loading
           video.preload = 'none';
           video.pause();
@@ -2516,6 +2521,19 @@
         cursor: default;
       `;
       
+      // Create loading indicator
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.innerHTML = 'Loading video...';
+      loadingIndicator.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #333;
+        font-size: 18px;
+        z-index: 10002;
+      `;
+      
       // Create close button
       const closeBtn = document.createElement('button');
       closeBtn.innerHTML = '×';
@@ -2537,27 +2555,62 @@
         justify-content: center;
       `;
       
-      // Create video element
+      // Create video element with proper attributes
       const video = document.createElement('video');
+      video.setAttribute('data-full-video', 'true'); // Mark as full video to skip blocking
       video.src = './resources/tracking/full/full-1_firefox_720p.mp4';
       video.controls = true;
-      video.autoplay = true;
+      video.preload = 'auto';
+      video.muted = false; // Allow sound for full video
       video.style.cssText = `
         width: 100%;
         height: auto;
         display: block;
       `;
       
+      // Add error handling
+      video.addEventListener('error', function(e) {
+        console.error('Video loading error:', e);
+        loadingIndicator.innerHTML = 'Failed to load video. Please try again.';
+        loadingIndicator.style.color = '#dc3545';
+      });
+      
+      // Hide loading indicator when video can play
+      video.addEventListener('canplay', function() {
+        loadingIndicator.style.display = 'none';
+        video.play().catch(err => {
+          console.error('Autoplay failed:', err);
+          // Autoplay might fail, but video controls will be available
+        });
+      });
+      
+      // Show loading indicator while loading
+      video.addEventListener('loadstart', function() {
+        loadingIndicator.style.display = 'block';
+      });
+      
       // Assemble elements
       videoContainer.appendChild(closeBtn);
+      videoContainer.appendChild(loadingIndicator);
       videoContainer.appendChild(video);
       modal.appendChild(videoContainer);
       document.body.appendChild(modal);
       
+      // Ensure video is not blocked by MutationObserver
+      // Set src after a small delay to avoid blocking
+      setTimeout(() => {
+        if (!video.src) {
+          video.src = './resources/tracking/full/full-1_firefox_720p.mp4';
+          video.load();
+        }
+      }, 100);
+      
       // Close functionality
       function closeModal() {
         video.pause();
-        document.body.removeChild(modal);
+        if (document.body.contains(modal)) {
+          document.body.removeChild(modal);
+        }
       }
       
       closeBtn.onclick = closeModal;
@@ -2567,12 +2620,14 @@
         }
       };
       
-      // ESC key close
-      document.addEventListener('keydown', function(e) {
+      // ESC key close (with cleanup)
+      const escHandler = function(e) {
         if (e.key === 'Escape') {
           closeModal();
+          document.removeEventListener('keydown', escHandler);
         }
-      });
+      };
+      document.addEventListener('keydown', escHandler);
     }
     
     // Initialize gallery
@@ -2631,6 +2686,17 @@
         videoOrder.forEach(videoId => {
           const video = document.getElementById(videoId);
           if (video) {
+            // Restore src if video was blocked
+            if (video.hasAttribute('data-temp-src') && !video.src) {
+              video.src = video.getAttribute('data-temp-src');
+              video.removeAttribute('data-temp-src');
+            }
+            const source = video.querySelector('source');
+            if (source && source.hasAttribute('data-temp-src') && !source.src) {
+              source.src = source.getAttribute('data-temp-src');
+              source.removeAttribute('data-temp-src');
+            }
+            
             video.pause();
             video.currentTime = 0;
             // Only load metadata, not full video - will load when needed
@@ -2647,6 +2713,17 @@
         // Play current video immediately (reset and play from beginning)
         const currentVideo = document.getElementById(videoOrder[currentVideoIndex]);
         if (currentVideo) {
+          // Restore src if video was blocked
+          if (currentVideo.hasAttribute('data-temp-src') && !currentVideo.src) {
+            currentVideo.src = currentVideo.getAttribute('data-temp-src');
+            currentVideo.removeAttribute('data-temp-src');
+          }
+          const source = currentVideo.querySelector('source');
+          if (source && source.hasAttribute('data-temp-src') && !source.src) {
+            source.src = source.getAttribute('data-temp-src');
+            source.removeAttribute('data-temp-src');
+          }
+          
           // Load current video when needed
           currentVideo.preload = 'auto';
           currentVideo.load(); // Force load current video only
@@ -2683,6 +2760,22 @@
           // Play new video
           const nextVideo = document.getElementById(videoOrder[currentVideoIndex]);
           if (nextVideo) {
+            // Restore src if video was blocked
+            if (nextVideo.hasAttribute('data-temp-src') && !nextVideo.src) {
+              nextVideo.src = nextVideo.getAttribute('data-temp-src');
+              nextVideo.removeAttribute('data-temp-src');
+            }
+            const source = nextVideo.querySelector('source');
+            if (source && source.hasAttribute('data-temp-src') && !source.src) {
+              source.src = source.getAttribute('data-temp-src');
+              source.removeAttribute('data-temp-src');
+            }
+            
+            // Set preload to auto to ensure video loads
+            if (nextVideo.preload !== 'auto') {
+              nextVideo.preload = 'auto';
+            }
+            
             // Ensure video is loaded, do not reset progress
             if (nextVideo.readyState >= 3) { // HAVE_FUTURE_DATA
               // Play directly, do not reset currentTime
@@ -2690,16 +2783,29 @@
                 console.log('Video play failed:', e);
                 // If playback fails, try reloading
                 nextVideo.load();
-                nextVideo.play();
+                setTimeout(() => {
+                  nextVideo.play().catch(err => {
+                    console.log('Video play failed after reload:', err);
+                  });
+                }, 100);
               });
             } else {
+              // Load video first if not loaded
+              if (nextVideo.readyState === 0) {
+                nextVideo.load();
+              }
+              
               // Wait for video to load
               nextVideo.addEventListener('canplay', function() {
                 // Do not reset currentTime, maintain current position
                 this.play().catch(e => {
                   console.log('Video play failed:', e);
                   this.load();
-                  this.play();
+                  setTimeout(() => {
+                    this.play().catch(err => {
+                      console.log('Video play failed after reload:', err);
+                    });
+                  }, 100);
                 });
               }, { once: true });
             }
