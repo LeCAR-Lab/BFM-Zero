@@ -2,12 +2,15 @@
 
 <div align="center">
 
-<!-- [[Website]](https://lecar-lab.github.io/SoFTA/) -->
+[[Website]](https://lecar-lab.github.io/BFM-Zero/)
 <!-- [[Arxiv]](https://lecar-lab.github.io/SoFTA/) -->
 <!-- [[Video]](https://www.youtube.com/) -->
 
-<img src="assets/ip.png" style="height:50px;" />
+<img src="static/images/ip.png" style="height:50px;" />
 <img src="static/images/meta.png" style="height:50px;" />
+
+## Code
+Code will be released soon.
 
 <!-- ## Quick Start
 
@@ -21,3 +24,6 @@
 
 </div>
 
+# License
+
+Meta Motivo is licensed under the CC BY-NC 4.0 license. See [LICENSE](LICENSE) for details.
