@@ -27,3 +27,15 @@ Code will be released soon.
 # License
 
 Meta Motivo is licensed under the CC BY-NC 4.0 license. See [LICENSE](LICENSE) for details.
+
+# Citation
+
+If you find this project useful in your research, please consider citing:
+
+```bibtex
+@article{li2025bfmzero,
+  title   = {BFM-Zero: A Promptable Behavioral Foundation Model for Humanoid Control Using Unsupervised Reinforcement Learning},
+  author  = {Yitang Li and Zhengyi Luo and Tonghe Zhang and Cunxi Dai and Anssi Kanervisto and Andrea Tirinzoni and Haoyang Weng and Kris Kitani and Mateusz Guzek and Ahmed Touati and Alessandro Lazaric and Matteo Pirotta and Guanya Shi},
+  journal = {arXiv preprint arXiv:2505.06776},
+  year    = {2025}
+}
