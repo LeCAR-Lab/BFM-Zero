@@ -26,7 +26,7 @@ Code will be released soon.
 
 # License
 
-Meta Motivo is licensed under the CC BY-NC 4.0 license. See [LICENSE](LICENSE) for details.
+BFM-Zero is licensed under the CC BY-NC 4.0 license. See [LICENSE](LICENSE) for details.
 
 # Citation
 
