@@ -48,7 +48,7 @@ def quat_mul(a, b, w_last=True):
     return quat
 
 
-def my_quat_rotate(q, v):
+def quat_rotate(q, v):
     """Rotate vector v by quaternion q. q format: [x, y, z, w]"""
     if isinstance(q, np.ndarray):
         q = torch.tensor(q)
@@ -78,8 +78,8 @@ def quat_to_tan_norm(q, w_last=True):
     ref_norm[..., -1] = 1  # [0, 0, 1]
     
     if w_last:
-        tan = my_quat_rotate(q, ref_tan)
-        norm = my_quat_rotate(q, ref_norm)
+        tan = quat_rotate(q, ref_tan)
+        norm = quat_rotate(q, ref_norm)
     else:
         raise NotImplementedError("w_last=False not implemented")
     
@@ -602,7 +602,7 @@ class MuJoCoBFMZeroEnv:
         root_pos_expand = root_pos.repeat(1, num_bodies, 1)  # (1, num_bodies, 3)
         local_body_pos = body_pos_t - root_pos_expand  # (1, num_bodies, 3)
         flat_local_body_pos = local_body_pos.reshape(-1, 3)  # (num_bodies, 3)
-        flat_local_body_pos = my_quat_rotate(flat_heading_rot_inv, flat_local_body_pos)  # (num_bodies, 3)
+        flat_local_body_pos = quat_rotate(flat_heading_rot_inv, flat_local_body_pos)  # (num_bodies, 3)
         local_body_pos_obs = flat_local_body_pos.reshape(1, -1)  # (1, num_bodies*3)
         local_body_pos_obs = local_body_pos_obs[..., 3:]  # Remove root pos: (1, (num_bodies-1)*3)
         
@@ -614,12 +614,12 @@ class MuJoCoBFMZeroEnv:
 
         # Local body velocities
         flat_body_vel = body_vel_t.reshape(-1, 3)  # (num_bodies, 3)
-        flat_local_body_vel = my_quat_rotate(flat_heading_rot_inv, flat_body_vel)  # (num_bodies, 3)
+        flat_local_body_vel = quat_rotate(flat_heading_rot_inv, flat_body_vel)  # (num_bodies, 3)
         local_body_vel_obs = flat_local_body_vel.reshape(1, -1)  # (1, num_bodies*3)
         
         # Local body angular velocities
         flat_body_ang_vel = body_ang_vel_t.reshape(-1, 3)  # (num_bodies, 3)
-        flat_local_body_ang_vel = my_quat_rotate(flat_heading_rot_inv, flat_body_ang_vel)  # (num_bodies, 3)
+        flat_local_body_ang_vel = quat_rotate(flat_heading_rot_inv, flat_body_ang_vel)  # (num_bodies, 3)
         local_body_ang_vel_obs = flat_local_body_ang_vel.reshape(1, -1)  # (1, num_bodies*3)
         
         # Get root height for privileged state (if needed)

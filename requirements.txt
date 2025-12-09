@@ -8,6 +8,7 @@ scipy==1.15.3
 
 # MuJoCo Physics Simulation
 mujoco==3.3.7
+# only for reward inference
 mujoco-warp @ git+https://github.com/google-deepmind/mujoco_warp.git@9fc294d86955a303619a254cefae809a41adb274
 warp-lang==1.11.0.dev20251130
 
@@ -24,7 +25,7 @@ safetensors==0.7.0
 ipython
 pyyaml  # For YAML config files
 pillow  # PIL for image handling
-imageio  # For video saving (install with: pip install imageio[ffmpeg] for video support)
+imageio[ffmpeg]  # For video saving (install with: pip install imageio[ffmpeg] for video support)
 
 # Optional: ONNX Runtime (for ONNX model inference)
 # onnxruntime  # Uncomment if you need to run ONNX models
