@@ -1,0 +1,124 @@
+observation:
+  policy:
+    dof_pos_minus_default: 
+      default_pos: [
+          -0.1, 0., 0., 0.3, -0.2, 0.,
+          -0.1, 0., 0., 0.3, -0.2, 0.,
+          0., 0., 0.,
+          0., 0., 0., 0., 0., 0., 0.,
+          0., 0., 0., 0., 0., 0., 0.
+      ]
+      scale: 1.0
+    dof_vel: 
+      scale: 1.0
+    projected_gravity:
+      scale: 1.0
+    base_ang_vel: 
+      scale: 0.25
+    prev_actions: 
+      scale: 1.0
+
+
+    prev_actions_history:
+      steps: 4
+    base_ang_vel_history:
+      scale: 0.25
+      steps: 4
+    dof_pos_minus_default_history: 
+      default_pos: [
+          -0.1, 0., 0., 0.3, -0.2, 0.,
+          -0.1, 0., 0., 0.3, -0.2, 0.,
+          0., 0., 0.,
+          0., 0., 0., 0., 0., 0., 0.,
+          0., 0., 0., 0., 0., 0., 0.
+      ]
+      steps: 4
+    dof_vel_history:
+      steps: 4
+
+    projected_gravity_history:
+      steps: 4
+      
+action_rescale: 5
+action_scale:
+  left_hip_yaw_joint: 0.54754699
+  left_hip_roll_joint: 0.22200157
+  left_hip_pitch_joint: 0.222001498914 # Tonghe changed from 0.54754699
+  left_knee_joint: 0.35066156
+  left_ankle_pitch_joint: 0.43857802
+  left_ankle_roll_joint: 0.43857802
+  right_hip_yaw_joint: 0.54754699
+  right_hip_roll_joint: 0.22200157
+  right_hip_pitch_joint: 0.222001498914 # Tonghe changed from 0.54754699
+  right_knee_joint: 0.35066156
+  right_ankle_pitch_joint: 0.43857802
+  right_ankle_roll_joint: 0.43857802
+  waist_yaw_joint: 0.54754699
+  waist_roll_joint: 0.43857802
+  waist_pitch_joint: 0.43857802
+  left_shoulder_pitch_joint: 0.43857802
+  left_shoulder_roll_joint: 0.43857802
+  left_shoulder_yaw_joint: 0.43857802
+  left_elbow_joint: 0.43857802
+  left_wrist_roll_joint: 0.43857802
+  left_wrist_pitch_joint: 0.07450086
+  left_wrist_yaw_joint: 0.07466888
+  right_shoulder_pitch_joint: 0.43857802
+  right_shoulder_roll_joint: 0.43857802
+  right_shoulder_yaw_joint: 0.43857802
+  right_elbow_joint: 0.43857802
+  right_wrist_roll_joint: 0.43857802
+  right_wrist_pitch_joint: 0.07450086
+  right_wrist_yaw_joint: 0.07450086  
+
+isaac_joint_names: ['left_hip_pitch_joint', 'left_hip_roll_joint', 'left_hip_yaw_joint', 'left_knee_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint',
+              'right_hip_pitch_joint', 'right_hip_roll_joint', 'right_hip_yaw_joint', 'right_knee_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint',
+              'waist_yaw_joint', 'waist_roll_joint', 'waist_pitch_joint',
+              'left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_joint', 
+              'left_wrist_roll_joint', 'left_wrist_pitch_joint', 'left_wrist_yaw_joint',
+              'right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_joint', 
+              'right_wrist_roll_joint', 'right_wrist_pitch_joint', 'right_wrist_yaw_joint']
+joint_kp:
+  .*_hip_yaw_joint: 40.1792
+  .*_hip_roll_joint: 99.0984
+  .*_hip_pitch_joint: 99.09843 # Tonghe changed from 40.1792
+  .*_knee_joint: 99.0984
+  waist_yaw_joint: 40.1792
+  waist_roll_joint: 28.5012
+  waist_pitch_joint: 28.5012
+  .*ankle_pitch_joint: 28.5012
+  .*ankle_roll_joint: 28.5012
+  .*_shoulder_.*: 14.2506
+  .*_elbow_joint: 14.2506
+  # .*_wrist_.*_joint: 16.77833  # Tonghe changed
+  .*_wrist_roll_joint: 14.25062  # Tonghe changed
+  .*_wrist_pitch_joint: 14.25062 # Tonghe changed
+  .*_wrist_yaw_joint: 14.25062   # Tonghe changed
+joint_kd:
+  waist_yaw_joint: 2.5579
+  waist_roll_joint: 1.8145
+  waist_pitch_joint: 1.8145
+  .*_shoulder_.*: 0.9072
+  .*_elbow_joint: 0.9072
+  .*_hip_yaw_joint: 2.5579
+  .*_hip_roll_joint: 6.3088
+  .*_hip_pitch_joint: 6.30880 # Tonghe changed from 2.5579
+  .*_knee_joint: 6.3088
+  .*ankle_pitch_joint: 1.8145
+  .*ankle_roll_joint: 1.8145
+  # .*_wrist_.*_joint: 1.06814  # Tonghe changed
+  .*_wrist_roll_joint: 1.06814  # Tonghe changed
+  .*_wrist_pitch_joint: 1.06814 # Tonghe changed
+  .*_wrist_yaw_joint: 1.06814   # Tonghe changed
+default_joint_pos:
+  .*_hip_pitch_joint: -0.1
+  .*_knee_joint: 0.3
+  .*_ankle_pitch_joint: -0.2
+
+policy_joint_names: ['left_hip_pitch_joint', 'left_hip_roll_joint', 'left_hip_yaw_joint', 'left_knee_joint', 'left_ankle_pitch_joint', 'left_ankle_roll_joint',
+              'right_hip_pitch_joint', 'right_hip_roll_joint', 'right_hip_yaw_joint', 'right_knee_joint', 'right_ankle_pitch_joint', 'right_ankle_roll_joint',
+              'waist_yaw_joint', 'waist_roll_joint', 'waist_pitch_joint',
+              'left_shoulder_pitch_joint', 'left_shoulder_roll_joint', 'left_shoulder_yaw_joint', 'left_elbow_joint', 
+              'left_wrist_roll_joint', 'left_wrist_pitch_joint', 'left_wrist_yaw_joint',
+              'right_shoulder_pitch_joint', 'right_shoulder_roll_joint', 'right_shoulder_yaw_joint', 'right_elbow_joint', 
+              'right_wrist_roll_joint', 'right_wrist_pitch_joint', 'right_wrist_yaw_joint']

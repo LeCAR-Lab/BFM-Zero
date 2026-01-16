@@ -1,0 +1,17 @@
+type: reward
+start: 0
+end: None
+stop: 0
+ctx_path: ../reward_inference/reward_locomotion.pkl
+selected_rewards_filter_z:
+  - reward: "move-ego-low0.6-0-0.7"
+    z_ids: [0]
+  - reward: "move-ego-90-0.3" #"move-arms-0-0.7-l-m"
+    z_ids: [0]
+  - reward: "move-ego-0-0"
+    z_ids: [0]
+  - reward: "spin-arms-5-l-l"
+    z_ids: [0]
+
+
+

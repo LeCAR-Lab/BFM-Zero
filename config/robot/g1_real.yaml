@@ -1,0 +1,148 @@
+ROBOT_TYPE: 'g1_real' # Robot name, "go2", "b2", "b2w", "h1", "go2w", "g1" 
+ ### REAL
+# # DOMAIN_ID: 0 # Domain id
+# # # Interface
+# # INTERFACE: "en0" # Yuanhang: in simulation, lo0 for mac, lo for linux
+
+## SIM
+DOMAIN_ID: 0 # Domain id
+# Interface
+# INTERFACE: "eth0" # Yuanhang: in simulation, lo0 for mac, lo for linux
+INTERFACE: "eth0" # "eth1" # Tonghe & Jimmyh for G1 5840
+# INTERFACE: "eth1" # Tonghe & Jimmyh for G1 5848
+USE_JOYSTICK: True
+
+
+UNITREE_LEGGED_CONST:
+  HIGHLEVEL: 0xEE
+  LOWLEVEL: 0xFF
+  TRIGERLEVEL: 0xF0
+  PosStopF: 2146000000.0
+  VelStopF: 16000.0
+  MODE_MACHINE: 5
+  MODE_PR:  0
+
+
+joint_pos_lower_limit:
+  left_hip_pitch_joint: -2.5307
+  right_hip_pitch_joint: -2.5307  
+  waist_yaw_joint: -2.6180
+  waist_pitch_joint: -0.52
+  waist_roll_joint: -0.52
+  left_hip_roll_joint: -0.5236
+  right_hip_roll_joint: -2.9671
+  left_hip_yaw_joint: -2.7576
+  right_hip_yaw_joint: -2.7576
+  left_knee_joint: -0.0873
+  right_knee_joint: -0.0873
+  left_shoulder_pitch_joint: -3.0892
+  right_shoulder_pitch_joint: -3.0892
+  left_ankle_pitch_joint: -0.8727
+  right_ankle_pitch_joint: -0.8727
+  left_shoulder_roll_joint: -1.5882
+  right_shoulder_roll_joint: -2.2515
+  left_ankle_roll_joint: -0.2618
+  right_ankle_roll_joint: -0.2618
+  left_shoulder_yaw_joint: -2.6180
+  right_shoulder_yaw_joint: -2.6180
+  left_elbow_joint: -1.0472
+  right_elbow_joint: -1.0472
+  left_wrist_roll_joint: -1.9722
+  right_wrist_roll_joint: -1.9722
+  left_wrist_pitch_joint: -1.6144
+  right_wrist_pitch_joint: -1.6144
+  left_wrist_yaw_joint: -1.6144
+  right_wrist_yaw_joint: -1.6144
+
+joint_pos_upper_limit:
+  left_hip_pitch_joint: 2.8798
+  right_hip_pitch_joint: 2.8798
+  waist_yaw_joint: 2.6180
+  waist_pitch_joint: 0.52
+  waist_roll_joint: 0.52
+  left_hip_roll_joint: 2.9671
+  right_hip_roll_joint: 0.5236
+  left_hip_yaw_joint: 2.7576
+  right_hip_yaw_joint: 2.7576
+  left_knee_joint: 2.8798
+  right_knee_joint: 2.8798
+  left_shoulder_pitch_joint: 2.6704
+  right_shoulder_pitch_joint: 2.6704
+  left_ankle_pitch_joint: 0.5236
+  right_ankle_pitch_joint: 0.5236
+  left_shoulder_roll_joint: 2.2515
+  right_shoulder_roll_joint: 1.5882
+  left_ankle_roll_joint: 0.2618
+  right_ankle_roll_joint: 0.2618
+  left_shoulder_yaw_joint: 2.6180
+  right_shoulder_yaw_joint: 2.6180
+  left_elbow_joint: 2.0944
+  right_elbow_joint: 2.0944
+  left_wrist_roll_joint: 1.9722
+  right_wrist_roll_joint: 1.9722
+  left_wrist_pitch_joint: 1.6144
+  right_wrist_pitch_joint: 1.6144
+  left_wrist_yaw_joint: 1.6144
+  right_wrist_yaw_joint: 1.6144
+
+joint_velocity_limit:
+  left_hip_pitch_joint: 32.0
+  right_hip_pitch_joint: 32.0
+  waist_yaw_joint: 32.0
+  waist_pitch_joint: 37.0
+  waist_roll_joint: 37.0
+  left_hip_roll_joint: 32.0
+  right_hip_roll_joint: 32.0
+  left_hip_yaw_joint: 32.0
+  right_hip_yaw_joint: 32.0
+  left_knee_joint: 20.0
+  right_knee_joint: 20.0
+  left_shoulder_pitch_joint: 37.0
+  right_shoulder_pitch_joint: 37.0
+  left_ankle_pitch_joint: 37.0
+  right_ankle_pitch_joint: 37.0
+  left_shoulder_roll_joint: 37.0
+  right_shoulder_roll_joint: 37.0
+  left_ankle_roll_joint: 37.0
+  right_ankle_roll_joint: 37.0
+  left_shoulder_yaw_joint: 37.0
+  right_shoulder_yaw_joint: 37.0
+  left_elbow_joint: 37.0
+  right_elbow_joint: 37.0
+  left_wrist_roll_joint: 37.0
+  right_wrist_roll_joint: 37.0
+  left_wrist_pitch_joint: 22.0
+  right_wrist_pitch_joint: 22.0
+  left_wrist_yaw_joint: 22.0
+  right_wrist_yaw_joint: 22.0
+
+joint_effort_limit:
+  left_hip_pitch_joint: 88.0
+  left_hip_roll_joint: 88.0
+  left_hip_yaw_joint: 88.0
+  left_knee_joint: 139.0
+  left_ankle_pitch_joint: 50.0
+  left_ankle_roll_joint: 50.0
+  right_hip_pitch_joint: 88.0
+  right_hip_roll_joint: 88.0
+  right_hip_yaw_joint: 88.0
+  right_knee_joint: 139.0
+  right_ankle_pitch_joint: 50.0
+  right_ankle_roll_joint: 50.0
+  waist_yaw_joint: 88.0
+  waist_roll_joint: 50.0
+  waist_pitch_joint: 50.0
+  left_shoulder_pitch_joint: 25.0
+  left_shoulder_roll_joint: 25.0
+  left_shoulder_yaw_joint: 25.0
+  left_elbow_joint: 25.0
+  left_wrist_roll_joint: 25.0
+  left_wrist_pitch_joint: 5.0
+  left_wrist_yaw_joint: 5.0
+  right_shoulder_pitch_joint: 25.0
+  right_shoulder_roll_joint: 25.0
+  right_shoulder_yaw_joint: 25.0
+  right_elbow_joint: 25.0
+  right_wrist_roll_joint: 25.0
+  right_wrist_pitch_joint: 5.0
+  right_wrist_yaw_joint: 5.0

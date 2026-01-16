@@ -1,0 +1,7 @@
+type: tracking
+start: 0
+end: 2000 #1650
+stop: 0
+ctx_path: ../tracking_inference/zs_walking.pkl
+gamma: 0.8  # discount factor for context averaging
+window_size: 3  # number of frames to average
