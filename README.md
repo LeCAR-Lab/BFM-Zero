@@ -13,8 +13,8 @@
 # Code
 Code will be released in stages:
 
-- [ ] Release pretrained checkpoints and sim-to-sim / sim-to-real deployment code.  
-- [ ] Release minimal inference code and tutorial.  
+- [x] Release pretrained checkpoints and sim-to-sim / sim-to-real deployment code. (Checkout `deploy` branch)
+- [x] Release minimal inference code and tutorial. (Checkout `minimal_inference` branch)
 - [ ] Release full training and evaluation pipelines.
 
 # License
