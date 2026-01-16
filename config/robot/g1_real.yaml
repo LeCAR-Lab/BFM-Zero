@@ -1,15 +1,9 @@
 ROBOT_TYPE: 'g1_real' # Robot name, "go2", "b2", "b2w", "h1", "go2w", "g1" 
- ### REAL
-# # DOMAIN_ID: 0 # Domain id
-# # # Interface
-# # INTERFACE: "en0" # Yuanhang: in simulation, lo0 for mac, lo for linux
-
+### REAL
 ## SIM
 DOMAIN_ID: 0 # Domain id
 # Interface
-# INTERFACE: "eth0" # Yuanhang: in simulation, lo0 for mac, lo for linux
-INTERFACE: "eth0" # "eth1" # Tonghe & Jimmyh for G1 5840
-# INTERFACE: "eth1" # Tonghe & Jimmyh for G1 5848
+INTERFACE: "eth0"   # "eth1"   
 USE_JOYSTICK: True
 
 

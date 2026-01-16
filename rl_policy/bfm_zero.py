@@ -38,7 +38,7 @@ class BFMZeroPolicy:
         robot_type = robot_config["ROBOT_TYPE"]
         if robot_type == "g1_real":
             # example: sys.path.append("/home/unitree/User/unitree_sdk2/build/lib")
-            sys.path.append("<your-unitree-sdk2-path>")
+            sys.path.append("/path/to/your/unitree_sdk2/build/lib")
             import g1_interface
             network_interface = robot_config.get("INTERFACE", None)
             self.robot = g1_interface.G1Interface(network_interface)

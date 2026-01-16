@@ -263,16 +263,23 @@ source ~/.bashrc
 ```
 
 ### Running on the Real Robot
-- Replace `"<your-unitree-sdk2-path>"` in `./rl_policy/bfm_zero.py`
-- Use the real-robot config: `config/robot/g1_real.yaml`. 
+- In [`./rl_policy/bfm_zero.py`](./rl_policy/bfm_zero.py), replace `"/path/to/your/unitree_sdk2/build/lib"` with the actual path to your Unitree SDK2 installation (e.g., `sys.path.append("/home/unitree/User/unitree_sdk2/build/lib")`).
 
-  (i.e. `python rl_policy/bfm_zero.py \
+- When deploying to the real robot, use the real-robot configuration file [`g1_real.yaml`](config/robot/g1_real.yaml) instead of the simulation configuration [`g1.yaml`](config/robot/g1.yaml).
+
+
+  ```python
+  python rl_policy/bfm_zero.py \
     --robot_config config/robot/g1_real.yaml \
     --policy_config ${POLICY_CONFIG} \
     --model_path ${MODEL_ONNX_PATH} \
-    --task  ${TASK}`)
-
+    --task  ${TASK}
+  ```
 ---
+
+### Known Issues
+- If you encounter an error stating that `eth0` is not a valid network interface, update the interface name in the file ['./config/robot/g1_real.yaml'](config/robot/g1_real.yaml) to match your robot’s actual network interface (e.g., `eth1`).
+
 
 
 ## 👥 Citation
