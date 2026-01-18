@@ -239,7 +239,7 @@ Deploying these models on physical hardware can be hazardous, and these models c
 - Install the Unitree C++ SDK Python binding from https://github.com/EGalahad/unitree_sdk2 to enable 50 Hz control. Update the import path in `rl_policy/base_policy.py` after building the binding.
 
 **Build the SDK with CMake**
-```
+```bash
 git clone https://github.com/EGalahad/unitree_sdk2.git
 sudo apt-get update
 sudo apt-get install build-essential cmake python3-dev python3-pip
@@ -252,7 +252,7 @@ make -j$(nproc)
 ```
 
 
-```
+```bash
 git clone https://github.com/eclipse-cyclonedds/cyclonedds -b releases/0.10.x
 cd cyclonedds && mkdir build install && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=../install
