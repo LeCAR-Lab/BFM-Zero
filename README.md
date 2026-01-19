@@ -2,9 +2,9 @@
 
 <div align="center">
 
+[[arXiv]](https://arxiv.org/abs/2511.04131)
+[[Paper]](https://lecar-lab.github.io/BFM-Zero/resources/paper.pdf)
 [[Website]](https://lecar-lab.github.io/BFM-Zero/)
-<!-- [[Arxiv]](https://lecar-lab.github.io/SoFTA/) -->
-<!-- [[Video]](https://www.youtube.com/) -->
 
 <img src="static/images/ip.png" style="height:50px;" />
 <img src="static/images/meta.png" style="height:50px;" />
