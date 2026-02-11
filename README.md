@@ -39,7 +39,18 @@ Humanoidverse training for BFM-Zero with Isaac Sim or MuJoCo.
 
 ## Installation
 
-### 1. Install uv
+### 1. Clone and fetch large files (Git LFS)
+
+This repo uses [Git LFS](https://git-lfs.github.com/) for motion data and model outputs. After cloning, install LFS and pull the large files:
+
+```bash
+git clone https://github.com/LeCAR-Lab/BFM-Zero.git
+cd BFM-Zero
+git lfs install
+git lfs pull
+```
+
+### 2. Install uv
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -47,9 +58,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 Or with pip: `pip install uv`
 
-### 2. Install dependencies
+### 3. Install dependencies
 
-From the `release_version` directory:
+From this directory (BFM-Zero):
 
 ```bash
 uv sync
