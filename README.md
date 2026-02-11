@@ -207,7 +207,7 @@ uv run python -m humanoidverse.reward_inference \
 | Argument | Description |
 |----------|-------------|
 | `--num_samples` | Number of samples in the buffer per inference run. |
-| `--n_inferences` | Number of inference latents per task. |
+| `--n_inferences` | Number of inference latents per reward task. |
 | `--episode_length` | Steps per rollout. |
 | `--skip_rollouts` | If `True`, only compute \(z\); do not run visualization rollouts. |
 
