@@ -49,6 +49,7 @@ cd BFM-Zero
 git lfs install
 git lfs pull
 ```
+Note: If the repository exceeded its LFS budget,  you can access the data here: https://huggingface.co/LeCAR-Lab/BFM-Zero/tree/main/data
 
 ### 2. Install uv
 
