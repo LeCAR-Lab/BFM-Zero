@@ -438,7 +438,7 @@ class MuJoCo(BaseSimulator):
                 torch.tensor([self.data.qpos[0:3]], device=self.device, dtype=torch.float32),
                 base_quat,
                 qvel_tensor[:, 0:3],
-                quat_rotate(base_quat, qvel_tensor[:, 3:6]),
+                quat_rotate(base_quat, qvel_tensor[:, 3:6], w_last=True),
             ], dim=-1
         )
     
@@ -459,7 +459,7 @@ class MuJoCo(BaseSimulator):
                 torch.tensor([self.data.qpos[0:3]], device=self.device, dtype=torch.float32),
                 base_quat,
                 qvel_tensor[:, 0:3],
-                quat_rotate(base_quat, qvel_tensor[:, 3:6]),
+                quat_rotate(base_quat, qvel_tensor[:, 3:6], w_last=True),
             ], dim=-1
         )
     
