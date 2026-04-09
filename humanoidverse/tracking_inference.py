@@ -34,7 +34,7 @@ def main(model_folder: Path, data_path: Path | None = None, headless: bool = Tru
     model_name = model.__class__.__name__
     with open(model_folder / "config.json", "r") as f:
         config = json.load(f)
-
+        
     use_root_height_obs = config["env"].get("root_height_obs", False)
 
     if data_path is not None:
@@ -137,7 +137,7 @@ def main(model_folder: Path, data_path: Path | None = None, headless: bool = Tru
 
     # Visualization length: match inference length so expert and policy videos align
     episode_len = z.shape[0]
-    episode_len = 100
+    episode_len = 3000
     print(f"Saving video for tracking ({episode_len} steps)")
     if save_mp4:
         rgb_renderer = IsaacRendererWithMuJoco(render_size=256)
@@ -163,7 +163,7 @@ def main(model_folder: Path, data_path: Path | None = None, headless: bool = Tru
         new_frames = []
         for a, b in zip(expert_video, frames):
             new_frames.append(np.concatenate([a, b], axis=1))
-        video_path = output_dir / "tracking.mp4"
+        video_path = output_dir / f"tracking_{MOTION_ID}.mp4"
         media.write_video(str(video_path), new_frames, fps=50)
         print(f"Saved video for tracking: {video_path}")
 
