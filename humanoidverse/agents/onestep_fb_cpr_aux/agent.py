@@ -38,17 +38,6 @@ class OneStepFBcprAuxAgentConfig(FBcprAuxAgentConfig):
     def object_class(self):
         return OneStepFBcprAuxAgent
 
-    def build(self, obs_space, action_dim: int) -> "OneStepFBcprAuxAgent":
-        return self.object_class(
-            obs_space=obs_space,
-            action_dim=action_dim,
-            cfg=self,
-        )
-
-    @property
-    def object_class(self):
-        return OneStepFBcprAuxAgent
-
 
 class OneStepFBcprAuxAgent(FBcprAuxAgent):
     """One-step FB variant of FBcprAuxAgent.
@@ -140,6 +129,29 @@ class OneStepFBcprAuxAgent(FBcprAuxAgent):
                 z=train_z,
             )
         )
+        # compute scalar auxiliary reward as a weighted sum of auxiliary terms
+        aux_reward = torch.zeros(
+            (self.cfg.train.batch_size, 1),
+            device=self.device,
+            dtype=torch.float32,
+        )
+        for aux_reward_name in self.cfg.aux_rewards:
+            # keep per-term aux logs for wandb, same as FBcprAuxAgent
+            metrics[f"aux_rew/{aux_reward_name}"] = train_batch["aux_rewards"][aux_reward_name].mean()
+            aux_reward += self.cfg.aux_rewards_scaling[aux_reward_name] * train_batch["aux_rewards"][aux_reward_name].to(
+                self.device
+            )
+        aux_reward = self._model._aux_reward_normalizer(aux_reward)
+        metrics.update(
+            self.update_aux_critic(
+                obs=train_obs,
+                action=train_action,
+                discount=discount,
+                aux_reward=aux_reward,
+                next_obs=train_next_obs,
+                z=train_z,
+            )
+        )
         metrics.update(
             self.update_actor(
                 obs=train_obs,
@@ -163,6 +175,11 @@ class OneStepFBcprAuxAgent(FBcprAuxAgent):
             _soft_update_params(
                 self._critic_map_paramlist,
                 self._target_critic_map_paramlist,
+                self.cfg.train.critic_target_tau,
+            )
+            _soft_update_params(
+                self._aux_critic_map_paramlist,
+                self._aux_target_critic_map_paramlist,
                 self.cfg.train.critic_target_tau,
             )
 
