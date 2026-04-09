@@ -200,6 +200,17 @@ class BackwardArchiConfig(BaseConfig):
         return BackwardMap(obs_space, z_dim, self)
 
 
+class OneStepBackwardArchiConfig(BackwardArchiConfig):
+    """Backward architecture alias for one-step FB configs.
+
+    One-step FB reuses the same backward network implementation as the
+    standard backward map; this class keeps config names compatible with
+    modules importing ``OneStepBackwardArchiConfig``.
+    """
+
+    name: tp.Literal["OneStepBackwardArchi"] = "OneStepBackwardArchi"
+
+
 class BackwardMap(nn.Module):
     def __init__(self, obs_space, z_dim, cfg: BackwardArchiConfig) -> None:
         super().__init__()
