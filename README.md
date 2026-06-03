@@ -247,7 +247,9 @@ pip3 install pybind11 pybind11-stubgen numpy
 cd ./unitree_sdk2
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=Release -Dpybind11_DIR=<your-pybind11-path> # `python3 -m pybind11 --cmakedir` to see the path
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -Dpybind11_DIR=<your-pybind11-path> # `python3 -m pybind11 --cmakedir` to see the path
 make -j$(nproc)
 ```
 
