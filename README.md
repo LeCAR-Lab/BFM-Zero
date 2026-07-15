@@ -25,7 +25,7 @@ Code will be released in stages:
 
 - [x] **Full training and evaluation pipelines**
 
-- [x] **A distributed training in MJLab (6 hours training) + Teleoperation**
+- [x] **A distributed training in MJLab (6 hours training) + Teleoperation**      
   → [`UFO`]([https://github.com/LeCAR-Lab/BFM-Zero/tree/deploy](https://github.com/Roboparty/UFO)) implementation
 
 - [ ] **Minimal training code (RTX 4090 support)**
