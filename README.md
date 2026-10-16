@@ -3,7 +3,7 @@
 <div align="center">
 
 [[arXiv]](https://arxiv.org/abs/2511.04131)
-[[Paper]](https://lecar-lab.github.io/BFM-Zero/resources/paper.pdf)
+[[Paper]](https://lecar-lab.github.io/BFM-Zero/resources/_ICLR2026_BFM0_Version_10675_.pdf)
 [[Website]](https://lecar-lab.github.io/BFM-Zero/)
 
 <!-- [[Arxiv]](https://lecar-lab.github.io/SoFTA/) -->
