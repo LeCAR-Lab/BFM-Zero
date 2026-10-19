@@ -214,10 +214,7 @@ class LeggedRobotMotions(LeggedRobotBase):
                 self.simulator._rigid_body_rot[:, self.extend_body_parent_ids].reshape(-1, 4),
                 self.extend_body_pos_in_parent.reshape(-1, 3)
             )
-            extend_curr_pos = my_quat_rotate(
-                self.extend_body_rot_in_parent_xyzw.reshape(-1, 4),
-                rotated_pos_in_parent
-            ).view(self.num_envs, -1, 3) + self.simulator._rigid_body_pos[:, self.extend_body_parent_ids]
+            extend_curr_pos = rotated_pos_in_parent.view(self.num_envs, -1, 3) + self.simulator._rigid_body_pos[:, self.extend_body_parent_ids]
             self._rigid_body_pos_extend = torch.cat([self.simulator._rigid_body_pos, extend_curr_pos], dim=1)
 
             ################### EXTEND Rigid body Rotation #####################

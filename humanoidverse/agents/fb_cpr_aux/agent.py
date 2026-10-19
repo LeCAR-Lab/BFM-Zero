@@ -219,13 +219,12 @@ class FBcprAuxAgent(FBcprAgent):
         z: torch.Tensor,
     ) -> Dict[str, torch.Tensor]:
         with autocast(device_type=self.device, dtype=self._model.amp_dtype, enabled=self.cfg.model.amp):
-            num_parallel = self.cfg.model.archi.critic.num_parallel
+            num_parallel = self.cfg.model.archi.aux_critic.num_parallel
             # compute target critic
             with torch.no_grad():
                 dist = self._model._actor(next_obs, z, self._model.cfg.actor_std)
                 next_action = dist.sample(clip=self.cfg.train.stddev_clip)
                 next_Qs = self._model._target_aux_critic(next_obs, z, next_action)  # num_parallel x batch x 1
-                # TODO AL: should we have aux_critic parameters here?
                 Q_mean, Q_unc, next_V = self.get_targets_uncertainty(next_Qs, self.cfg.train.aux_critic_pessimism_penalty)
                 target_Q = aux_reward + discount * next_V
                 expanded_targets = target_Q.expand(num_parallel, -1, -1)

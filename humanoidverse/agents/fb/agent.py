@@ -16,6 +16,7 @@ from torch.amp import autocast
 from torch.utils._pytree import tree_map
 
 from ..base import BaseConfig
+from ..base_model import migrate_legacy_aux_critic_config
 from ..envs.utils.gym_spaces import json_to_space, space_to_json
 from ..misc.zbuffer import ZBuffer
 from ..nn_models import _soft_update_params, eval_mode, weight_init
@@ -401,6 +402,7 @@ class FBAgent:
             obs_space = json_to_space(args["obs_space"])
             action_dim = args["action_dim"]
 
+        loaded_config["model"] = migrate_legacy_aux_critic_config(loaded_config["model"])
         config = cls.config_class(**loaded_config)
         agent = config.build(obs_space, action_dim)
         optimizers = torch.load(str(path / "optimizers.pth"), weights_only=True, map_location=device)

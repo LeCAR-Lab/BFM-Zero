@@ -2,7 +2,7 @@ import sys
 import os
 from loguru import logger
 import torch
-from humanoidverse.utils.torch_utils import to_torch, torch_rand_float
+from humanoidverse.utils.torch_utils import to_torch, torch_rand_float, my_quat_rotate
 import numpy as np
 from typing import Optional
 from humanoidverse.simulator.base_simulator.base_simulator import BaseSimulator
@@ -588,11 +588,15 @@ class IsaacSim(BaseSimulator):
     
     @property
     def all_root_states(self):
-        return self._robot.data.root_state_w[:, [0, 1, 2, 4, 5, 6, 3, 7, 8, 9, 10, 11, 12]]
+        return self.robot_root_states
     
     @property
     def robot_root_states(self):
-        return self._robot.data.root_state_w[:, [0, 1, 2, 4, 5, 6, 3, 7, 8, 9, 10, 11, 12]]
+        state = self._robot.data.root_state_w[:, [0, 1, 2, 4, 5, 6, 3, 7, 8, 9, 10, 11, 12]]
+        # IsaacLab root_state_w mixes link pose with COM velocity; motion observations use link origins.
+        com_offset = my_quat_rotate(state[:, 3:7], self._robot.data.com_pos_b[:, 0])
+        state[:, 7:10] -= torch.cross(state[:, 10:13], com_offset, dim=-1)
+        return state
     
     @property
     def dof_pos(self):
@@ -612,7 +616,7 @@ class IsaacSim(BaseSimulator):
     
     @property
     def _rigid_body_vel(self):
-        return self._robot.data.body_lin_vel_w[:, self.body_ids, :]
+        return self._robot.data.body_link_lin_vel_w[:, self.body_ids, :]
     
     @property
     def _rigid_body_ang_vel(self):
@@ -636,10 +640,19 @@ class IsaacSim(BaseSimulator):
 
     def apply_torques_at_dof(self, torques):
         self._robot.set_joint_effort_target(torques, joint_ids=self.dof_ids)
+
+    def set_pd_gains(self, env_ids, stiffness, damping):
+        self._robot.write_joint_stiffness_to_sim(stiffness, joint_ids=self.dof_ids, env_ids=env_ids)
+        self._robot.write_joint_damping_to_sim(damping, joint_ids=self.dof_ids, env_ids=env_ids)
+        for actuator in self._robot.actuators.values():
+            actuator.stiffness[env_ids] = self._robot.data.joint_stiffness[env_ids][:, actuator.joint_indices]
+            actuator.damping[env_ids] = self._robot.data.joint_damping[env_ids][:, actuator.joint_indices]
     
     def set_actor_root_state_tensor(self, set_env_ids, root_states):
-        self._robot.write_root_pose_to_sim(root_states[set_env_ids, :7], set_env_ids)
-        self._robot.write_root_velocity_to_sim(root_states[set_env_ids, 7:], set_env_ids)
+        if len(set_env_ids) == 0:
+            return
+        self._robot.write_root_link_pose_to_sim(root_states[set_env_ids, :7], set_env_ids)
+        self._robot.write_root_link_velocity_to_sim(root_states[set_env_ids, 7:], set_env_ids)
 
     def set_dof_state_tensor(self, set_env_ids, dof_states):
         dof_pos, dof_vel = dof_states[set_env_ids, :, 0], dof_states[set_env_ids, :, 1]
@@ -703,5 +716,3 @@ class IsaacSim(BaseSimulator):
                 height=512,
             ))
         self.scene.sensors["rendering_cam"] = self.rendering_cam
-
-    

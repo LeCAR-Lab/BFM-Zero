@@ -18,6 +18,8 @@ import torch
 torch.set_float32_matmul_precision("high")
 
 import json
+import shutil
+import tempfile
 import time
 import typing as tp
 import warnings
@@ -37,6 +39,7 @@ from tqdm import tqdm
 
 
 from humanoidverse.agents.base import BaseConfig
+from humanoidverse.agents.base_model import migrate_legacy_aux_critic_config
 from humanoidverse.agents.buffers.load_data import load_expert_trajectories
 from humanoidverse.agents.buffers.trajectory import TrajectoryDictBufferMultiDim
 from humanoidverse.agents.buffers.transition import DictBuffer, dtype_numpytotorch_lower_precision
@@ -162,11 +165,19 @@ class TrainConfig(BaseConfig):
         return Workspace(self)
 
 
+def checkpoint_path(work_dir: Path) -> Path:
+    path = work_dir / CHECKPOINT_DIR_NAME
+    previous = work_dir / (CHECKPOINT_DIR_NAME + ".previous")
+    # A process can stop between the two directory renames during publication.
+    return previous if not path.exists() and previous.exists() else path
+
+
 def validate_resume_config(work_dir: Path, cfg: TrainConfig):
-    if not (work_dir / CHECKPOINT_DIR_NAME).exists():
+    checkpoint_dir = checkpoint_path(work_dir)
+    if not checkpoint_dir.exists():
         return
-    if (work_dir / CHECKPOINT_DIR_NAME / "buffers/train").exists():
-        with (work_dir / CHECKPOINT_DIR_NAME / "train_status.json").open() as f:
+    if (checkpoint_dir / "buffers/train").exists():
+        with (checkpoint_dir / "train_status.json").open() as f:
             status = json.load(f)
         if status.get("replay_format") != "explicit_successor_v1":
             raise ValueError("Legacy replay has no verified physical successors. Start a new work_dir; model weights remain loadable for inference.")
@@ -178,8 +189,9 @@ def validate_resume_config(work_dir: Path, cfg: TrainConfig):
         "work_dir", "num_env_steps", "log_every_updates", "checkpoint_every_steps", "checkpoint_buffer",
         "buffer_device", "disable_tqdm", "use_wandb", "wandb_ename", "wandb_gname", "wandb_pname", "tags", "infra",
     }
-    with (work_dir / CHECKPOINT_DIR_NAME / "config.json").open() as f:
+    with (checkpoint_dir / "config.json").open() as f:
         previous["agent"] = json.load(f)
+    migrate_legacy_aux_critic_config(previous["agent"]["model"])
     for config in (previous, current):
         config["agent"]["model"].pop("device", None)
         config["env"].pop("device", None)
@@ -189,7 +201,7 @@ def validate_resume_config(work_dir: Path, cfg: TrainConfig):
 
 
 def create_agent_or_load_checkpoint(work_dir: Path, cfg: TrainConfig, agent_build_kwargs: dict[str, tp.Any]):
-    checkpoint_dir = work_dir / CHECKPOINT_DIR_NAME
+    checkpoint_dir = checkpoint_path(work_dir)
     checkpoint_time = 0
     if checkpoint_dir.exists():
         with (checkpoint_dir / "train_status.json").open("r") as f:
@@ -347,7 +359,7 @@ class Workspace:
 
         print("Allocating buffers")
         replay_buffer = {}
-        checkpoint_dir = self.work_dir / CHECKPOINT_DIR_NAME
+        checkpoint_dir = checkpoint_path(self.work_dir)
         if (checkpoint_dir / "buffers/train").exists():
             print("Loading checkpointed buffer")
             if self.cfg.use_trajectory_buffer:
@@ -399,7 +411,8 @@ class Workspace:
             eval_instances.append(isinstance(evaluation, HumanoidVerseIsaacTrackingEvaluation))
         uses_humanoidverse_eval = True if any(eval_instances) else False
 
-        for t in range(self._checkpoint_time, self.cfg.num_env_steps + self.cfg.online_parallel_envs, self.cfg.online_parallel_envs):
+        completed_steps = self._checkpoint_time
+        for t in range(self._checkpoint_time, self.cfg.num_env_steps, self.cfg.online_parallel_envs):
             if (t != self._checkpoint_time) and checkpoint_time_checker.check(t):
                 checkpoint_time_checker.update_last_step(t)
                 self.save(t, replay_buffer)
@@ -534,8 +547,13 @@ class Workspace:
                 self.train_logger.log(m_dict)
 
             progb.update(self.cfg.online_parallel_envs)
+            completed_steps = t + self.cfg.online_parallel_envs
             td = new_td
             info = new_info
+        if completed_steps > self._checkpoint_time:
+            self.save(completed_steps, replay_buffer)
+            if self.evaluate and eval_time_checker.check(completed_steps):
+                self.eval(completed_steps, replay_buffer=replay_buffer)
         train_env.close()
 
     def eval(self, t, replay_buffer):
@@ -585,11 +603,29 @@ class Workspace:
 
     def save(self, time: int, replay_buffer: Dict[str, tp.Any]) -> None:
         print(f"Checkpointing at time {time}")
-        self.agent.save(str(self.work_dir / CHECKPOINT_DIR_NAME))
-        if self.cfg.checkpoint_buffer:
-            replay_buffer["train"].save(self.work_dir / CHECKPOINT_DIR_NAME / "buffers" / "train")
-        with (self.work_dir / CHECKPOINT_DIR_NAME / "train_status.json").open("w+") as f:
-            json.dump({"time": time, "replay_format": "explicit_successor_v1"}, f, indent=4)
+        checkpoint_dir = self.work_dir / CHECKPOINT_DIR_NAME
+        previous = self.work_dir / (CHECKPOINT_DIR_NAME + ".previous")
+        if not checkpoint_dir.exists() and previous.exists():
+            previous.replace(checkpoint_dir)
+        with tempfile.TemporaryDirectory(prefix=".checkpoint-", dir=self.work_dir) as folder:
+            staging = Path(folder)
+            self.agent.save(str(staging))
+            if self.cfg.checkpoint_buffer:
+                replay_buffer["train"].save(staging / "buffers" / "train")
+            with (staging / "train_status.json").open("w") as f:
+                json.dump({"time": time, "replay_format": "explicit_successor_v1"}, f, indent=4)
+            if previous.exists():
+                shutil.rmtree(previous)
+            if checkpoint_dir.exists():
+                checkpoint_dir.replace(previous)
+            try:
+                staging.replace(checkpoint_dir)
+            except BaseException:
+                if previous.exists():
+                    previous.replace(checkpoint_dir)
+                raise
+        if previous.exists():
+            shutil.rmtree(previous)
 
 
 def default_train_config() -> TrainConfig:

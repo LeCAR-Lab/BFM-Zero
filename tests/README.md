@@ -36,6 +36,15 @@ inline XML model. No checkpoint, motion dataset or GPU is needed.
   resume configuration checks, reproducible seeds and distinct expert environments.
 - The legacy tracking evaluator uses all robot joints and the same time-based
   joint-angle metrics as the main evaluator, excluding the floating root.
+- Isaac Sim adapter uses link-origin velocities for observations and root resets;
+  push velocities appear in the same observation and history sample.
+- PD randomization updates both PhysX and actuator gains; sampled torque noise
+  reaches the effort command and is cleared when disabled.
+- Auxiliary critic architecture is independent, including update and save/load;
+  legacy checkpoints retain the architecture actually used to train their weights.
+- Checkpoint write/publish failures preserve the previous version; recovery handles
+  interruption between directory renames. Training saves its final completed batch
+  without an extra batch and retains the final scheduled evaluation.
 
 The training evaluator replaces `mpjpe_l`, `vel_dist` and `accel_dist` with
 `joint_angle_l2_rad`, `joint_velocity_l2_rad_s` and `joint_acceleration_l2_rad_s2`.

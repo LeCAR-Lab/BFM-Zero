@@ -115,6 +115,7 @@ class TrainingTests(unittest.TestCase):
             key: getattr(arch, key).model_copy(update={"hidden_dim": 32, "hidden_layers": 2})
             for key in ("f", "b", "actor", "critic", "aux_critic", "discriminator")
         }
+        networks["aux_critic"] = networks["aux_critic"].model_copy(update={"hidden_dim": 16, "num_parallel": 3})
         arch = arch.model_copy(update={**networks, "z_dim": 8})
         model_cfg = cfg.model.model_copy(update={"archi": arch, "device": "cpu", "seq_length": 2})
         cfg = cfg.model_copy(
@@ -127,6 +128,8 @@ class TrainingTests(unittest.TestCase):
             }
         )
         agent = cfg.build(spaces, 2)
+        self.assertEqual(agent._model._aux_critic.hidden_dim, 16)
+        self.assertEqual(agent._model._aux_critic.num_parallel, 3)
         replay = TrajectoryDictBufferMultiDim(
             capacity=8, n_dim=2, end_key="done", output_key_tp1=[], output_key_t=["observation", "action", "next", "z", "aux_rewards"]
         )
@@ -172,6 +175,25 @@ class TrainingTests(unittest.TestCase):
             safetensors.torch.save_file(state, path)
             with self.assertRaises(RuntimeError):
                 type(agent).load(folder, device="cpu")
+
+        # Legacy metadata described an aux architecture that was never actually built.
+        legacy_arch = arch.model_copy(update={"aux_critic": arch.critic.model_copy(deep=True)})
+        legacy_cfg = cfg.model_copy(update={"model": cfg.model.model_copy(update={"archi": legacy_arch})})
+        legacy = legacy_cfg.build(spaces, 2)
+        with tempfile.TemporaryDirectory() as folder:
+            legacy.save(folder)
+            for relative in ("config.json", "model/config.json"):
+                path = Path(folder) / relative
+                saved = json.loads(path.read_text())
+                model_config = saved["model"] if relative == "config.json" else saved
+                del model_config["aux_critic_config_version"]
+                model_config["archi"]["aux_critic"] = arch.aux_critic.model_dump()
+                path.write_text(json.dumps(saved))
+            loaded_agent = type(legacy).load(folder, device="cpu")
+            loaded_model = type(legacy._model).load(Path(folder) / "model", device="cpu")
+            for key, value in legacy._model.state_dict().items():
+                torch.testing.assert_close(loaded_agent._model.state_dict()[key], value)
+                torch.testing.assert_close(loaded_model.state_dict()[key], value)
 
 
     def test_reset_seed_includes_action_space(self):

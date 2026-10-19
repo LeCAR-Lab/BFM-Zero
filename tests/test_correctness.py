@@ -73,6 +73,7 @@ class InferenceTests(unittest.TestCase):
         env.extend_body_pos_in_parent = torch.tensor([[0.0, 0.0, 0.35], [0.0, 0.0, 0.0]], dtype=torch.float64).repeat(count, 1, 1)
         identity = torch.tensor([0.0, 0.0, 0.0, 1.0], dtype=torch.float64)
         env.extend_body_rot_in_parent_xyzw = identity.repeat(count, 2, 1)
+        env.extend_body_rot_in_parent_xyzw[:-1, 0] = torch.tensor([0.0, np.sin(0.3), 0.0, np.cos(0.3)], dtype=torch.float64)
         env.env_origins = torch.zeros(count, 3, dtype=torch.float64)
         env.motion_ids = env.episode_length_buf = torch.zeros(count, dtype=torch.long)
         env.motion_start_times = torch.zeros(count, dtype=torch.float64)
