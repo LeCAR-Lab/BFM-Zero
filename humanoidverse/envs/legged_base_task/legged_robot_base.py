@@ -313,6 +313,20 @@ class LeggedRobotBase(BaseTask):
         self._compute_reward()
         # check terminations
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
+        self.extras.pop("_final_observation_raw", None)
+        self.extras.pop("_final_sim_state", None)
+        self.extras.pop("_final_episode_length", None)
+        if len(env_ids) > 0:
+            # Preserve the physical successor before same-step autoreset.
+            self._compute_observations()
+            self.extras["_final_observation_raw"] = {key: value.clone() for key, value in self.obs_buf_dict_raw["actor_obs"].items()}
+            self.extras["_final_episode_length"] = self.episode_length_buf.clone()
+            self.extras["_final_sim_state"] = {
+                "root_states": self.simulator.robot_root_states.clone(),
+                "dof_pos": self.simulator.dof_pos.clone(),
+                "dof_vel": self.simulator.dof_vel.clone(),
+                "base_ang_vel": self.base_ang_vel.clone(),
+            }
         self.reset_envs_idx(env_ids)
 
         # set envs

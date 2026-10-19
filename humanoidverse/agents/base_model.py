@@ -62,8 +62,8 @@ def load_model(
     state_dict = safetensors.torch.load_file(model_dir / "model.safetensors", device=device)
     if strict and any(["target" in key for key in state_dict.keys()]):
         loaded_model._prepare_for_train()
-    strict = False
-    loaded_model.load_state_dict(state_dict, strict=strict)
+    # load_model also restores aliases omitted by safetensors.save_model.
+    safetensors.torch.load_model(loaded_model, model_dir / "model.safetensors", device=device, strict=strict)
     return loaded_model
 
 

@@ -82,6 +82,12 @@ class HumanoidVerseVectorEnv(VectorEnv):
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[torch.Tensor, dict[str, Any]]:
+        if seed is not None:
+            from humanoidverse.agents.utils import set_seed_everywhere
+
+            set_seed_everywhere(seed)
+            self.action_space.seed(seed)
+            self.single_action_space.seed(seed)
         _, info = self.base_env.reset_all()
         observation = self._get_g1env_observation()
         return observation, info

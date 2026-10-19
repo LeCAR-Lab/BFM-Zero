@@ -26,6 +26,14 @@ inline XML model. No checkpoint, motion dataset or GPU is needed.
 - State refresh after physics substeps without advancing simulation time.
 - COM offsets take effect when the original inertial and body frames coincide,
   including rotated roots, repeated randomization and restoring defaults.
+- Same-step autoreset retains physical successors, history and terminal flags;
+  short episodes, evaluation cuts, ring wrap and the last legal sampling start.
+- Explicit replay survives save/load and reward inference; legacy replay is
+  rejected before environment creation or overwriting saved configuration.
+- Model/agent strict loading, shared parameter aliases, actual optimizer updates,
+  resume configuration checks, reproducible seeds and distinct expert environments.
+- The legacy tracking evaluator uses all robot joints and the same time-based
+  joint-angle metrics as the main evaluator, excluding the floating root.
 
 The training evaluator replaces `mpjpe_l`, `vel_dist` and `accel_dist` with
 `joint_angle_l2_rad`, `joint_velocity_l2_rad_s` and `joint_acceleration_l2_rad_s2`.
@@ -38,3 +46,9 @@ The corrected reference encoding changes the inputs to the backward model;
 existing weights remain loadable, but identical policy behavior is not guaranteed.
 These tests do not validate full Isaac Sim training, rendered policy quality,
 GPU performance, ONNX execution or real-robot behavior.
+
+New online replay stores explicit successors, including pre-reset timeout states.
+Existing complete model weights remain loadable; replay from older checkpoints
+cannot reconstruct the missing physical successors and is rejected for resume.
+The default 5.12M buffer needs approximately 19 GiB more float payload. The policy
+architecture, reward weights and configured DR ranges are unchanged.

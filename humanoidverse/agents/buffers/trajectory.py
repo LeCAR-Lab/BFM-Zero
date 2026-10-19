@@ -122,6 +122,7 @@ class TrajectoryDictBuffer:
             start_idx=self.start_idx[traj_idx],
             storage_length=self.capacity,
             priorities=self.priorities[traj_idx],
+            offset=offset,
         )
         idxs = idxs.to(torch.long).unbind(-1)
         for k in self.output_key_t:
@@ -194,7 +195,7 @@ class TrajectoryDictBufferMultiDim(DictBuffer):
         if self._recompute_start_stop:
             done = get_key(self.storage, self.end_key)
             self.start_idx, self.stop_idx, self.lengths = find_start_stop_traj(
-                done.squeeze()[: len(self)], at_capacity=self._is_full, cursor=self._idx - 1
+                done.squeeze(-1)[: len(self)], at_capacity=self._is_full, cursor=self._idx - 1
             )
             self._recompute_start_stop = False
 
@@ -213,6 +214,7 @@ class TrajectoryDictBufferMultiDim(DictBuffer):
             start_idx=self.start_idx[traj_idx],
             storage_length=self.capacity,
             priorities=None,
+            offset=offset,
         )
         idxs = idxs.to(torch.long).unbind(-1)
         for k in self.output_key_t:
@@ -229,7 +231,7 @@ class TrajectoryDictBufferMultiDim(DictBuffer):
         if self._recompute_start_stop:
             done = get_key(self.storage, self.end_key)
             self.start_idx, self.stop_idx, self.lengths = find_start_stop_traj(
-                done.squeeze()[: len(self)], at_capacity=self._is_full, cursor=self._idx - 1
+                done.squeeze(-1)[: len(self)], at_capacity=self._is_full, cursor=self._idx - 1
             )
             self._recompute_start_stop = False
 
@@ -255,12 +257,12 @@ class TrajectoryDictBufferMultiDim(DictBuffer):
         return output
 
 
-def get_idxs(seq_length, num_slices, lengths, start_idx, storage_length, priorities: torch.Tensor | None = None):
+def get_idxs(seq_length, num_slices, lengths, start_idx, storage_length, priorities: torch.Tensor | None = None, offset=1):
     if priorities is not None:
         traj_idx = torch.multinomial(priorities, num_slices, replacement=True)
     else:
         traj_idx = torch.randint(lengths.shape[0], (num_slices,), device=lengths.device)
-    end_point = lengths[traj_idx] - seq_length - 1
+    end_point = lengths[traj_idx] - seq_length - offset + 1
     relative_starts = (torch.rand(num_slices, device=lengths.device) * end_point).floor().to(start_idx.dtype)
     starts = torch.cat(
         [

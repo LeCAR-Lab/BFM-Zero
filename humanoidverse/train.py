@@ -32,7 +32,6 @@ import pydantic
 import torch  # better to use scoped import if we use processes
 import tyro
 import wandb
-from packaging.version import Version
 from torch.utils._pytree import tree_map
 from tqdm import tqdm
 
@@ -163,6 +162,32 @@ class TrainConfig(BaseConfig):
         return Workspace(self)
 
 
+def validate_resume_config(work_dir: Path, cfg: TrainConfig):
+    if not (work_dir / CHECKPOINT_DIR_NAME).exists():
+        return
+    if (work_dir / CHECKPOINT_DIR_NAME / "buffers/train").exists():
+        with (work_dir / CHECKPOINT_DIR_NAME / "train_status.json").open() as f:
+            status = json.load(f)
+        if status.get("replay_format") != "explicit_successor_v1":
+            raise ValueError("Legacy replay has no verified physical successors. Start a new work_dir; model weights remain loadable for inference.")
+    with (work_dir / "config.json").open() as f:
+        previous = json.load(f)
+    current = cfg.model_dump(mode="json")
+    # Logging, device placement and the remaining budget may change on resume.
+    operational = {
+        "work_dir", "num_env_steps", "log_every_updates", "checkpoint_every_steps", "checkpoint_buffer",
+        "buffer_device", "disable_tqdm", "use_wandb", "wandb_ename", "wandb_gname", "wandb_pname", "tags", "infra",
+    }
+    with (work_dir / CHECKPOINT_DIR_NAME / "config.json").open() as f:
+        previous["agent"] = json.load(f)
+    for config in (previous, current):
+        config["agent"]["model"].pop("device", None)
+        config["env"].pop("device", None)
+    changed = sorted(key for key in previous.keys() | current.keys() if key not in operational and previous.get(key) != current.get(key))
+    if changed:
+        raise ValueError(f"Resume configuration differs in {changed}. Use the saved configuration or a new work_dir.")
+
+
 def create_agent_or_load_checkpoint(work_dir: Path, cfg: TrainConfig, agent_build_kwargs: dict[str, tp.Any]):
     checkpoint_dir = work_dir / CHECKPOINT_DIR_NAME
     checkpoint_time = 0
@@ -178,6 +203,43 @@ def create_agent_or_load_checkpoint(work_dir: Path, cfg: TrainConfig, agent_buil
     return agent, cfg, checkpoint_time
 
 
+def make_transition(observation, action, next_observation, reward, terminated, truncated, info, next_info, step_count):
+    """Store same-step autoreset successors explicitly, including timeout bootstraps."""
+    def tensor(value):
+        return torch.as_tensor(value).detach().clone()
+
+    current = {key: tensor(value) for key, value in observation.items() if key not in ("time", "history")}
+    successor = {key: tensor(value) for key, value in next_observation.items() if key not in ("time", "history")}
+    final_mask = next_info.get("_final_observation")
+    if final_mask is not None:
+        for key, value in successor.items():
+            mask = torch.as_tensor(final_mask, device=value.device, dtype=torch.bool)
+            value[mask] = torch.as_tensor(next_info["final_observation"][key], device=value.device)[mask]
+    data = {
+        "observation": current,
+        "action": tensor(action),
+        "step_count": tensor(step_count).reshape(-1, 1),
+        "reward": tensor(reward).reshape(-1, 1),
+        "next": {
+            "observation": successor,
+            "terminated": tensor(terminated).reshape(-1, 1),
+            "truncated": tensor(truncated).reshape(-1, 1),
+        },
+    }
+    data["done"] = data["next"]["terminated"] | data["next"]["truncated"]
+    for key in ("qpos", "qvel"):
+        if key in info:
+            data[key] = tensor(info[key])
+            data["next"][key] = tensor(next_info[key])
+            if final_mask is not None:
+                value = data["next"][key]
+                mask = torch.as_tensor(final_mask, device=value.device, dtype=torch.bool)
+                value[mask] = torch.as_tensor(next_info["final_info"][key], device=value.device)[mask]
+    if "aux_rewards" in next_info:
+        data["aux_rewards"] = {key: tensor(value).reshape(-1, 1) for key, value in next_info["aux_rewards"].items() if not key.startswith("_")}
+    return data
+
+
 def init_wandb(cfg: TrainConfig):
     exp_name = "BFM-Zero"
     wandb_name = exp_name
@@ -188,6 +250,8 @@ def init_wandb(cfg: TrainConfig):
 class Workspace:
     def __init__(self, cfg: TrainConfig) -> None:
         self.cfg = cfg
+        validate_resume_config(Path(cfg.work_dir), cfg)
+        set_seed_everywhere(cfg.seed)
 
         # HACK with Isaac, we can not recreate environments with current code, so we need to
         #      create the environment with desired number of envs here
@@ -195,6 +259,8 @@ class Workspace:
             from omegaconf import OmegaConf
 
             self.train_env, self.train_env_info = cfg.env.build(num_envs=cfg.online_parallel_envs)
+            self.train_env.action_space.seed(cfg.seed)
+            self.train_env.single_action_space.seed(cfg.seed)
             self.obs_space = self.train_env.single_observation_space
             self.action_space = self.train_env.single_action_space
         else:
@@ -219,8 +285,6 @@ class Workspace:
                 OmegaConf.save(self.train_env_info["unresolved_conf"], file)
 
         self.train_logger = CSVLogger(filename=self.work_dir / TRAIN_LOG_FILENAME)
-
-        set_seed_everywhere(self.cfg.seed)
 
         self.agent, self.cfg, self._checkpoint_time = create_agent_or_load_checkpoint(
             self.work_dir, self.cfg, agent_build_kwargs=dict(obs_space=self.obs_space, action_dim=self.action_dim)
@@ -290,10 +354,17 @@ class Workspace:
                 replay_buffer["train"] = TrajectoryDictBufferMultiDim.load(checkpoint_dir / "buffers/train", device=self.cfg.buffer_device)
             else:
                 replay_buffer["train"] = DictBuffer.load(checkpoint_dir / "buffers/train", device=self.cfg.buffer_device)
-            print(f"Loaded buffer of size {len(replay_buffer['train'])}")
+            buffer = replay_buffer["train"]
+            if self.cfg.use_trajectory_buffer and buffer.output_key_tp1:
+                raise ValueError("Legacy trajectory replay has no explicit successors. Start a new work_dir; old buffer boundaries cannot be repaired.")
+            if self.cfg.use_trajectory_buffer and len(buffer):
+                buffer.storage["done"][buffer._idx - 1] = True
+                buffer.storage["next"]["truncated"][buffer._idx - 1] = True
+                buffer._recompute_start_stop = True
+            print(f"Loaded buffer of size {len(buffer)}")
         else:
             if self.cfg.use_trajectory_buffer:
-                output_key_t = ["observation", "action", "z", "terminated", "truncated", "step_count", "reward"]
+                output_key_t = ["observation", "action", "z", "next", "step_count", "reward"]
                 # TODO this interface should be more elegant (how to inform buffer what keys are coming in / need to be sampled?)
                 if isinstance(self.cfg.agent, (FBcprAuxAgentConfig)):
                     output_key_t.append("aux_rewards")
@@ -302,9 +373,9 @@ class Workspace:
                     capacity=self.cfg.buffer_size // self.cfg.online_parallel_envs,  # make sure to divide by num_envs
                     device=self.cfg.buffer_device,
                     n_dim=2,
-                    end_key="truncated",
+                    end_key="done",
                     output_key_t=output_key_t,  # TODO(team): fix this. in principle we could avoid to sample qpos, qvel for training but we need them for reward evaluation
-                    output_key_tp1=["observation", "terminated"],
+                    output_key_tp1=[],
                 )
             else:
                 replay_buffer["train"] = DictBuffer(capacity=self.cfg.buffer_size, device=self.cfg.buffer_device)
@@ -314,10 +385,6 @@ class Workspace:
         print("Starting training")
         progb = tqdm(total=self.cfg.num_env_steps, disable=self.cfg.disable_tqdm)
         td, info = train_env.reset()
-        # see https://farama.org/Vector-Autoreset-Mode
-        terminated = np.zeros(self.cfg.online_parallel_envs, dtype=bool)
-        truncated = np.zeros(self.cfg.online_parallel_envs, dtype=bool)
-        done = np.zeros(self.cfg.online_parallel_envs, dtype=bool)
         total_metrics, context = None, None
         start_time = time.time()
         fps_start_time = time.time()
@@ -343,9 +410,6 @@ class Workspace:
                 if uses_humanoidverse_eval:
                     # reset if there is a humanoidverse evaluation
                     td, info = train_env.reset()
-                    terminated = np.zeros(self.cfg.online_parallel_envs, dtype=bool)
-                    truncated = np.zeros(self.cfg.online_parallel_envs, dtype=bool)
-                    done = np.zeros(self.cfg.online_parallel_envs, dtype=bool)
 
                 if self.cfg.prioritization:
                     assert len(eval_metrics[self.priorization_eval_name]) == len(replay_buffer["expert_slicer"].motion_ids), (
@@ -429,67 +493,14 @@ class Workspace:
                     # make sure we set truncated since at the next iteration we are forced to reset the environment
                     # after the evaluation. This is because we share the environment with the evaluation
                     new_truncated = np.ones_like(new_truncated, dtype=bool)
-                    truncated = np.ones_like(new_truncated, dtype=bool)
 
-            if Version(gymnasium.__version__) >= Version("1.0"):
-                if self.cfg.use_trajectory_buffer:
-                    data = {
-                        "observation": tree_map(lambda x: x[None, ...], obs),
-                        "action": action[None, ...],
-                        "terminated": terminated[None, ..., None],
-                        "truncated": truncated[None, ..., None],
-                        "step_count": step_count[None, ..., None],
-                        "reward": new_reward[None, ..., None],
-                    }
-                    data["observation"].pop("history", None)
-                    if context is not None:
-                        data["z"] = context[None, ...]
-                    if history_context is not None:
-                        data["history_context"] = history_context[None, ...]
-                    if "qpos" in info:
-                        data["qpos"] = info["qpos"][None, ...]
-                    if "qvel" in info:
-                        data["qvel"] = info["qvel"][None, ...]
-                    if "aux_rewards" in new_info:
-                        data["aux_rewards"] = {k: v[None, ..., None] for k, v in new_info["aux_rewards"].items() if not k.startswith("_")}
-                else:
-                    # We add only transitions corresponding to environments that have not reset in the previous step.
-                    # For environments that have reset in the previous step, the new observation corresponds to the state after reset.
-                    indexes = ~done
-
-                    real_next_obs = tree_map(lambda x: x.astype(np.float32 if x.dtype == np.float64 else x.dtype)[indexes], new_td)
-                    # TODO again, we need to remove "time" from the observation (to stay consistent with obs_space)
-                    _ = real_next_obs.pop("time")
-                    _ = real_next_obs.pop("history", None)
-
-                    data = {
-                        "observation": tree_map(lambda x: x[indexes], obs),
-                        "action": action[indexes],
-                        "step_count": step_count[indexes],
-                        "reward": new_reward[indexes].reshape(-1, 1),
-                        "next": {
-                            "observation": real_next_obs,
-                            "terminated": new_terminated[indexes].reshape(-1, 1),
-                            "truncated": new_truncated[indexes].reshape(-1, 1),
-                        },
-                    }
-                    data["observation"].pop("history", None)
-                    if context is not None:
-                        data["z"] = context[indexes]
-                    if history_context is not None:
-                        data["history_context"] = history_context[indexes]
-                    if "qpos" in info:
-                        data["qpos"] = info["qpos"][indexes]
-                        data["next"]["qpos"] = new_info["qpos"][indexes]
-                    if "qvel" in info:
-                        data["qvel"] = info["qvel"][indexes]
-                        data["next"]["qvel"] = new_info["qvel"][indexes]
-                    if "aux_rewards" in new_info:
-                        data["aux_rewards"] = {
-                            k: v[indexes].reshape(-1, 1) for k, v in new_info["aux_rewards"].items() if not k.startswith("_")
-                        }
-            else:
-                raise NotImplementedError("still some work to do for gymnasium < 1.0")
+            data = make_transition(obs, action, new_td, new_reward, new_terminated, new_truncated, info, new_info, step_count)
+            if context is not None:
+                data["z"] = context
+            if history_context is not None:
+                data["history_context"] = history_context
+            if self.cfg.use_trajectory_buffer:
+                data = tree_map(lambda value: value[None, ...], data)
             replay_buffer["train"].extend(data)
 
             if len(replay_buffer["train"]) > 0 and t > self.cfg.num_seed_steps and update_agent_time_checker.check(t):
@@ -524,9 +535,6 @@ class Workspace:
 
             progb.update(self.cfg.online_parallel_envs)
             td = new_td
-            terminated = new_terminated
-            truncated = new_truncated
-            done = np.logical_or(new_terminated.ravel(), new_truncated.ravel())
             info = new_info
         train_env.close()
 
@@ -581,10 +589,10 @@ class Workspace:
         if self.cfg.checkpoint_buffer:
             replay_buffer["train"].save(self.work_dir / CHECKPOINT_DIR_NAME / "buffers" / "train")
         with (self.work_dir / CHECKPOINT_DIR_NAME / "train_status.json").open("w+") as f:
-            json.dump({"time": time}, f, indent=4)
+            json.dump({"time": time, "replay_format": "explicit_successor_v1"}, f, indent=4)
 
 
-def train_bfm_zero():
+def default_train_config() -> TrainConfig:
     from humanoidverse.agents.fb_cpr_aux.model import FBcprAuxModelArchiConfig, FBcprAuxModelConfig
     from humanoidverse.agents.fb_cpr_aux.agent import FBcprAuxAgentTrainConfig
     from humanoidverse.agents.nn_models import ForwardArchiConfig, BackwardArchiConfig, ActorArchiConfig, DiscriminatorArchiConfig, RewardNormalizerConfig
@@ -717,7 +725,11 @@ def train_bfm_zero():
         eval_every_steps=9600000,
         tags={},
     )
-    workspace = cfg.build()
+    return cfg
+
+
+def train_bfm_zero():
+    workspace = default_train_config().build()
     workspace.train()
 
 

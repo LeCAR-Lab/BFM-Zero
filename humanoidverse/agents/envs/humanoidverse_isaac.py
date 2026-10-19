@@ -354,6 +354,12 @@ class HumanoidVerseVectorEnv(VectorEnv):
         reset_to_default_pose: bool = False,
         target_states: dict[str, torch.Tensor] | None = None,
     ) -> tuple[torch.Tensor, dict[str, Any]]:
+        if seed is not None:
+            from humanoidverse.agents.utils import set_seed_everywhere
+
+            set_seed_everywhere(seed)
+            self.action_space.seed(seed)
+            self.single_action_space.seed(seed)
         if reset_to_default_pose and target_states is not None:
             raise ValueError("Cannot specify both reset_to_default_pose and target_states.")
         target_states = target_states or (self._default_pose_target_reset if reset_to_default_pose else None)
@@ -369,25 +375,34 @@ class HumanoidVerseVectorEnv(VectorEnv):
         info = {"qpos": qpos, "qvel": qvel}
         return observation, info
 
-    def _get_qpos_qvel(self, to_numpy: bool = True):
-        # base_pos = self._env.simulator._robot.data.root_state_w[:, :7].clone().detach()
-        base_pos = self._env.simulator.robot_root_states[:, [0, 1, 2, 6, 3, 4, 5]].clone().detach()
-        qpos = self._env.simulator.dof_pos.clone().detach()
+    def _get_qpos_qvel(self, to_numpy: bool = True, sim_state=None):
+        if sim_state is None:
+            sim_state = {
+                "root_states": self._env.simulator.robot_root_states,
+                "dof_pos": self._env.simulator.dof_pos,
+                "dof_vel": self._env.simulator.dof_vel,
+                "base_ang_vel": self._env._get_obs_base_ang_vel(),
+            }
+        base_pos = sim_state["root_states"][:, [0, 1, 2, 6, 3, 4, 5]].clone().detach()
+        qpos = sim_state["dof_pos"].clone().detach()
         mujoco_qpos = torch.cat([base_pos, qpos], dim=-1)
-        qvel = self._env.simulator.dof_vel.clone().detach()
-        base_lin_vel = self._env.simulator.robot_root_states[:, 7:10].clone().detach()
-        base_ang_vel = self._env._get_obs_base_ang_vel().clone().detach()
+        qvel = sim_state["dof_vel"].clone().detach()
+        base_lin_vel = sim_state["root_states"][:, 7:10].clone().detach()
+        base_ang_vel = sim_state["base_ang_vel"].clone().detach()
         mujoco_qvel = torch.cat([base_lin_vel, base_ang_vel, qvel], dim=-1)
         if to_numpy:
             mujoco_qpos = mujoco_qpos.cpu().numpy()
             mujoco_qvel = mujoco_qvel.cpu().numpy()
         return mujoco_qpos, mujoco_qvel
 
-    def _get_g1env_observation(self, to_numpy: bool = True):
+    def _get_g1env_observation(self, to_numpy: bool = True, raw_obs=None, episode_length=None):
         """Turn current Isaac sim state into a G1Env-like observation."""
 
         # G1Env state: https://github.com/fairinternal/HumEnv/blob/main/g1env/robot.py#L545-L551
-        raw_obs = self._env.obs_buf_dict_raw["actor_obs"]
+        if raw_obs is None:
+            raw_obs = self._env.obs_buf_dict_raw["actor_obs"]
+        if episode_length is None:
+            episode_length = self._env.episode_length_buf
 
         g1env_state = torch.cat(
             [
@@ -412,7 +427,7 @@ class HumanoidVerseVectorEnv(VectorEnv):
         if self.include_last_action:
             observation["last_action"] = last_action
         if self.add_time_aware_observation:
-            observation["time"] = self._env.episode_length_buf.unsqueeze(-1)
+            observation["time"] = episode_length.unsqueeze(-1)
         if self.include_history_actor:
             observation["history_actor"] = raw_obs["history_actor"]
         if self.include_history_noaction:
@@ -457,6 +472,16 @@ class HumanoidVerseVectorEnv(VectorEnv):
         time_outs = new_info["time_outs"].bool()
         terminated = torch.logical_and(reset, ~time_outs)
         truncated = time_outs
+
+        new_info = dict(new_info)
+        final_raw = new_info.pop("_final_observation_raw", None)
+        if final_raw is not None:
+            new_info["final_observation"] = self._get_g1env_observation(
+                to_numpy=to_numpy, raw_obs=final_raw, episode_length=new_info.pop("_final_episode_length")
+            )
+            final_qpos, final_qvel = self._get_qpos_qvel(to_numpy=to_numpy, sim_state=new_info.pop("_final_sim_state"))
+            new_info["final_info"] = {"qpos": final_qpos, "qvel": final_qvel}
+            new_info["_final_observation"] = reset.cpu().numpy() if to_numpy else reset.clone()
 
         # update observation and history
         observation = self._get_g1env_observation(to_numpy=to_numpy)

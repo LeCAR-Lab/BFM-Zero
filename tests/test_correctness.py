@@ -75,6 +75,8 @@ class InferenceTests(unittest.TestCase):
                 env = NS(
                     simulator=NS(
                         robot_root_states=root,
+                        dof_pos=torch.zeros(2, 1),
+                        dof_vel=torch.zeros(2, 1),
                         base_quat=root[:, 3:7],
                         set_actor_root_state_tensor=lambda ids, states: root.__setitem__(ids, states[ids]),
                         set_dof_state_tensor=Mock(),
@@ -103,6 +105,7 @@ class InferenceTests(unittest.TestCase):
                 def observe():
                     state = torch.cat([env.projected_gravity, env.base_ang_vel], dim=-1).clone()
                     env.obs_buf_dict = {"actor_obs": state}
+                    env.obs_buf_dict_raw = {"actor_obs": {"state": state}}
                     env.hist_obs_dict = {"state": state}
 
                 env._compute_observations = observe

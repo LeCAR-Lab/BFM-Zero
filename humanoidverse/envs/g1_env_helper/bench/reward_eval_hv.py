@@ -76,7 +76,7 @@ class RewardWrapperHV(BaseHumEnvBenchWrapper):
         if isinstance(self.env_model, str):
             self.env_model = mujoco.MjModel.from_xml_path(self.env_model)
 
-        if isinstance(self.inference_dataset, TrajectoryDictBufferMultiDim):
+        if isinstance(self.inference_dataset, TrajectoryDictBufferMultiDim) and "next" not in self.inference_dataset.output_key_t:
             if "qpos" not in self.inference_dataset.output_key_tp1:
                 self.inference_dataset.output_key_tp1.append("qpos")
             if "qvel" not in self.inference_dataset.output_key_tp1:

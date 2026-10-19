@@ -1,11 +1,32 @@
 import unittest
 
+import numpy as np
 import torch
 
 from humanoidverse.agents.evaluations import humanoidverse_isaac as evaluation
 
 
 class MetricsTests(unittest.TestCase):
+    def test_legacy_evaluator_uses_all_joints_and_shared_metrics(self):
+        from humanoidverse.envs.g1_env_helper.bench import tracking_eval as legacy
+
+        for joints in (23, 24, 29):
+            state = np.zeros((5, joints * 2 + 6))
+            state[:, joints - 1] = 1.0
+            actual = np.zeros((4, joints))
+            actual[:, -1] = np.arange(4) * 0.1
+            metrics = legacy._calc_metrics({
+                "observation": {"state": state},
+                "tracking_target": {"state": np.zeros_like(state[1:])},
+                "joint_pos": actual, "target_joint_pos": np.zeros_like(actual),
+                "xpos": np.zeros((4, 6)), "target_xpos": np.zeros((4, 6)),
+                "dt": 0.02, "motion_id": 0, "motion_file": "test",
+            }, None)["test"]
+            self.assertAlmostEqual(metrics["obs_state_emd"], 1.0)
+            self.assertAlmostEqual(metrics["joint_velocity_l2_rad_s"], 5.0, places=4)
+            self.assertLess(metrics["joint_acceleration_l2_rad_s2"], 0.001)
+            self.assertTrue({"mpjpe_l/avg_norm_qpos", "vel_dist", "accel_dist"}.isdisjoint(metrics))
+
     def test_joint_derivatives_use_time_axis_and_seconds(self):
         time = torch.arange(4, dtype=torch.float64) * 0.25
         actual = time[:, None].square() * torch.tensor([1.0, 2.0])
