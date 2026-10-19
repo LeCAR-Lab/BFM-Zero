@@ -102,6 +102,12 @@ Override from code by passing a custom `TrainConfig`, or extend the CLI to accep
 
 Tips: After 50-100 M steps training, eval/emd should lower than 0.75.
 
+The training evaluator reports joint-angle errors as `joint_angle_l2_rad`,
+`joint_velocity_l2_rad_s` and `joint_acceleration_l2_rad_s2` (time-averaged L2 norms).
+These replace `mpjpe_l`, `vel_dist` and `accel_dist`; old values are not directly
+comparable. `obs_state_emd` now includes all configured joints. The main `emd`
+calculation is unchanged.
+
 
 <div align="center">
 <img src="static/images/training_curve.png" style="height:300px;" />
@@ -176,7 +182,7 @@ uv run python -m humanoidverse.tracking_inference \
 **Outputs** (under `model_folder/tracking_inference/`):
 
 - `zs_{MOTION_ID}.pkl`: Latent \(z\) for each motion.
-- `tracking.mp4`: Expert vs policy comparison (when `--save_mp4` is set).
+- `tracking.mp4`: Expert vs policy comparison (when `--save_mp4` is set); multiple motions use `tracking_<motion_id>.mp4`.
 
 ---
 

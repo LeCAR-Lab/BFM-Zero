@@ -42,6 +42,7 @@ class MuJoCo(BaseSimulator):
 
         self.default_dof_frictionloss = self.model.dof_frictionloss.copy()
         self.default_body_mass = self.model.body_mass.copy()
+        self.default_body_ipos = self.model.body_ipos.copy()
         self.default_geom_friction = self.model.geom_friction.copy()
 
         self.model.opt.timestep = 1 / self.simulator_config.sim.fps
@@ -63,6 +64,7 @@ class MuJoCo(BaseSimulator):
         # First reset to defaults
         self.model.dof_frictionloss[:] = self.default_dof_frictionloss
         self.model.body_mass[:] = self.default_body_mass
+        self.model.body_ipos[:] = self.default_body_ipos
         self.model.geom_friction[:] = self.default_geom_friction
 
         if self.domain_rand_config.get("randomize_link_mass", False):
@@ -104,12 +106,14 @@ class MuJoCo(BaseSimulator):
             # get id of torso
             self.torso_id = self.model.body("torso_link").id
             assert self.torso_id > -1
-            x_uniform_range = self.domain_rand_config["base_com_range"]["x"]
-            assert self.domain_rand_config["base_com_range"]["y"] == x_uniform_range
-            assert self.domain_rand_config["base_com_range"]["z"] == x_uniform_range
-            #TODO: is this an appropriate way to randomize base com? We add weight to the torso
-            dmass_torso = np.random.uniform(low=x_uniform_range[0], high=x_uniform_range[1])
-            self.model.body_mass[self.torso_id] = self.model.body_mass[self.torso_id] + dmass_torso
+            for axis, name in enumerate(("x", "y", "z")):
+                low, high = self.domain_rand_config["base_com_range"][name]
+                self.model.body_ipos[self.torso_id, axis] += np.random.uniform(low, high)
+            # COM offsets invalidate the compiler's body/inertia alignment shortcut.
+            self.model.body_sameframe[self.torso_id] = mujoco.mjtSameFrame.mjSAMEFRAME_NONE
+        # Recompute model constants at qpos0 without changing the live state.
+        mujoco.mj_setConst(self.model, mujoco.MjData(self.model))
+        self.refresh_sim_tensors()
 
     def setup_terrain(self, mesh_type):
         """Sets up the terrain based on the specified mesh type."""
@@ -225,7 +229,7 @@ class MuJoCo(BaseSimulator):
         self.refresh_sim_tensors()
     
     def refresh_sim_tensors(self):
-        pass  
+        mujoco.mj_forward(self.model, self.data)
     
     def apply_torques_at_dof(self, torques):
         # Convert torch tensor to numpy if needed.
@@ -239,23 +243,26 @@ class MuJoCo(BaseSimulator):
     
     def set_actor_root_state_tensor(self, set_env_ids, root_states):
         # In MuJoCo, the full state is given by qpos and qvel.
-        if isinstance(root_states, torch.Tensor):
-            root_states[:, 10:13] = quat_rotate_inverse(self.base_quat, root_states[:, 10:13], w_last=True)
-            root_states = root_states.cpu().numpy()
+        if len(set_env_ids) == 0:
+            return
+        root_states = torch.as_tensor(root_states).detach().clone()
+        root_states[:, 10:13] = quat_rotate_inverse(root_states[:, 3:7], root_states[:, 10:13], w_last=True)
+        root_states = root_states.cpu().numpy()
         self.data.qpos[0:3] = root_states[0, 0:3]
         self.data.qpos[3:7] = root_states[0, 3:7][..., [3, 0, 1, 2]]
         self.data.qvel[0:3] = root_states[0, 7:10]
         self.data.qvel[3:6] = root_states[0, 10:13]
-        # print(root_states.shape)
-        # mujoco.mj_forward(self.model, self.data)
+        self.refresh_sim_tensors()
     
     def set_dof_state_tensor(self, set_env_ids, dof_states):
         # Update joint positions and velocities.
+        if len(set_env_ids) == 0:
+            return
         if isinstance(dof_states, torch.Tensor):
             dof_states = dof_states.cpu().numpy()
         self.data.qpos[7:] = dof_states[0, :, 0]
         self.data.qvel[6:] = dof_states[0, :, 1]
-        # mujoco.mj_forward(self.model, self.data)
+        self.refresh_sim_tensors()
     
     def apply_rigid_body_force_at_pos_tensor(self, force_tensor, force, pos):
         # In MuJoCo, external forces are applied via xfrc_applied.
@@ -269,8 +276,9 @@ class MuJoCo(BaseSimulator):
         mujoco.mj_step(self.model, self.data)
         # if self.viewer is not None:
         #     mujoco.viewer.sync(self.viewer, self.model, self.data)
-        self.refresh_sim_tensors()
         if self.viewer is not None:
+            # Headless runs refresh once at the environment's control-step boundary.
+            self.refresh_sim_tensors()
             self.viewer.sync()
 
     def get_dof_properties(self, model):
@@ -481,7 +489,10 @@ class MuJoCo(BaseSimulator):
     
     @property
     def _rigid_body_vel(self):
-        return torch.tensor([self.data.cvel[self.body_id, 3:6]], device=self.device, dtype=torch.float32) # Using xvelp for global velocity
+        velocities = np.empty((len(self.body_id), 6))
+        for i, body_id in enumerate(self.body_id):
+            mujoco.mj_objectVelocity(self.model, self.data, mujoco.mjtObj.mjOBJ_XBODY, int(body_id), velocities[i], 0)
+        return torch.as_tensor(velocities[:, 3:], device=self.device, dtype=torch.float32).unsqueeze(0)
     
     @property
     def _rigid_body_ang_vel(self):

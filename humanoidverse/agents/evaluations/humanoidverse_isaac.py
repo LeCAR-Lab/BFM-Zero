@@ -16,6 +16,7 @@ import ot
 import torch
 from torch.utils._pytree import tree_map
 from tqdm import tqdm
+from humanoidverse.utils.helpers import get_reference_proprioception
 
 from ..buffers.trajectory import TrajectoryDictBufferMultiDim
 from ..envs.humanoidverse_isaac import HumanoidVerseIsaacConfig, HumanoidVerseVectorEnv, IsaacRendererWithMuJoco
@@ -254,18 +255,10 @@ def get_backward_observation(env, motion_id, include_last_action, velocity_multi
             "max_local_self_obs": max_local_self_obs,
         }
 
-    projected_gravity = quat_rotate_inverse(base_quat, env.gravity_vec[0:1].repeat(max_local_self_obs.shape[0], 1), w_last=True)
-
-    # TODO ensure this is correct
-    g1env_state = torch.cat(
-        [
-            ref_dof_pos,
-            ref_dof_vel,
-            projected_gravity,
-            ref_ang_vel,
-        ],
-        dim=-1,
+    proprioception = get_reference_proprioception(
+        env, motion_state["dof_pos"], ref_dof_vel, ref_body_rots[:, 0], ref_body_angular_vels[:, 0]
     )
+    g1env_state = torch.cat(list(proprioception.values()), dim=-1)
     bogus_actions = ref_dof_pos
     g1env_last_action = bogus_actions
 
@@ -530,6 +523,7 @@ def _async_tracking_worker(
                         "observation": tree_map(lambda x: x[0 : ctx_dict[m_id].shape[0] + 1, env_id], episode_data["observation"]),
                         "joint_pos": _joint_pos,
                         "target_joint_pos": _target_joint_pos,
+                        "dt": isaac_env.dt,
                     },
                 )
 
@@ -547,11 +541,6 @@ def _async_tracking_worker(
 
     return metrics
 
-
-
-QPOS_START = 23 + 3
-QPOS_END = 23 + 3 + 23
-QVEL_IDX = 23
 
 
 def distance_matrix(X: torch.Tensor, Y: torch.Tensor):
@@ -585,8 +574,9 @@ def distance_proximity(next_obs: torch.Tensor, tracking_target: torch.Tensor, bo
 
 def _calc_metrics(ep):
     metr = {}
-    next_obs = torch.tensor(ep["observation"]["state"][:, :QVEL_IDX], dtype=torch.float32)
-    tracking_target = torch.tensor(ep["tracking_target"]["state"][:, :QVEL_IDX], dtype=torch.float32)
+    num_joints = ep["joint_pos"].shape[-1]
+    next_obs = torch.as_tensor(ep["observation"]["state"][:, :num_joints], dtype=torch.float32)
+    tracking_target = torch.as_tensor(ep["tracking_target"]["state"][:, :num_joints], dtype=torch.float32)
     dist_prox_res = distance_proximity(next_obs=next_obs, tracking_target=tracking_target, prefix="obs_state_")
     metr.update(dist_prox_res)
     emd_res = emd_numpy(next_obs=next_obs, tracking_target=tracking_target, prefix="obs_state_")
@@ -607,7 +597,7 @@ def _calc_metrics(ep):
     # metr["success_phc_mean_xpos"] = torch.all(torch.norm(jpos_pred - jpos_gt, dim=-1).mean(dim=-1) <= 0.5).float()
 
     # phc metrics
-    phc_metrics = compute_joint_pos_metrics(joint_pos=ep["joint_pos"], target_joint_pos=ep["target_joint_pos"])
+    phc_metrics = compute_joint_pos_metrics(joint_pos=ep["joint_pos"], target_joint_pos=ep["target_joint_pos"], dt=ep["dt"])
     metr.update(phc_metrics)
     for k, v in metr.items():
         if isinstance(v, torch.Tensor):
@@ -617,21 +607,19 @@ def _calc_metrics(ep):
     return {ep["motion_file"]: metr}
 
 
-def compute_joint_pos_metrics(joint_pos, target_joint_pos):
-    stats = {}
-    # Next observation should match the desired target (if possible in 1 step)
-    stats["mpjpe_l"] = torch.norm(joint_pos - target_joint_pos, dim=-1).mean(-1) * 1000
-
-    # we compute the velocity as finite difference
-    vel_gt = target_joint_pos[:, 1:] - target_joint_pos[:, :-1]  # num_env x T x D
-    vel_pred = joint_pos[:, 1:] - joint_pos[:, :-1]  # num_env x T x D
-    stats["vel_dist"] = torch.norm(vel_pred - vel_gt, dim=-1).mean(-1) * 1000  # num_env
-
-    # Computes acceleration error:
-    #     1/(n-2) \sum_{i=1}^{n-1} X_{i-1} - 2X_i + X_{i+1}
-    accel_gt = target_joint_pos[:, :-2] - 2 * target_joint_pos[:, 1:-1] + target_joint_pos[:, 2:]
-    accel_pred = joint_pos[:, :-2] - 2 * joint_pos[:, 1:-1] + joint_pos[:, 2:]
-    stats["accel_dist"] = torch.norm(accel_pred - accel_gt, dim=-1).mean(-1) * 100
+def compute_joint_pos_metrics(joint_pos, target_joint_pos, dt):
+    """Joint-angle errors for [time, joint] arrays, with dt in seconds."""
+    if not np.isfinite(dt) or dt <= 0 or joint_pos.ndim != 2 or joint_pos.shape != target_joint_pos.shape or not joint_pos.numel():
+        raise ValueError("Expected nonempty matching [time, joint] arrays and a positive finite timestep.")
+    error = joint_pos - target_joint_pos
+    stats = {"joint_angle_l2_rad": error.norm(dim=-1).mean()}
+    # A derivative is undefined when the clip has too few frames.
+    if error.shape[0] >= 2:
+        velocity_error = torch.diff(error, dim=0) / dt
+        stats["joint_velocity_l2_rad_s"] = velocity_error.norm(dim=-1).mean()
+    if error.shape[0] >= 3:
+        acceleration_error = torch.diff(velocity_error, dim=0) / dt
+        stats["joint_acceleration_l2_rad_s2"] = acceleration_error.norm(dim=-1).mean()
 
     stats.update(
         distance_proximity(next_obs=joint_pos, tracking_target=target_joint_pos, prefix="")

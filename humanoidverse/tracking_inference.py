@@ -102,70 +102,69 @@ def main(model_folder: Path, data_path: Path | None = None, headless: bool = Tru
         joblib.dump(z.cpu().numpy(), output_dir / f"zs_{MOTION_ID}.pkl")
         print(f"Saved zs_{MOTION_ID}.pkl")
         
-    observation, info = wrapped_env.reset(to_numpy=False)
+        observation, info = wrapped_env.reset(to_numpy=False)
 
-    # Root state: pos(3) + quat(4) + lin_vel(3) + ang_vel(3). Isaac expects quat as wxyz; motion lib uses xyzw.
-    ref_body_rots = obs_dict["ref_body_rots"][0, 0].clone()
-    if simulator == "isaacsim":
-        ref_body_rots = ref_body_rots[[3, 0, 1, 2]]  # xyzw -> wxyz for correct humanoid facing in Isaac
-    ref_root_init_state = torch.cat(
-            [
-                obs_dict["ref_body_pos"][0, 0],
-                ref_body_rots,
-                obs_dict["ref_body_vels"][0, 0],
-                obs_dict["ref_body_angular_vels"][0, 0],
-            ]
-        )
-    dof_init_state = torch.zeros_like(wrapped_env._env.simulator.dof_state.view(num_envs, -1, 2)[0])
-    dof_init_state[..., 0] = obs_dict["dof_pos"][0]
-    dof_init_state[..., 1] = obs_dict["ref_dof_vel"][0]
-    target_states = {
-        "dof_states": dof_init_state,
-        "root_states": torch.stack([ref_root_init_state.clone() for i in range(num_envs)])
-    }
-    env_ids = torch.arange(num_envs, dtype=torch.long)
-    observation, info = wrapped_env._env.reset_envs_idx(env_ids, target_states=target_states)
-    # refresh_env_ids = wrapped_env._env.need_to_refresh_envs.nonzero(as_tuple=False).flatten()
-    # wrapped_env._env.simulator.set_actor_root_state_tensor(refresh_env_ids, wrapped_env._env.target_robot_root_states)
-    # wrapped_env._env.simulator.set_dof_state_tensor(refresh_env_ids, wrapped_env._env.target_robot_dof_state)
-    # wrapped_env._env.need_to_refresh_envs[refresh_env_ids] = False
-    observation_new, reward, terminated, truncated, info = wrapped_env.step(torch.zeros((num_envs, wrapped_env.action_space.shape[-1]), dtype=torch.float32), to_numpy=False)
-    observation = wrapped_env._get_g1env_observation(to_numpy=False)
-    qpos, qvel = wrapped_env._get_qpos_qvel(to_numpy=True)
-    assert np.allclose(wrapped_env._env.simulator.dof_pos.clone().cpu(), expert_qpos[0,7:])
-    joint_pos = [wrapped_env._env.simulator.dof_state[..., 0].clone().cpu().numpy()]
+        # Root state: pos(3) + quat(4) + lin_vel(3) + ang_vel(3). Isaac expects quat as wxyz; motion lib uses xyzw.
+        ref_body_rots = obs_dict["ref_body_rots"][0, 0].clone()
+        if simulator == "isaacsim":
+            ref_body_rots = ref_body_rots[[3, 0, 1, 2]]  # xyzw -> wxyz for correct humanoid facing in Isaac
+        ref_root_init_state = torch.cat(
+                [
+                    obs_dict["ref_body_pos"][0, 0],
+                    ref_body_rots,
+                    obs_dict["ref_body_vels"][0, 0],
+                    obs_dict["ref_body_angular_vels"][0, 0],
+                ]
+            )
+        dof_init_state = torch.zeros_like(wrapped_env._env.simulator.dof_state.view(num_envs, -1, 2)[0])
+        dof_init_state[..., 0] = obs_dict["dof_pos"][0]
+        dof_init_state[..., 1] = obs_dict["ref_dof_vel"][0]
+        target_states = {
+            "dof_states": dof_init_state,
+            "root_states": torch.stack([ref_root_init_state.clone() for i in range(num_envs)])
+        }
+        env_ids = torch.arange(num_envs, dtype=torch.long)
+        observation, info = wrapped_env._env.reset_envs_idx(env_ids, target_states=target_states)
+        # refresh_env_ids = wrapped_env._env.need_to_refresh_envs.nonzero(as_tuple=False).flatten()
+        # wrapped_env._env.simulator.set_actor_root_state_tensor(refresh_env_ids, wrapped_env._env.target_robot_root_states)
+        # wrapped_env._env.simulator.set_dof_state_tensor(refresh_env_ids, wrapped_env._env.target_robot_dof_state)
+        # wrapped_env._env.need_to_refresh_envs[refresh_env_ids] = False
+        observation_new, reward, terminated, truncated, info = wrapped_env.step(torch.zeros((num_envs, wrapped_env.action_space.shape[-1]), dtype=torch.float32), to_numpy=False)
+        observation = wrapped_env._get_g1env_observation(to_numpy=False)
+        qpos, qvel = wrapped_env._get_qpos_qvel(to_numpy=True)
+        assert np.allclose(wrapped_env._env.simulator.dof_pos.clone().cpu(), expert_qpos[0,7:])
+        joint_pos = [wrapped_env._env.simulator.dof_state[..., 0].clone().cpu().numpy()]
 
-    # Visualization length: match inference length so expert and policy videos align
-    episode_len = z.shape[0]
-    episode_len = 100
-    print(f"Saving video for tracking ({episode_len} steps)")
-    if save_mp4:
-        rgb_renderer = IsaacRendererWithMuJoco(render_size=256)
-        # Only render 1 + episode_len frames (same as frames list), not the full motion
-        expert_video = rgb_renderer.from_qpos(expert_qpos[: 1 + episode_len])
-        frames = [rgb_renderer.render(wrapped_env._env, 0)[0]]
-
-    print(f"Running tracking inference for {episode_len} steps")
-    for i in range(episode_len):
-        print(f"Step {i} of {episode_len}")
-        action = model.act(observation, z[i % len(z)].repeat(num_envs, 1), mean=True)
-        observation, reward, terminated, truncated, info = wrapped_env.step(action, to_numpy=False)
-        joint_pos.append(wrapped_env._env.simulator.dof_state[..., 0].clone().cpu().numpy())
+        # Visualization length: match inference length so expert and policy videos align
+        episode_len = z.shape[0]
+        print(f"Saving video for tracking ({episode_len} steps)")
         if save_mp4:
-            frames.append(rgb_renderer.render(wrapped_env._env, 0)[0])
+            rgb_renderer = IsaacRendererWithMuJoco(render_size=256)
+            # Only render 1 + episode_len frames (same as frames list), not the full motion
+            expert_video = rgb_renderer.from_qpos(expert_qpos[: 1 + episode_len])
+            frames = [rgb_renderer.render(wrapped_env._env, 0)[0]]
 
-    joint_pos = np.stack(joint_pos, axis=0).squeeze(1)
-    stats = {}
+        print(f"Running tracking inference for {episode_len} steps")
+        for i in range(episode_len):
+            print(f"Step {i} of {episode_len}")
+            action = model.act(observation, z[i % len(z)].repeat(num_envs, 1), mean=True)
+            observation, reward, terminated, truncated, info = wrapped_env.step(action, to_numpy=False)
+            joint_pos.append(wrapped_env._env.simulator.dof_state[..., 0].clone().cpu().numpy())
+            if save_mp4:
+                frames.append(rgb_renderer.render(wrapped_env._env, 0)[0])
+
+        joint_pos = np.stack(joint_pos, axis=0).squeeze(1)
+        stats = {}
     
-    # breakpoint()  # use PYTHONBREAKPOINT=0 to disable, or install ipdb for a nicer debugger
+        # breakpoint()  # use PYTHONBREAKPOINT=0 to disable, or install ipdb for a nicer debugger
 
-    if save_mp4:
-        new_frames = []
-        for a, b in zip(expert_video, frames):
-            new_frames.append(np.concatenate([a, b], axis=1))
-        video_path = output_dir / "tracking.mp4"
-        media.write_video(str(video_path), new_frames, fps=50)
-        print(f"Saved video for tracking: {video_path}")
+        if save_mp4:
+            new_frames = []
+            for a, b in zip(expert_video, frames):
+                new_frames.append(np.concatenate([a, b], axis=1))
+            video_path = output_dir / ("tracking.mp4" if len(motion_list) == 1 else f"tracking_{MOTION_ID}.mp4")
+            media.write_video(str(video_path), new_frames, fps=50)
+            print(f"Saved video for tracking: {video_path}")
 
 
 if __name__ == "__main__":

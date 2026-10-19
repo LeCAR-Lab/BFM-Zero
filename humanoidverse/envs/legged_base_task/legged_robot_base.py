@@ -321,8 +321,7 @@ class LeggedRobotBase(BaseTask):
             self.simulator.set_actor_root_state_tensor(refresh_env_ids, self.target_robot_root_states)
             self.simulator.set_dof_state_tensor(refresh_env_ids, self.target_robot_dof_state)
             self.need_to_refresh_envs[refresh_env_ids] = False
-
-        if len(env_ids) > 0:
+            # Manual resets and pushes can write state without setting reset_buf.
             self._pre_compute_observations_callback()
             
         self._compute_observations() # in some cases a simulation step might be required to refresh some obs (for example body positions)
