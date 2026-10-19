@@ -231,7 +231,7 @@ class LeggedRobotMotions(LeggedRobotBase):
         
             ################### EXTEND Rigid Body Linear Velocity #####################
             self._rigid_body_ang_vel_global = self.simulator._rigid_body_ang_vel[:, self.extend_body_parent_ids]
-            angular_velocity_contribution = torch.cross(self._rigid_body_ang_vel_global, self.extend_body_pos_in_parent.view(self.num_envs, -1, 3), dim=2)
+            angular_velocity_contribution = torch.cross(self._rigid_body_ang_vel_global, rotated_pos_in_parent.view(self.num_envs, -1, 3), dim=2)
             extend_curr_vel = self.simulator._rigid_body_vel[:, self.extend_body_parent_ids] + angular_velocity_contribution.view(self.num_envs, -1, 3)
             self._rigid_body_vel_extend = torch.cat([self.simulator._rigid_body_vel, extend_curr_vel], dim=1)
         else:

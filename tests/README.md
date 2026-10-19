@@ -16,6 +16,8 @@ inline XML model. No checkpoint, motion dataset or GPU is needed.
 - The actual push flag with domain randomization enabled and disabled.
 - Local-frame angular velocity and observation scaling in expert loading and both
   reference-observation builders, including zero velocities used by goal inference.
+- Virtual-head world velocity and privileged observations match position finite
+  differences across XYZ rotations, including tilted/inverted poses and zero speed.
 - Tracking every requested motion to its full length, distinct videos for multiple
   motions and the existing `tracking.mp4` filename for a single motion.
 - Joint-angle metrics along the time axis with physical units; short clips and
