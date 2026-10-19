@@ -15,8 +15,7 @@ import pydantic
 from gymnasium import Env
 from gymnasium.vector import VectorEnv
 from humanoidverse.envs.legged_robot_motions.legged_robot_motions import LeggedRobotMotions, compute_humanoid_observations_max
-from humanoidverse.utils.helpers import pre_process_config
-from humanoidverse.utils.torch_utils import quat_rotate_inverse
+from humanoidverse.utils.helpers import pre_process_config, get_reference_proprioception
 from omegaconf import OmegaConf
 from torch.utils._pytree import tree_map
 
@@ -69,31 +68,11 @@ def load_expert_trajectories_from_motion_lib(env, agent_cfg, device="cpu", add_h
         )
         max_local_self_obs = torch.cat([v for v in obs_dict.values()], dim=-1)
 
-        # Aligned with the logic below to create proprio state
-        base_quat = ref_body_rots[:, 0]
-        ref_dof_pos = motion_res["dof_pos"] - env.default_dof_pos[0]
-        ref_dof_vel = motion_res["dof_vel"]
-        ref_ang_vel = ref_body_angular_vels[:, 0]
-        projected_gravity = quat_rotate_inverse(base_quat, env.gravity_vec[0:1].repeat(max_local_self_obs.shape[0], 1), w_last=True)
-        # NOTE we multiply by zero to align with mujoco data
-        bogus_actions = ref_dof_pos * 0  # bogus actions
-
-        state = torch.cat(
-            [
-                ref_dof_pos,
-                ref_dof_vel,
-                projected_gravity,
-                ref_ang_vel,
-            ],
-            dim=-1,
+        data = get_reference_proprioception(
+            env, motion_res["dof_pos"], motion_res["dof_vel"], ref_body_rots[:, 0], ref_body_angular_vels[:, 0]
         )
-
-        data = {
-            "base_ang_vel": ref_ang_vel,
-            "projected_gravity": projected_gravity,
-            "dof_pos": ref_dof_pos,
-            "dof_vel": ref_dof_vel,
-        }
+        bogus_actions = torch.zeros_like(data["dof_pos"])
+        state = torch.cat(list(data.values()), dim=-1)
 
         ### compute history_actor
         # TODO: speed this up
@@ -330,12 +309,15 @@ class HumanoidVerseVectorEnv(VectorEnv):
                 dims[k] = 1 if len(v.shape) == 0 else v.shape[0]
             self.history_handler = HistoryHandler(self.num_envs, context_length=self.context_length, keys_dims=dims, device=self.device)
 
-        _target_dof_pos = self._env.default_dof_pos.clone().unsqueeze(0).repeat(self.num_envs, 1, 2)
+        _target_dof_pos = self._env.default_dof_pos.clone().unsqueeze(-1).repeat(self.num_envs, 1, 2)
         # Set velocities to zero
         _target_dof_pos[..., 1] = 0.0
+        root_state = self._env.base_init_state.clone()
+        if self._env.config.simulator.config.name == "isaacsim":
+            root_state[3:7] = root_state[[6, 3, 4, 5]]
         self._default_pose_target_reset = {
             "dof_states": _target_dof_pos,
-            "root_states": self._env.base_init_state,
+            "root_states": root_state,
         }
 
     @property
@@ -693,7 +675,7 @@ class HumanoidVerseIsaacConfig(BaseConfig):
             cfg.domain_rand.randomize_friction = False
             cfg.domain_rand.randomize_torque_rfi = False
             cfg.domain_rand.randomize_rfi_lim = False
-            cfg.domain_rand.randomize_push_robots = False
+            cfg.domain_rand.push_robots = False
             cfg.domain_rand.randomize_default_dof_pos = False
 
         assert cfg.env.config.termination.terminate_when_close_to_dof_pos_limit is False

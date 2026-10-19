@@ -154,6 +154,19 @@ class PolicyExporterLSTM(torch.nn.Module):
         traced_script_module.save(path)
 
 
+def get_reference_proprioception(env, dof_pos, dof_vel, base_quat, base_ang_vel):
+    """Match the noise-free online proprioception (local frame and configured scales)."""
+    from humanoidverse.utils.torch_utils import quat_rotate_inverse
+
+    data = {
+        "dof_pos": dof_pos - env.default_dof_pos[0],
+        "dof_vel": dof_vel,
+        "projected_gravity": quat_rotate_inverse(base_quat, env.gravity_vec[:1].expand(base_quat.shape[0], -1), w_last=True),
+        "base_ang_vel": quat_rotate_inverse(base_quat, base_ang_vel, w_last=True),
+    }
+    return {key: value * env.config.obs.obs_scales[key] for key, value in data.items()}
+
+
 def get_backward_observation(env, motion_id, use_root_height_obs: bool = False, velocity_multiplier: float = 1.0) -> torch.Tensor:
     from humanoidverse.utils.torch_utils import quat_rotate_inverse
     from humanoidverse.envs.legged_robot_motions.legged_robot_motions import compute_humanoid_observations_max, compute_humanoid_observations_max_with_contact
@@ -218,10 +231,10 @@ def get_backward_observation(env, motion_id, use_root_height_obs: bool = False, 
             "ref_body_vels": ref_body_vels,
             "ref_body_angular_vels": ref_body_angular_vels
         }
-        state = torch.cat([ref_dof_pos,
-                    ref_dof_vel,
-                    projected_gravity,
-                    ref_ang_vel], dim=-1)
+        proprioception = get_reference_proprioception(
+            env, motion_state["dof_pos"], ref_dof_vel, base_quat, ref_body_angular_vels[:, 0]
+        )
+        state = torch.cat(list(proprioception.values()), dim=-1)
         last_action = bogus_actions
         # TODO get obs from raw obs instead of the obs
         bfmzero_obs = {
