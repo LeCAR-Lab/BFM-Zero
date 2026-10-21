@@ -23,8 +23,7 @@ from humenv.bench.gym_utils.episodes import Episode
 from humenv.misc.motionlib import MotionBuffer
 
 from humanoidverse.utils.g1_env_config import G1EnvConfigsType
-
-QVEL_IDX: int = 23
+from humanoidverse.agents.evaluations.humanoidverse_isaac import compute_joint_pos_metrics
 
 if Version("0.26") <= Version(gymnasium.__version__) < Version("1.0"):
 
@@ -159,7 +158,7 @@ def _async_tracking_worker(inputs, env_config: G1EnvConfigsType, motion_buffer: 
         ctx = [None] * (ep_["qpos"].shape[0] - 1) if ctx is None else ctx
         observation, info = env.reset(options={"qpos": ep_["qpos"][0], "qvel": ep_["qvel"][0]})
         xpos = [np.stack([env.unwrapped._mj_data.body(i).xpos for i in xpos_bodies]).ravel()]
-        joint_pos = [info["qpos"].ravel()]
+        joint_pos = [info["qpos"].ravel()[7:]]
         _episode = Episode()
         # For calculating the metrics later, we need the same dim obs as expert data is in
         # (i.e., we need to remove "last_act" and "phase" data)
@@ -171,7 +170,7 @@ def _async_tracking_worker(inputs, env_config: G1EnvConfigsType, motion_buffer: 
             action = agent.act(obs, ctx[i]).ravel()
             observation, reward, terminated, truncated, info = env.step(action)
             xpos.append(np.stack([env.unwrapped._mj_data.body(i).xpos for i in xpos_bodies]).ravel())
-            joint_pos.append(info["qpos"].ravel())
+            joint_pos.append(info["qpos"].ravel()[7:])
             # Same cutting of the obs here
             _episode.add(
                 observation,
@@ -192,8 +191,9 @@ def _async_tracking_worker(inputs, env_config: G1EnvConfigsType, motion_buffer: 
         tmp["tracking_target"] = tracking_target
         tmp["motion_id"] = m_id
         tmp["motion_file"] = motion_buffer.get_name(m_id)
-        tmp["target_joint_pos"] = ep_["qpos"][1:]
+        tmp["target_joint_pos"] = ep_["qpos"][1:, 7:]
         tmp["joint_pos"] = np.stack(joint_pos)[1:]
+        tmp["dt"] = env.unwrapped.dt
         metrics.update(_calc_metrics(tmp, frame_stack))
     env.close()
     return metrics
@@ -247,13 +247,14 @@ def _calc_metrics(ep, frame_stack: int | None):
         assert tracking_target.shape[-1] == 1, "Tracking target should have only one frame in the last dimension"
         tracking_target = tracking_target.squeeze(-1)
 
-    next_obs = torch.tensor(next_obs[:, :QVEL_IDX], dtype=torch.float32)
-    tracking_target = torch.tensor(tracking_target[:, :QVEL_IDX], dtype=torch.float32)
+    joint_count = ep["joint_pos"].shape[-1]
+    next_obs = torch.tensor(next_obs[:, :joint_count], dtype=torch.float32)
+    tracking_target = torch.tensor(tracking_target[:, :joint_count], dtype=torch.float32)
 
     dist_prox_res = distance_proximity(next_obs=next_obs, tracking_target=tracking_target)
-    metr.update(dist_prox_res)
+    metr.update({f"obs_state_{key}": value for key, value in dist_prox_res.items()})
     emd_res = emd_numpy(next_obs=next_obs, tracking_target=tracking_target)
-    metr.update(emd_res)
+    metr.update({f"obs_state_{key}": value for key, value in emd_res.items()})
     # add distance wrt xpos
     xpos = torch.tensor(ep["xpos"], dtype=torch.float32)
     target_xpos = torch.tensor(ep["target_xpos"], dtype=torch.float32)
@@ -265,31 +266,14 @@ def _calc_metrics(ep, frame_stack: int | None):
     jpos_gt = target_xpos.reshape(target_xpos.shape[0], -1, 3)  # length x 23 x 3
     metr["success_phc_linf_xpos"] = torch.all(torch.norm(jpos_pred - jpos_gt, dim=-1) <= 0.5).float()
     metr["success_phc_mean_xpos"] = torch.all(torch.norm(jpos_pred - jpos_gt, dim=-1).mean(dim=-1) <= 0.5).float()
-    metr.update(compute_joint_pos_metrics(ep["joint_pos"], ep["target_joint_pos"]))
+    metr.update(compute_joint_pos_metrics(
+        torch.as_tensor(ep["joint_pos"], dtype=torch.float32),
+        torch.as_tensor(ep["target_joint_pos"], dtype=torch.float32),
+        dt=ep["dt"],
+    ))
     for k, v in metr.items():
         if isinstance(v, torch.Tensor):
             metr[k] = v.tolist()
     metr["motion_id"] = ep["motion_id"]
     # metr["motion_file"] = ep["motion_file"]
     return {ep["motion_file"]: metr}
-
-
-def compute_joint_pos_metrics(joint_pos, target_joint_pos):
-    stats = {}
-    # Next observation should match the desired target (if possible in 1 step)
-    stats["mpjpe_l/avg_norm_qpos"] = np.linalg.norm(joint_pos - target_joint_pos, axis=-1).mean(-1) * 1000
-
-    # we compute the velocity as finite difference
-    vel_gt = target_joint_pos[:, 1:] - target_joint_pos[:, :-1]  # num_env x T x D
-    vel_pred = joint_pos[:, 1:] - joint_pos[:, :-1]  # num_env x T x D
-    stats["vel_dist"] = np.linalg.norm(vel_pred - vel_gt, axis=-1).mean(-1) * 1000  # num_env
-
-    # Computes acceleration error:
-    #     1/(n-2) \sum_{i=1}^{n-1} X_{i-1} - 2X_i + X_{i+1}
-    accel_gt = target_joint_pos[:, :-2] - 2 * target_joint_pos[:, 1:-1] + target_joint_pos[:, 2:]
-    accel_pred = joint_pos[:, :-2] - 2 * joint_pos[:, 1:-1] + joint_pos[:, 2:]
-    stats["accel_dist"] = np.linalg.norm(accel_pred - accel_gt, axis=-1).mean(-1) * 100
-
-    stats["success_phc_linf_qpos"] = float(np.all(np.linalg.norm(joint_pos - target_joint_pos, axis=-1) <= 0.5))
-    stats["success_phc_mean_qpos"] = float(np.all(np.linalg.norm(joint_pos - target_joint_pos, axis=-1).mean(-1) <= 0.5))
-    return stats

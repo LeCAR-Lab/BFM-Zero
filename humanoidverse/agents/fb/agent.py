@@ -8,6 +8,7 @@ import pickle
 from pathlib import Path
 from typing import Dict, Literal, Tuple
 
+import pydantic
 import safetensors
 import torch
 import torch.nn.functional as F
@@ -15,6 +16,7 @@ from torch.amp import autocast
 from torch.utils._pytree import tree_map
 
 from ..base import BaseConfig
+from ..base_model import migrate_legacy_aux_critic_config
 from ..envs.utils.gym_spaces import json_to_space, space_to_json
 from ..misc.zbuffer import ZBuffer
 from ..nn_models import _soft_update_params, eval_mode, weight_init
@@ -41,7 +43,7 @@ class FBAgentTrainConfig(BaseConfig):
     z_buffer_size: int = 10000
     rollout_expert_trajectories: bool = False
     rollout_expert_trajectories_length: int = 250
-    rollout_expert_trajectories_percentage: float = 0.25
+    rollout_expert_trajectories_percentage: float = pydantic.Field(default=0.25, ge=0., le=1.)
 
 
 class FBAgentConfig(BaseConfig):
@@ -343,6 +345,8 @@ class FBAgent:
         return preds_mean, preds_unc, preds_mean - pessimism_penalty * preds_unc
     
     def _sample_tracking_z(self, replay_buffer, batch_dim, traj_length):
+        if batch_dim == 0:
+            return torch.empty((0, traj_length, self.cfg.model.archi.z_dim), device=self._model.device)
         batch = replay_buffer["expert_slicer"].sample(batch_dim * traj_length, seq_length=traj_length)  # N*T x obs_dim
         z = self._model.backward_map(batch["next"]["observation"])  # NT x z_dim
         z = z.view(batch_dim, traj_length, z.shape[-1])  # N x T x z_dim
@@ -364,7 +368,7 @@ class FBAgent:
                 idxs = step_count % self.cfg.train.rollout_expert_trajectories_length
                 if torch.any(idxs == 0):
                     n_elem = int(self.cfg.train.rollout_expert_trajectories_percentage*step_count.shape[0])
-                    self.env_idx_with_expert_rollout = torch.randint(0, step_count.shape[0], size=(n_elem,), device=self._model.device)
+                    self.env_idx_with_expert_rollout = torch.randperm(step_count.shape[0], device=self._model.device)[:n_elem]
                     self.tracking_z = self._sample_tracking_z(replay_buffer, n_elem, self.cfg.train.rollout_expert_trajectories_length)  # N x T x z_dim
                 mod_time = idxs[self.env_idx_with_expert_rollout].ravel()
                 z[self.env_idx_with_expert_rollout] = self.tracking_z[torch.arange(len(self.env_idx_with_expert_rollout), device=self._model.device), mod_time]
@@ -372,7 +376,7 @@ class FBAgent:
             z = self._model.sample_z(step_count.shape[0], device=self._model.device)
             if self.cfg.train.rollout_expert_trajectories:
                 n_elem = int(self.cfg.train.rollout_expert_trajectories_percentage*step_count.shape[0])
-                self.env_idx_with_expert_rollout = torch.randint(0, step_count.shape[0], size=(n_elem,), device=self._model.device)
+                self.env_idx_with_expert_rollout = torch.randperm(step_count.shape[0], device=self._model.device)[:n_elem]
                 self.tracking_z = self._sample_tracking_z(replay_buffer, n_elem, self.cfg.train.rollout_expert_trajectories_length)  # N x T x z_dim
                 z[self.env_idx_with_expert_rollout] = self.tracking_z[:, 0]
         return z
@@ -398,12 +402,13 @@ class FBAgent:
             obs_space = json_to_space(args["obs_space"])
             action_dim = args["action_dim"]
 
+        loaded_config["model"] = migrate_legacy_aux_critic_config(loaded_config["model"])
         config = cls.config_class(**loaded_config)
         agent = config.build(obs_space, action_dim)
         optimizers = torch.load(str(path / "optimizers.pth"), weights_only=True, map_location=device)
         for k, v in optimizers.items():
             getattr(agent, k).load_state_dict(v)
-        safetensors.torch.load_model(agent._model, path / "model/model.safetensors", device=device, strict=False)
+        safetensors.torch.load_model(agent._model, path / "model/model.safetensors", device=device, strict=True)
         agent._model.train()
         agent._model.requires_grad_(True)
         return agent

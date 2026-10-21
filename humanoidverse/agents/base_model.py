@@ -1,4 +1,5 @@
 import json
+import copy
 import pickle
 import typing as tp
 from pathlib import Path
@@ -9,6 +10,14 @@ from torch import nn
 
 from .base import BaseConfig
 from .envs.utils.gym_spaces import json_to_space, space_to_json
+
+
+def migrate_legacy_aux_critic_config(config: dict) -> dict:
+    if config.get("name") == "FBcprAuxModel" and "aux_critic_config_version" not in config:
+        # Released checkpoints built both critics from `critic`, regardless of the saved aux config.
+        config["archi"]["aux_critic"] = copy.deepcopy(config["archi"]["critic"])
+        config["aux_critic_config_version"] = 1
+    return config
 
 
 def save_model(path: str, model: "BaseModel", build_kwargs: tp.Optional[tp.Dict[str, tp.Any]] = None) -> None:
@@ -33,7 +42,7 @@ def load_model(
 ) -> "BaseModel":
     model_dir = Path(path)
     with (model_dir / "config.json").open() as f:
-        loaded_config = json.load(f)
+        loaded_config = migrate_legacy_aux_critic_config(json.load(f))
     if device is not None:
         loaded_config["device"] = device
 
@@ -62,8 +71,8 @@ def load_model(
     state_dict = safetensors.torch.load_file(model_dir / "model.safetensors", device=device)
     if strict and any(["target" in key for key in state_dict.keys()]):
         loaded_model._prepare_for_train()
-    strict = False
-    loaded_model.load_state_dict(state_dict, strict=strict)
+    # load_model also restores aliases omitted by safetensors.save_model.
+    safetensors.torch.load_model(loaded_model, model_dir / "model.safetensors", device=device, strict=strict)
     return loaded_model
 
 

@@ -134,6 +134,7 @@ class LeggedRobotBase(BaseTask):
         self._kp_scale = torch.ones(self.num_envs, self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
         self._kd_scale = torch.ones(self.num_envs, self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
         self._rfi_lim_scale = torch.ones(self.num_envs, self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
+        self._torque_noise = torch.zeros_like(self.torques)
         self.push_robot_vel_buf = torch.zeros(self.num_envs, 2, dtype=torch.float, device=self.device, requires_grad=False)
         self.record_push_robot_vel_buf = torch.zeros(self.num_envs, 2, dtype=torch.float, device=self.device, requires_grad=False)
 
@@ -296,6 +297,7 @@ class LeggedRobotBase(BaseTask):
             jpos_target = actions_scaled + (self.default_dof_pos + self.default_dof_pos_offset)
             # jpos_target *= 0.
             self.simulator._robot.set_joint_position_target(jpos_target, joint_ids=self.simulator.dof_ids)
+            self.simulator.apply_torques_at_dof(self._torque_noise)
         else:
             raise NotImplementedError(f"Simulator {self.config.simulator.config.name} not implemented")
 
@@ -306,13 +308,27 @@ class LeggedRobotBase(BaseTask):
         self._update_counters_each_step()
         self.last_episode_length_buf = self.episode_length_buf.clone()
 
-        self._pre_compute_observations_callback()
         self._update_tasks_callback()
+        self._pre_compute_observations_callback()
         # compute observations, rewards, resets, ...
         self._check_termination()
         self._compute_reward()
         # check terminations
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
+        self.extras.pop("_final_observation_raw", None)
+        self.extras.pop("_final_sim_state", None)
+        self.extras.pop("_final_episode_length", None)
+        if len(env_ids) > 0:
+            # Preserve the physical successor before same-step autoreset.
+            self._compute_observations()
+            self.extras["_final_observation_raw"] = {key: value.clone() for key, value in self.obs_buf_dict_raw["actor_obs"].items()}
+            self.extras["_final_episode_length"] = self.episode_length_buf.clone()
+            self.extras["_final_sim_state"] = {
+                "root_states": self.simulator.robot_root_states.clone(),
+                "dof_pos": self.simulator.dof_pos.clone(),
+                "dof_vel": self.simulator.dof_vel.clone(),
+                "base_ang_vel": self.base_ang_vel.clone(),
+            }
         self.reset_envs_idx(env_ids)
 
         # set envs
@@ -659,8 +675,10 @@ class LeggedRobotBase(BaseTask):
         else:
             raise NameError(f"Unknown controller type: {control_type}")
         
+        self._torque_noise.zero_()
         if self.config.domain_rand.randomize_torque_rfi:
-            torques = torques + (torch.rand_like(torques)*2.-1.) * self.config.domain_rand.rfi_lim * self._rfi_lim_scale * self.torque_limits
+            self._torque_noise.copy_((torch.rand_like(torques)*2.-1.) * self.config.domain_rand.rfi_lim * self._rfi_lim_scale * self.torque_limits)
+            torques = torques + self._torque_noise
         
         if self.config.robot.control.clip_torques:
             return torch.clip(torques, -self.torque_limits, self.torque_limits)
@@ -876,6 +894,8 @@ class LeggedRobotBase(BaseTask):
         if self.config.domain_rand.randomize_pd_gain:
             self._kp_scale[env_ids] = torch_rand_float(self.config.domain_rand.kp_range[0], self.config.domain_rand.kp_range[1], (len(env_ids), self.num_dofs), device=self.device)
             self._kd_scale[env_ids] = torch_rand_float(self.config.domain_rand.kd_range[0], self.config.domain_rand.kd_range[1], (len(env_ids), self.num_dofs), device=self.device)
+            if self.config.simulator.config.name == "isaacsim":
+                self.simulator.set_pd_gains(env_ids, self._kp_scale[env_ids] * self.p_gains, self._kd_scale[env_ids] * self.d_gains)
     
         if self.config.domain_rand.randomize_rfi_lim:
             self._rfi_lim_scale[env_ids] = torch_rand_float(self.config.domain_rand.rfi_lim_range[0], self.config.domain_rand.rfi_lim_range[1], (len(env_ids), self.num_dofs), device=self.device)

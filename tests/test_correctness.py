@@ -63,6 +63,68 @@ def wrapper(env):
 
 
 class InferenceTests(unittest.TestCase):
+    def test_extended_body_velocity_matches_world_position_derivative(self):
+        count = 6
+        angles = torch.tensor([0.0, np.pi / 2, -np.pi / 2, np.pi, 0.7, np.pi / 2], dtype=torch.float64)
+        speeds = torch.tensor([1.0, 1.0, -2.0, 3.0, 0.0, 1.0], dtype=torch.float64)
+        env = LeggedRobotMotions.__new__(LeggedRobotMotions)
+        env.num_envs, env.num_extend_bodies = count, 2
+        env.extend_body_parent_ids = torch.tensor([1, 0])
+        env.extend_body_pos_in_parent = torch.tensor([[0.0, 0.0, 0.35], [0.0, 0.0, 0.0]], dtype=torch.float64).repeat(count, 1, 1)
+        identity = torch.tensor([0.0, 0.0, 0.0, 1.0], dtype=torch.float64)
+        env.extend_body_rot_in_parent_xyzw = identity.repeat(count, 2, 1)
+        env.extend_body_rot_in_parent_xyzw[:-1, 0] = torch.tensor([0.0, np.sin(0.3), 0.0, np.cos(0.3)], dtype=torch.float64)
+        env.env_origins = torch.zeros(count, 3, dtype=torch.float64)
+        env.motion_ids = env.episode_length_buf = torch.zeros(count, dtype=torch.long)
+        env.motion_start_times = torch.zeros(count, dtype=torch.float64)
+        env.dt = 0.02
+        env.config = OmegaConf.create({"use_teleop_control": False, "obs": {"root_height_obs": False}})
+        env.all_obs_name, env.use_contact_in_obs_max = {"max_local_self"}, False
+        env.motion_tracking_id = [0]
+        env.marker_coords = torch.zeros(count, 4, 3, dtype=torch.float64)
+        motion = {
+            "rg_pos_t": torch.zeros(count, 4, 3, dtype=torch.float64),
+            "rg_rot_t": identity.repeat(count, 4, 1),
+            "body_vel_t": torch.zeros(count, 4, 3, dtype=torch.float64),
+            "body_ang_vel_t": torch.zeros(count, 4, 3, dtype=torch.float64),
+            "dof_pos": torch.zeros(count, 1, dtype=torch.float64),
+            "dof_vel": torch.zeros(count, 1, dtype=torch.float64),
+        }
+        env._motion_lib = NS(get_motion_state=lambda *args, **kwargs: motion)
+        root = torch.zeros(count, 13, dtype=torch.float64)
+        root[:, 6] = 1.0
+        velocity = torch.tensor([0.2, -0.1, 0.3], dtype=torch.float64).repeat(count, 2, 1)
+        velocity[-1, 1] = 0.0
+        env.simulator = NS(
+            robot_root_states=root, dof_pos=motion["dof_pos"], dof_vel=motion["dof_vel"],
+            _rigid_body_vel=velocity, _rigid_body_ang_vel=torch.zeros_like(velocity),
+        )
+        # Run the real observation callback; only simulator/motion-library boundaries are replaced.
+        with patch.object(LeggedRobotBase, "_pre_compute_observations_callback"), patch.object(LeggedRobotMotions, "_log_motion_tracking_info"):
+            for axis in (0, 1, 2):
+                with self.subTest(rotation_axis=axis):
+                    env.simulator._rigid_body_ang_vel.zero_()
+                    env.simulator._rigid_body_ang_vel[:, 1, axis] = speeds
+                    positions = []
+                    epsilon = 1e-5
+                    for time in (-epsilon, epsilon, 0.0):
+                        theta = angles + speeds * time
+                        rotations = identity.repeat(count, 2, 1)
+                        rotations[:, 1, axis] = torch.sin(theta / 2)
+                        rotations[:, 1, 3] = torch.cos(theta / 2)
+                        env.simulator._rigid_body_rot = rotations
+                        env.simulator._rigid_body_pos = torch.ones_like(velocity) + velocity * time
+                        env._pre_compute_observations_callback()
+                        positions.append(env._rigid_body_pos_extend.clone())
+                    expected = (positions[1] - positions[0]) / (2 * epsilon)
+                    torch.testing.assert_close(env._rigid_body_vel_extend, expected, atol=1e-8, rtol=1e-8)
+                    torch.testing.assert_close(env._rigid_body_vel_extend[:, :2], velocity)
+                    torch.testing.assert_close(env._rigid_body_ang_vel_extend[:, 2:], env.simulator._rigid_body_ang_vel[:, [1, 0]])
+                    # With identity root heading, the privileged velocity block equals world velocity.
+                    torch.testing.assert_close(env._max_local_self[:, -24:-12], expected.flatten(1), atol=1e-8, rtol=1e-8)
+                    if axis == 1:
+                        torch.testing.assert_close(env._rigid_body_vel_extend[-1, 2], torch.tensor([0.0, 0.0, -0.35], dtype=torch.float64), atol=1e-8, rtol=1e-8)
+
     def test_reset_observation_and_history_match_written_state(self):
         for manual_reset, episode_reset in ((True, False), (False, True), (False, False)):
             with self.subTest(manual_reset=manual_reset, episode_reset=episode_reset):
@@ -75,6 +137,8 @@ class InferenceTests(unittest.TestCase):
                 env = NS(
                     simulator=NS(
                         robot_root_states=root,
+                        dof_pos=torch.zeros(2, 1),
+                        dof_vel=torch.zeros(2, 1),
                         base_quat=root[:, 3:7],
                         set_actor_root_state_tensor=lambda ids, states: root.__setitem__(ids, states[ids]),
                         set_dof_state_tensor=Mock(),
@@ -103,6 +167,7 @@ class InferenceTests(unittest.TestCase):
                 def observe():
                     state = torch.cat([env.projected_gravity, env.base_ang_vel], dim=-1).clone()
                     env.obs_buf_dict = {"actor_obs": state}
+                    env.obs_buf_dict_raw = {"actor_obs": {"state": state}}
                     env.hist_obs_dict = {"state": state}
 
                 env._compute_observations = observe
